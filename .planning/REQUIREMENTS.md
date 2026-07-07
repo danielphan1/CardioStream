@@ -91,11 +91,49 @@
 
 ## Traceability
 
-<!-- Filled by roadmap creation: REQ-ID → Phase mapping -->
-
-| REQ-ID | Phase |
-|--------|-------|
-| (pending roadmap) | |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Pending |
+| DATA-07 | Phase 1 | Pending |
+| DATA-08 | Phase 1 | Pending |
+| API-01 | Phase 2 | Pending |
+| API-02 | Phase 2 | Pending |
+| DASH-01 | Phase 2 | Pending |
+| DASH-02 | Phase 2 | Pending |
+| DASH-03 | Phase 2 | Pending |
+| DASH-04 | Phase 2 | Pending |
+| DASH-05 | Phase 2 | Pending |
+| DASH-06 | Phase 2 | Pending |
+| DASH-07 | Phase 2 | Pending |
+| DASH-08 | Phase 2 | Pending |
+| DASH-09 | Phase 2 | Pending |
+| DASH-11 | Phase 2 | Pending |
+| ACC-01 | Phase 2 | Pending |
+| ACC-02 | Phase 2 | Pending |
+| API-04 | Phase 3 | Pending |
+| API-05 | Phase 3 | Pending |
+| VOICE-06 | Phase 3 | Pending |
+| VOICE-07 | Phase 3 | Pending |
+| VOICE-08 | Phase 3 | Pending |
+| VOICE-09 | Phase 3 | Pending |
+| SEC-02 | Phase 3 | Pending |
+| VOICE-01 | Phase 4 | Pending |
+| VOICE-02 | Phase 4 | Pending |
+| VOICE-03 | Phase 4 | Pending |
+| VOICE-04 | Phase 4 | Pending |
+| VOICE-05 | Phase 4 | Pending |
+| ACC-03 | Phase 4 | Pending |
+| API-03 | Phase 5 | Pending |
+| DASH-10 | Phase 5 | Pending |
+| SEC-01 | Phase 5 | Pending |
+| SEC-03 | Phase 5 | Pending |
+| DEPL-01 | Phase 5 | Pending |
+| DEPL-02 | Phase 5 | Pending |
 
 ---
-*Requirements defined: 2026-07-07 — 33 v1 requirements across 7 categories*
+*Requirements defined: 2026-07-07 — 41 v1 requirements across 7 categories*
