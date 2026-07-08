@@ -30,7 +30,16 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Automated test suite passes: AHA + Hypotension category boundaries, bradycardia/tachycardia boundaries, MAP calculation, AM/PM logic, and double-ingest idempotency
   4. Public repo contains no real health data — real files are gitignored and a committed synthetic sample with the same schema and outlier character works for development
   5. Alembic migrations create the readings table plus empty future tables (lab_results, incidents, procedures), with all timestamps stored as naive local time
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Privacy-first repo scaffold: gitignore-first commit, backend layout, pinned deps, real-data drop checkpoint
+- [ ] 01-02-PLAN.md — SQLAlchemy schema + Alembic (readings w/ unique datetime, empty future tables, migration smoke test)
+- [ ] 01-03-PLAN.md — Derivation module TDD: AHA/hypotension/pulse classifiers, MAP, pulse pressure, AM/PM boundary matrix
+- [ ] 01-04-PLAN.md — OMRON parse + transform: real-format inspection, naive datetimes, D-07 dedupe, D-08 rejection
+- [ ] 01-05-PLAN.md — Seeded synthetic sample generator + committed OMRON-format xlsx + character regression test
+- [ ] 01-06-PLAN.md — Idempotent merge loader: D-05 upsert, D-06 IngestSummary, double-ingest proof
+- [ ] 01-07-PLAN.md — python -m app.seed, golden-master diff vs bp_data_cleaned.csv, README + final privacy audit
 
 ### Phase 2: Read API & Dashboard
 **Goal**: Anyone can see and manually explore Chris's data across all four charts — the manual filter state that voice commands will later mutate
@@ -90,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Foundation | 0/TBD | Not started | - |
+| 1. Data Foundation | 0/7 | Not started | - |
 | 2. Read API & Dashboard | 0/TBD | Not started | - |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
