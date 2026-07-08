@@ -1,0 +1,17 @@
+# Privacy gate: real health data lives here — NEVER commit (DATA-08)
+data/
+
+# Databases (dev.db contains PHI after seeding)
+*.db
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Environment / secrets
+.env
+
+# OS
+.DS_Store
