@@ -1,8 +1,10 @@
-"""File-facing ETL: OMRON .xlsx export -> normalized raw DataFrame -> clean frame.
+"""File-facing ETL: OMRON .xlsx export -> raw DataFrame -> clean frame -> DB merge.
 
-Pure functions shared by the CLI seeder (plan 01-07) and the Phase 5 upload
-route (CLAUDE.md pattern: "pure function raw_df -> clean_df imported by both").
-No DB access, no side effects.
+``parse_omron`` and ``transform`` are pure functions shared by the CLI seeder
+(plan 01-07) and the Phase 5 upload route (CLAUDE.md pattern: "pure function
+raw_df -> clean_df imported by both") — no DB access, no side effects.
+``merge_readings`` is the DB half (plan 01-06): the idempotent merge of a
+clean frame into the readings table, returning the D-06 IngestSummary.
 
 FORMAT NOTE — ASSUMED, NOT INSPECTED (blocker A1/A2 still open):
 The real OMRON export and bp_data_cleaned.csv were not provided at the 01-01
@@ -27,6 +29,9 @@ from dataclasses import dataclass
 from datetime import date, datetime, time
 
 import pandas as pd
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 from app.derivations import (
     classify_bp,
@@ -35,6 +40,7 @@ from app.derivations import (
     compute_pulse_pressure,
     derive_am_pm,
 )
+from app.models import Reading
 
 # Assumed OMRON export columns (A1), normalized to snake_case on read.
 _EXPECTED_RAW_COLUMNS = [
@@ -256,3 +262,107 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
 
     rejected.sort(key=lambda r: r.row_index)
     return clean, rejected
+
+
+# --- merge_readings: idempotent DB merge (DATA-03, D-05, D-06) ----------------
+
+# Input fields compared for the update/unchanged branch; derived columns follow
+# these deterministically, so comparing inputs is sufficient (D-05).
+_COMPARED_FIELDS = ("systolic", "diastolic", "pulse", "notes")
+
+
+class IngestSummary(BaseModel):
+    """D-06 ingest summary — this exact shape becomes the Phase 5 API-03
+    ``POST /upload`` response. Do not deviate.
+
+    Counts, reasons, and dates only — never blood-pressure values (T-1-04).
+    ``latest`` is the max reading datetime in the DB after the merge, naive
+    local time (DATA-05).
+    """
+
+    added: int
+    updated: int
+    unchanged: int
+    rejected: list[RejectedRow]
+    total: int
+    latest: datetime | None
+
+
+def merge_readings(
+    session: Session, clean_df: pd.DataFrame, rejected: list[RejectedRow]
+) -> IngestSummary:
+    """Idempotently merge a clean frame into the readings table (DATA-03).
+
+    Python-level merge (RESEARCH Pattern 2) — NOT ``ON CONFLICT``, which cannot
+    report added-vs-updated-vs-unchanged, and explicitly NOT ``Session.merge()``
+    (anti-pattern: it keys on the ``id`` primary key, not the ``datetime``
+    natural key). The ``uq_readings_datetime`` constraint remains the safety
+    net if this logic ever regresses.
+
+    Branching per row (keyed by the reading datetime):
+
+    - new datetime            -> INSERT, counted ``added``
+    - existing, inputs differ -> UPDATE in place (incoming file is truth,
+      D-05), derived values from clean_df applied too, counted ``updated``
+    - existing, inputs equal  -> untouched, counted ``unchanged``
+
+    All writes happen in ONE transaction (single commit at the end).
+    """
+    # Load existing rows once into a dict keyed by the natural key.
+    existing: dict[datetime, Reading] = {
+        r.datetime_: r for r in session.scalars(select(Reading))
+    }
+
+    added = updated = unchanged = 0
+    for row in clean_df.itertuples(index=False):
+        dt = row.datetime.to_pydatetime()  # naive — DATA-05 round-trip
+        incoming_notes = row.notes if row.notes is not None else None
+        current = existing.get(dt)
+        if current is None:
+            session.add(
+                Reading(
+                    datetime_=dt,
+                    systolic=int(row.systolic),
+                    diastolic=int(row.diastolic),
+                    pulse=int(row.pulse),
+                    am_pm=row.am_pm,
+                    bp_category=row.bp_category,
+                    pulse_category=row.pulse_category,
+                    map_value=float(row.map),
+                    pulse_pressure=int(row.pulse_pressure),
+                    notes=incoming_notes,
+                )
+            )
+            added += 1
+        elif (
+            current.systolic == int(row.systolic)
+            and current.diastolic == int(row.diastolic)
+            and current.pulse == int(row.pulse)
+            and current.notes == incoming_notes
+        ):
+            unchanged += 1
+        else:
+            # D-05: the incoming file is truth — inputs AND derived columns.
+            current.systolic = int(row.systolic)
+            current.diastolic = int(row.diastolic)
+            current.pulse = int(row.pulse)
+            current.am_pm = row.am_pm
+            current.bp_category = row.bp_category
+            current.pulse_category = row.pulse_category
+            current.map_value = float(row.map)
+            current.pulse_pressure = int(row.pulse_pressure)
+            current.notes = incoming_notes
+            updated += 1
+
+    session.commit()
+
+    total = session.scalar(select(func.count()).select_from(Reading))
+    latest = session.scalar(select(func.max(Reading.datetime_)))
+    return IngestSummary(
+        added=added,
+        updated=updated,
+        unchanged=unchanged,
+        rejected=rejected,
+        total=total,
+        latest=latest,
+    )
