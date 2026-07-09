@@ -8,7 +8,16 @@ from datetime import date, datetime, time
 import pandas as pd
 import pytest
 
-from app.etl import parse_omron
+from app.etl import RejectedRow, parse_omron, transform
+
+
+def _raw_df(rows: list[dict]) -> pd.DataFrame:
+    """Build a frame shaped like parse_omron output from row dicts."""
+    cols = ["datetime", "systolic", "diastolic", "pulse", "notes"]
+    filled = [{c: row.get(c) for c in cols} for row in rows]
+    df = pd.DataFrame(filled, columns=cols)
+    df["datetime"] = pd.to_datetime(df["datetime"], errors="coerce")
+    return df
 
 
 class TestParseOmron:
@@ -164,3 +173,268 @@ class TestParseOmron:
         )
         df = parse_omron(path)
         assert pd.isna(df.loc[0, "notes"])
+
+
+CLEAN_COLUMNS = [
+    "datetime",
+    "systolic",
+    "diastolic",
+    "pulse",
+    "am_pm",
+    "bp_category",
+    "pulse_category",
+    "map",
+    "pulse_pressure",
+    "notes",
+]
+
+
+class TestTransform:
+    def test_clean_df_columns_and_known_values(self):
+        """Spot check via app.derivations: (2025-03-01 08:05, 120, 80, 55)."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 80,
+                        "pulse": 55,
+                        "notes": "spot check",
+                    }
+                ]
+            )
+        )
+        assert list(clean.columns) == CLEAN_COLUMNS
+        assert rejected == []
+        row = clean.iloc[0]
+        assert row["am_pm"] == "AM"
+        assert row["bp_category"] == "Elevated"
+        assert row["pulse_category"] == "Bradycardia"
+        assert row["map"] == pytest.approx(93.3, abs=0.05)
+        assert row["pulse_pressure"] == 40
+        assert row["notes"] == "spot check"
+
+    def test_clean_datetime_stays_naive(self):
+        clean, _ = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 80,
+                        "pulse": 55,
+                    }
+                ]
+            )
+        )
+        assert clean["datetime"].dt.tz is None  # DATA-05
+
+    def test_d07_last_wins_dedupe_and_displaced_row_surfaced(self):
+        """Same minute-granularity datetime: last row in file order survives."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 80,
+                        "pulse": 55,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 130,
+                        "diastolic": 85,
+                        "pulse": 70,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 1
+        assert clean.iloc[0]["systolic"] == 130  # last wins
+        assert len(rejected) == 1
+        assert rejected[0].row_index == 0
+        assert rejected[0].reason == "intra-file duplicate datetime: superseded by later row"
+
+    def test_d08_missing_pulse_rejected_others_survive(self):
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 80,
+                        "pulse": None,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 2, 8, 5),
+                        "systolic": 118,
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 1
+        assert clean.iloc[0]["systolic"] == 118
+        assert len(rejected) == 1
+        assert rejected[0].row_index == 0
+        assert "pulse" in rejected[0].reason
+
+    def test_d08_nat_datetime_rejected(self):
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {"datetime": None, "systolic": 120, "diastolic": 80, "pulse": 55},
+                    {
+                        "datetime": datetime(2025, 3, 2, 8, 5),
+                        "systolic": 118,
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 1
+        assert len(rejected) == 1
+        assert rejected[0].row_index == 0
+        assert "datetime" in rejected[0].reason
+
+    def test_d08_non_numeric_systolic_rejected(self):
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": "high",
+                        "diastolic": 80,
+                        "pulse": 55,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 0
+        assert len(rejected) == 1
+        assert "systolic" in rejected[0].reason
+
+    def test_d08_non_positive_diastolic_rejected(self):
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 0,
+                        "pulse": 55,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 0
+        assert len(rejected) == 1
+        assert "diastolic" in rejected[0].reason
+
+    def test_d08_reason_does_not_echo_other_health_values(self):
+        """Log hygiene (V8/T-1-04): reasons never leak the row's readings."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 187,
+                        "diastolic": 113,
+                        "pulse": None,
+                    },
+                ]
+            )
+        )
+        assert len(rejected) == 1
+        assert "187" not in rejected[0].reason
+        assert "113" not in rejected[0].reason
+
+    def test_one_bad_row_never_aborts_the_rest(self):
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {"datetime": None, "systolic": 120, "diastolic": 80, "pulse": 55},
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": "bad",
+                        "diastolic": 80,
+                        "pulse": 55,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 2, 20, 5),
+                        "systolic": 118,
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 3, 12, 0),
+                        "systolic": 145,
+                        "diastolic": 91,
+                        "pulse": 105,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 2
+        assert len(rejected) == 2
+        # noon exactly is PM; derived via app.derivations
+        assert clean.iloc[1]["am_pm"] == "PM"
+        assert clean.iloc[1]["bp_category"] == "Stage 2"
+        assert clean.iloc[1]["pulse_category"] == "Tachycardia"
+
+    def test_notes_nan_normalized_to_none(self):
+        clean, _ = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 80,
+                        "pulse": 55,
+                    }
+                ]
+            )
+        )
+        assert clean.iloc[0]["notes"] is None
+
+    def test_rejected_row_shape(self):
+        _, rejected = transform(
+            _raw_df(
+                [{"datetime": None, "systolic": 120, "diastolic": 80, "pulse": 55}]
+            )
+        )
+        r = rejected[0]
+        assert isinstance(r, RejectedRow)
+        assert isinstance(r.row_index, int)
+        assert isinstance(r.reason, str)
+
+    def test_transform_of_parse_output_end_to_end(self, omron_xlsx):
+        """Full pipeline: file -> parse_omron -> transform."""
+        path = omron_xlsx(
+            [
+                {
+                    "Date": date(2025, 3, 1),
+                    "Time": time(8, 5),
+                    "Systolic": 120,
+                    "Diastolic": 80,
+                    "Pulse": 55,
+                    "Notes": "e2e",
+                },
+                {
+                    "Date": "not-a-date",
+                    "Time": "whenever",
+                    "Systolic": 118,
+                    "Diastolic": 76,
+                    "Pulse": 62,
+                },
+            ]
+        )
+        clean, rejected = transform(parse_omron(path))
+        assert len(clean) == 1
+        assert clean.iloc[0]["bp_category"] == "Elevated"
+        assert clean.iloc[0]["notes"] == "e2e"
+        assert len(rejected) == 1
+        assert "datetime" in rejected[0].reason
