@@ -23,9 +23,18 @@ Datetimes are naive local time end-to-end (DATA-05) — no tz anywhere.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date, datetime, time
 
 import pandas as pd
+
+from app.derivations import (
+    classify_bp,
+    classify_pulse,
+    compute_map,
+    compute_pulse_pressure,
+    derive_am_pm,
+)
 
 # Assumed OMRON export columns (A1), normalized to snake_case on read.
 _EXPECTED_RAW_COLUMNS = [
@@ -128,3 +137,122 @@ def parse_omron(path_or_buffer, max_rows: int = 10_000) -> pd.DataFrame:
         }
     )
     return out[_OUTPUT_COLUMNS]
+
+
+# --- transform: derive, dedupe (D-07), reject (D-08) -------------------------
+
+_CLEAN_COLUMNS = [
+    "datetime",
+    "systolic",
+    "diastolic",
+    "pulse",
+    "am_pm",
+    "bp_category",
+    "pulse_category",
+    "map",
+    "pulse_pressure",
+    "notes",
+]
+
+_DUPLICATE_REASON = "intra-file duplicate datetime: superseded by later row"
+
+
+@dataclass(frozen=True)
+class RejectedRow:
+    """A row excluded from clean_df, with a hygiene-safe reason (D-08, T-1-04).
+
+    ``reason`` names the offending field and problem only — it never echoes
+    other health values from the row (log hygiene, V8).
+    """
+
+    row_index: int
+    reason: str
+
+
+def _validate_row(row: pd.Series) -> str | None:
+    """Return a rejection reason for a raw row, or None if the row is valid."""
+    if pd.isna(row["datetime"]):
+        return "datetime: missing or unparseable"
+    for field in ("systolic", "diastolic", "pulse"):
+        val = row[field]
+        if val is None or pd.isna(val):
+            return f"{field}: missing"
+        try:
+            num = float(val)
+        except (TypeError, ValueError):
+            return f"{field}: not a number"
+        if num <= 0:
+            return f"{field}: not a positive number"
+    return None
+
+
+def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
+    """Derive the five computed columns and produce a DB-ready clean frame.
+
+    Returns ``(clean_df, rejected)``:
+
+    - clean_df columns: datetime, systolic, diastolic, pulse, am_pm,
+      bp_category, pulse_category, map, pulse_pressure, notes — all derived
+      values computed EXCLUSIVELY via :mod:`app.derivations` (DATA-01).
+    - D-08: rows with NaT datetime or missing/non-numeric/non-positive vitals
+      are excluded and reported as :class:`RejectedRow`; one bad row never
+      aborts the file.
+    - D-07: intra-file duplicate datetimes (minute granularity) resolve
+      last-in-file-order wins; displaced rows are surfaced in ``rejected``,
+      never silently dropped.
+    - notes NaN is normalized to None (DB-ready); datetimes stay naive
+      (DATA-05).
+    """
+    rejected: list[RejectedRow] = []
+
+    # D-08: per-row validation first.
+    keep: list[int] = []
+    for idx, row in raw_df.iterrows():
+        reason = _validate_row(row)
+        if reason is not None:
+            rejected.append(RejectedRow(int(idx), reason))
+        else:
+            keep.append(idx)
+    valid = raw_df.loc[keep]
+
+    # D-07: last-wins dedupe at minute granularity; record displaced indices
+    # BEFORE dropping (surfaced, never silent).
+    if len(valid) > 0:
+        minute = valid["datetime"].dt.floor("min")
+        displaced_mask = minute.duplicated(keep="last")
+        for idx in valid.index[displaced_mask]:
+            rejected.append(RejectedRow(int(idx), _DUPLICATE_REASON))
+        valid = valid.loc[~displaced_mask]
+
+    # Derive via app.derivations only — never re-implement thresholds here.
+    records = []
+    notes_values: list[str | None] = []
+    for _, row in valid.iterrows():
+        sbp = int(row["systolic"])
+        dbp = int(row["diastolic"])
+        pulse = int(row["pulse"])
+        dt = row["datetime"].to_pydatetime()
+        records.append(
+            {
+                "datetime": row["datetime"],
+                "systolic": sbp,
+                "diastolic": dbp,
+                "pulse": pulse,
+                "am_pm": derive_am_pm(dt),
+                "bp_category": classify_bp(sbp, dbp),
+                "pulse_category": classify_pulse(pulse),
+                "map": compute_map(sbp, dbp),
+                "pulse_pressure": compute_pulse_pressure(sbp, dbp),
+                "notes": None,  # placeholder; object-dtype column set below
+            }
+        )
+        notes_values.append(None if pd.isna(row["notes"]) else str(row["notes"]))
+
+    clean = pd.DataFrame(records, columns=_CLEAN_COLUMNS)
+    if clean.empty:
+        clean["datetime"] = pd.to_datetime(clean["datetime"])
+    # NaN -> None normalization, object dtype so None survives (DB-ready).
+    clean["notes"] = pd.Series(notes_values, index=clean.index, dtype="object")
+
+    rejected.sort(key=lambda r: r.row_index)
+    return clean, rejected
