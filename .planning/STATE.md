@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 last_updated: "2026-07-09T02:15:53.019Z"
-last_activity: 2026-07-09 -- Wave 2 complete (01-02 schema/migrations, 01-03 derivations)
+last_activity: 2026-07-09 -- Wave 3 complete (01-04 ETL parse/transform, 01-05 sample generator)
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 7
-  completed_plans: 3
-  percent: 43
+  completed_plans: 5
+  percent: 71
 ---
 
 # Project State
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 01 (data-foundation) — EXECUTING
-Plan: 4 of 7
+Plan: 6 of 7
 Status: Ready to execute
-Last activity: 2026-07-09 -- Wave 2 complete (01-02, 01-03 merged, 32 tests green)
+Last activity: 2026-07-09 -- Wave 3 complete (01-04, 01-05 merged, 59 tests green)
 
-Progress: [████░░░░░░] 43%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
