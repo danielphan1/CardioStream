@@ -14,7 +14,7 @@
 - [ ] **DATA-05**: All timestamps stored as naive local time end-to-end — no UTC conversion anywhere (protects AM/PM analysis)
 - [ ] **DATA-06**: Migrations exist for future tables (lab_results, incidents, procedures); tables stay empty in v1
 - [ ] **DATA-07**: Automated tests cover ETL derivations: BP category boundaries, pulse category boundaries, MAP calculation, AM/PM logic, idempotent re-ingest
-- [ ] **DATA-08**: Real health data never enters the public repo — gitignored data directory plus a synthetic sample file for development and demos
+- [x] **DATA-08**: Real health data never enters the public repo — gitignored data directory plus a synthetic sample file for development and demos
 
 ### API
 
@@ -100,7 +100,7 @@
 | DATA-05 | Phase 1 | Pending |
 | DATA-06 | Phase 1 | Pending |
 | DATA-07 | Phase 1 | Pending |
-| DATA-08 | Phase 1 | Pending |
+| DATA-08 | Phase 1 | Complete |
 | API-01 | Phase 2 | Pending |
 | API-02 | Phase 2 | Pending |
 | DASH-01 | Phase 2 | Pending |
