@@ -14,9 +14,11 @@ from __future__ import annotations
 from datetime import datetime
 
 import pandas as pd
+import pytest
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
-from app.etl import IngestSummary, merge_readings, transform
+from app.etl import IngestSummary, merge_readings, parse_omron, transform
 from app.models import Reading
 
 RAW_COLUMNS = ["datetime", "systolic", "diastolic", "pulse", "notes"]
@@ -121,3 +123,104 @@ def test_identical_reingest_counts_unchanged(session):
     assert (summary.added, summary.updated, summary.unchanged) == (0, 0, 3)
     assert summary.total == 3
     assert _db_count(session) == before
+
+
+# --- Task 2: full-pipeline idempotency proof (ROADMAP criterion 2) ------------
+
+# Assumed OMRON export rows (fixture shape from plan 01-04). The 11:59 AM /
+# 12:00 PM pair straddles the AM/PM boundary for the naive round-trip test.
+FIRST_FILE = [
+    {"Date": "2025-03-01", "Time": "8:05 AM", "Systolic": 118, "Diastolic": 75, "Pulse": 62, "Notes": "morning"},
+    {"Date": "2025-03-01", "Time": "11:59 AM", "Systolic": 124, "Diastolic": 70, "Pulse": 58},
+    {"Date": "2025-03-01", "Time": "12:00 PM", "Systolic": 132, "Diastolic": 84, "Pulse": 66},
+    {"Date": "2025-03-02", "Time": "7:55 AM", "Systolic": 145, "Diastolic": 92, "Pulse": 71},
+]
+
+
+def _ingest(path, session):
+    """The real pipeline end-to-end: parse -> transform -> merge."""
+    clean_df, rejected = transform(parse_omron(path))
+    return merge_readings(session, clean_df, rejected), clean_df
+
+
+def test_double_ingest_adds_zero_rows(session, omron_xlsx):
+    """DATA-03: re-ingesting the same cumulative export adds zero rows."""
+    path = omron_xlsx(FIRST_FILE)
+
+    first, _ = _ingest(path, session)
+    assert first.added == len(FIRST_FILE)
+    count_after_first = _db_count(session)
+
+    second, _ = _ingest(path, session)
+    assert (second.added, second.updated, second.unchanged) == (0, 0, len(FIRST_FILE))
+    assert second.total == len(FIRST_FILE)
+    # Direct DB row-count equality, not just the summary's claim.
+    assert _db_count(session) == count_after_first
+
+
+def test_overlapping_export_upserts(session, omron_xlsx):
+    """Cumulative overlap: union ingested, changed row updated, rest untouched."""
+    first_path = omron_xlsx(FIRST_FILE, "first.xlsx")
+    _ingest(first_path, session)
+
+    # Second export = first file's rows, PLUS 3 new datetimes, PLUS one
+    # existing datetime (8:05 AM) with a changed systolic (118 -> 150).
+    second_file = [dict(row) for row in FIRST_FILE]
+    second_file[0]["Systolic"] = 150
+    second_file += [
+        {"Date": "2025-03-03", "Time": "8:00 AM", "Systolic": 128, "Diastolic": 78, "Pulse": 64},
+        {"Date": "2025-03-03", "Time": "8:00 PM", "Systolic": 136, "Diastolic": 86, "Pulse": 59},
+        {"Date": "2025-03-04", "Time": "9:15 AM", "Systolic": 142, "Diastolic": 88, "Pulse": 70},
+    ]
+    second_path = omron_xlsx(second_file, "second.xlsx")
+
+    summary, _ = _ingest(second_path, session)
+    assert summary.added == 3
+    assert summary.updated == 1
+    assert summary.unchanged == len(FIRST_FILE) - 1
+    assert summary.total == len(FIRST_FILE) + 3  # the union
+    assert summary.latest == datetime(2025, 3, 4, 9, 15)
+
+    row = session.scalars(
+        select(Reading).where(Reading.datetime_ == datetime(2025, 3, 1, 8, 5))
+    ).one()
+    assert row.systolic == 150  # D-05: incoming file is truth
+
+
+def test_unique_constraint_safety_net(session):
+    """DATA-03 backstop: even if merge logic regresses, the DB constraint
+    (uq_readings_datetime) makes duplicate datetimes structurally impossible."""
+    fields = dict(
+        systolic=118,
+        diastolic=75,
+        pulse=62,
+        am_pm="AM",
+        bp_category="Normal",
+        pulse_category="Normal",
+        map_value=89.3,
+        pulse_pressure=43,
+        notes=None,
+    )
+    dup = datetime(2025, 3, 1, 8, 5)
+    session.add(Reading(datetime_=dup, **fields))
+    session.add(Reading(datetime_=dup, **fields))
+
+    with pytest.raises(IntegrityError):
+        session.commit()
+
+
+def test_datetimes_naive_roundtrip(session, omron_xlsx):
+    """DATA-05: stored datetimes are naive and equal clean_df datetimes exactly
+    — no shift across the AM/PM (noon) boundary."""
+    path = omron_xlsx(FIRST_FILE)
+    _, clean_df = _ingest(path, session)
+
+    stored = sorted(r.datetime_ for r in session.scalars(select(Reading)))
+    assert all(d.tzinfo is None for d in stored)
+
+    expected = sorted(ts.to_pydatetime() for ts in clean_df["datetime"])
+    assert stored == expected
+
+    # The boundary pair survived exactly: 11:59 stayed AM-side, noon stayed noon.
+    assert datetime(2025, 3, 1, 11, 59) in stored
+    assert datetime(2025, 3, 1, 12, 0) in stored
