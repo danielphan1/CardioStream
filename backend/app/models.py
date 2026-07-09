@@ -9,9 +9,9 @@ batch migrations can drop them later and autogenerate diffs stay reproducible
 on both databases.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, Integer, MetaData, Numeric, Text, UniqueConstraint
+from sqlalchemy import Date, DateTime, Integer, MetaData, Numeric, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 convention = {
@@ -53,3 +53,47 @@ class Reading(Base):
 
     # DATA-03 hard guarantee: duplicate reading datetimes are structurally impossible.
     __table_args__ = (UniqueConstraint("datetime"),)
+
+
+# Future tables (DATA-06): migrated but intentionally EMPTY in v1 — no seed data, no API.
+
+
+class LabResult(Base):
+    """Lab test result (future data; table stays empty in v1 per DATA-06)."""
+
+    __tablename__ = "lab_results"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    test_name: Mapped[str] = mapped_column(Text, nullable=False)
+    result: Mapped[float | None] = mapped_column(Numeric(asdecimal=False), nullable=True)
+    unit: Mapped[str | None] = mapped_column(Text, nullable=True)
+    range_low: Mapped[float | None] = mapped_column(Numeric(asdecimal=False), nullable=True)
+    range_high: Mapped[float | None] = mapped_column(Numeric(asdecimal=False), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class Incident(Base):
+    """Health incident, e.g. passing out or hospitalization (future data, empty in v1)."""
+
+    __tablename__ = "incidents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Naive local time, same DATA-05 rule as readings.
+    datetime_: Mapped[datetime] = mapped_column("datetime", DateTime, nullable=False)
+    incident_type: Mapped[str] = mapped_column(Text, nullable=False)
+    duration: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class Procedure(Base):
+    """Medical procedure (future data, empty in v1)."""
+
+    __tablename__ = "procedures"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    procedure_name: Mapped[str] = mapped_column(Text, nullable=False)
+    location: Mapped[str | None] = mapped_column(Text, nullable=True)
+    outcome: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
