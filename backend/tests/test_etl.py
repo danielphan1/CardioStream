@@ -209,7 +209,11 @@ class TestTransform:
         assert rejected == []
         row = clean.iloc[0]
         assert row["am_pm"] == "AM"
-        assert row["bp_category"] == "Elevated"
+        # NOTE: plan 01-04 predicted "Elevated" for 120/80, but the pinned
+        # AHA ladder (01-03, D-03 severity-max) classifies diastolic 80 as
+        # Stage 1 — "Elevated" requires diastolic <80. derivations.py is the
+        # single source of truth (DATA-01); the plan literal was wrong.
+        assert row["bp_category"] == "Stage 1"
         assert row["pulse_category"] == "Bradycardia"
         assert row["map"] == pytest.approx(93.3, abs=0.05)
         assert row["pulse_pressure"] == 40
@@ -434,7 +438,8 @@ class TestTransform:
         )
         clean, rejected = transform(parse_omron(path))
         assert len(clean) == 1
-        assert clean.iloc[0]["bp_category"] == "Elevated"
+        # 120/80 -> Stage 1 per the pinned AHA ladder (see note above)
+        assert clean.iloc[0]["bp_category"] == "Stage 1"
         assert clean.iloc[0]["notes"] == "e2e"
         assert len(rejected) == 1
         assert "datetime" in rejected[0].reason
