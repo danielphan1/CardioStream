@@ -18,6 +18,10 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
+from app.models import Base
 
 OMRON_COLUMNS = [
     "Date",
@@ -57,3 +61,24 @@ def omron_xlsx(tmp_path, omron_df):
         return path
 
     return _write
+
+
+# --- DB fixtures (plan 01-06) -------------------------------------------------
+# Unit tests use Base.metadata.create_all on a fresh in-memory SQLite engine;
+# migrations are exercised ONLY in test_migrations.py (drift guard covers parity).
+
+
+@pytest.fixture
+def engine():
+    """Function-scoped in-memory SQLite engine with the full schema created."""
+    eng = create_engine("sqlite://")
+    Base.metadata.create_all(eng)
+    yield eng
+    eng.dispose()
+
+
+@pytest.fixture
+def session(engine):
+    """A Session bound to the function-scoped in-memory engine."""
+    with Session(engine) as s:
+        yield s
