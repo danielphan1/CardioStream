@@ -12,7 +12,7 @@ Build from the data up: first a tested, privacy-safe ETL foundation seeded with 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Data Foundation** - Repo + privacy setup, schema/migrations, idempotent OMRON ETL with tested derivations, 132 readings seeded
+- [x] **Phase 1: Data Foundation** - Repo + privacy setup, schema/migrations, idempotent OMRON ETL with tested derivations, 132 readings seeded (completed 2026-07-13)
 - [ ] **Phase 2: Read API & Dashboard** - `/readings` + `/stats` endpoints and the four-chart dashboard with manual filters, stats strip, and readings table
 - [ ] **Phase 3: Agent via Text Input** - Claude-powered `/agent` endpoint with validated JSON commands, driven by the text input box
 - [ ] **Phase 4: Voice Capture** - Continuous-listening mic sessions on Chrome/Edge and Safari/iOS with unmissable state indicators and live transcript
@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Automated test suite passes: AHA + Hypotension category boundaries, bradycardia/tachycardia boundaries, MAP calculation, AM/PM logic, and double-ingest idempotency
   4. Public repo contains no real health data — real files are gitignored and a committed synthetic sample with the same schema and outlier character works for development
   5. Alembic migrations create the readings table plus empty future tables (lab_results, incidents, procedures), with all timestamps stored as naive local time
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 - [x] 01-01-PLAN.md — Privacy-first repo scaffold: gitignore-first commit, backend layout, pinned deps, real-data drop checkpoint
@@ -39,7 +39,7 @@ Plans:
 - [x] 01-04-PLAN.md — OMRON parse + transform: real-format inspection, naive datetimes, D-07 dedupe, D-08 rejection
 - [x] 01-05-PLAN.md — Seeded synthetic sample generator + committed OMRON-format xlsx + character regression test
 - [x] 01-06-PLAN.md — Idempotent merge loader: D-05 upsert, D-06 IngestSummary, double-ingest proof
-- [ ] 01-07-PLAN.md — python -m app.seed, golden-master diff vs bp_data_cleaned.csv, README + final privacy audit
+- [x] 01-07-PLAN.md — python -m app.seed, golden-master diff vs bp_data_cleaned.csv, README + final privacy audit
 
 ### Phase 2: Read API & Dashboard
 **Goal**: Anyone can see and manually explore Chris's data across all four charts — the manual filter state that voice commands will later mutate
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Foundation | 6/7 | In Progress|  |
+| 1. Data Foundation | 7/7 | Complete   | 2026-07-13 |
 | 2. Read API & Dashboard | 0/TBD | Not started | - |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
