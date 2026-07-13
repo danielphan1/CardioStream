@@ -7,7 +7,7 @@
 
 ### Data Foundation
 
-- [ ] **DATA-01**: ETL pipeline ingests OMRON Excel/CSV exports and computes derived fields (AM/PM, BP category, pulse category, MAP, pulse pressure) — categories computed in ETL only, single source of truth
+- [x] **DATA-01**: ETL pipeline ingests OMRON Excel/CSV exports and computes derived fields (AM/PM, BP category, pulse category, MAP, pulse pressure) — categories computed in ETL only, single source of truth
 - [ ] **DATA-02**: BP categories follow AHA classification extended with Hypotension; pulse categories include Bradycardia (<60 bpm) / Normal / Tachycardia
 - [ ] **DATA-03**: ETL is idempotent — re-uploading a cumulative/overlapping OMRON export never duplicates rows (DB unique constraint on reading datetime)
 - [ ] **DATA-04**: Database is seeded with the existing 132 real readings (Feb 22 – Jun 13, 2025)
@@ -93,7 +93,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
 | DATA-02 | Phase 1 | Pending |
 | DATA-03 | Phase 1 | Pending |
 | DATA-04 | Phase 1 | Pending |
