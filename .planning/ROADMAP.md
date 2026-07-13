@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Automated test suite passes: AHA + Hypotension category boundaries, bradycardia/tachycardia boundaries, MAP calculation, AM/PM logic, and double-ingest idempotency
   4. Public repo contains no real health data — real files are gitignored and a committed synthetic sample with the same schema and outlier character works for development
   5. Alembic migrations create the readings table plus empty future tables (lab_results, incidents, procedures), with all timestamps stored as naive local time
-**Plans:** 7/7 plans complete
+**Plans:** 7/8 plans complete (1 gap-closure plan pending)
 
 Plans:
 - [x] 01-01-PLAN.md — Privacy-first repo scaffold: gitignore-first commit, backend layout, pinned deps, real-data drop checkpoint
@@ -40,6 +40,7 @@ Plans:
 - [x] 01-05-PLAN.md — Seeded synthetic sample generator + committed OMRON-format xlsx + character regression test
 - [x] 01-06-PLAN.md — Idempotent merge loader: D-05 upsert, D-06 IngestSummary, double-ingest proof
 - [x] 01-07-PLAN.md — python -m app.seed, golden-master diff vs bp_data_cleaned.csv, README + final privacy audit
+- [ ] 01-08-PLAN.md — Gap closure: D-08 validation/coercion agreement (CR-01+WR-02), NaN-notes convergence + minute-key (WR-01+WR-03), ambiguous-date guard (WR-04)
 
 ### Phase 2: Read API & Dashboard
 **Goal**: Anyone can see and manually explore Chris's data across all four charts — the manual filter state that voice commands will later mutate
