@@ -18,7 +18,11 @@ Because cell types are unverified (A2), BOTH branches are implemented:
 native datetime/date/time cells AND text values via
 ``pd.to_datetime(..., errors="coerce")``. Unparseable values become NaT and
 are rejected later by ``transform`` (D-08) — never silently dropped here.
-Re-verify this section against the real file when it lands in data/.
+Ambiguous slash-format text dates (WR-04) are rejected via a dual-parse
+dayfirst guard in ``_coerce_date`` rather than silently guessed month-first.
+Re-verify this section against the real file when it lands in data/: pin an
+explicit ``format=`` string in ``_coerce_date``/``_coerce_time`` and remove
+the ambiguity guard in favor of the known format (Gap 2, A1/A2 open).
 
 Datetimes are naive local time end-to-end (DATA-05) — no tz anywhere.
 """
@@ -70,8 +74,23 @@ def _coerce_date(val) -> pd.Timestamp:
         return pd.Timestamp(val).normalize()
     if isinstance(val, date):
         return pd.Timestamp(val)
-    parsed = pd.to_datetime(str(val), errors="coerce")
-    return parsed.normalize() if not pd.isna(parsed) else pd.NaT
+    text = str(val)
+    # ISO 8601 is unambiguous by definition — accept it directly. (dateutil's
+    # dayfirst hint misreads Y-M-D as Y-D-M, so ISO must bypass the guard.)
+    parsed_iso = pd.to_datetime(text, format="ISO8601", errors="coerce")
+    if not pd.isna(parsed_iso):
+        return parsed_iso.normalize()
+    # WR-04 ambiguity guard: parse twice — default (month-first) and
+    # dayfirst. If both succeed but DISAGREE ('03/04/2025': March 4 vs
+    # 3 April), the value is genuinely ambiguous — return NaT so the row
+    # becomes a RejectedRow downstream instead of a silently wrong reading
+    # flowing into the AM/PM and date-range features Chris queries by voice.
+    parsed = pd.to_datetime(text, errors="coerce")
+    parsed_dayfirst = pd.to_datetime(text, errors="coerce", dayfirst=True)
+    if not pd.isna(parsed) and not pd.isna(parsed_dayfirst) and parsed != parsed_dayfirst:
+        return pd.NaT
+    result = parsed if not pd.isna(parsed) else parsed_dayfirst
+    return result.normalize() if not pd.isna(result) else pd.NaT
 
 
 def _coerce_time(val) -> pd.Timedelta:
