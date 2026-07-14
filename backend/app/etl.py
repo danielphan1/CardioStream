@@ -219,6 +219,16 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
     - D-07: intra-file duplicate datetimes (minute granularity) resolve
       last-in-file-order wins; displaced rows are surfaced in ``rejected``,
       never silently dropped.
+    - D-07 stored key (WR-03): surviving datetimes are floored to minute
+      precision so the STORED natural key matches the pipeline's own
+      minute-granularity duplicate definition. Consequence: cross-file
+      re-exports of the same logical reading with re-stamped seconds merge
+      as updated/unchanged instead of inserting a duplicate row.
+      ``derive_am_pm`` operates on the floored value (same minute, AM/PM
+      unchanged). If the real bp_data_cleaned.csv golden master carries
+      second-precision DateTimes, the diff divergence is investigated under
+      the D-01 process (EXCLUDED_ROWS register in tests/test_golden_master.py)
+      when the real data lands.
     - notes NaN is normalized to None (DB-ready); datetimes stay naive
       (DATA-05).
     """
@@ -242,6 +252,10 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
         for idx in valid.index[displaced_mask]:
             rejected.append(RejectedRow(int(idx), _DUPLICATE_REASON))
         valid = valid.loc[~displaced_mask]
+        # WR-03: floor the STORED datetimes to minute precision so the DB
+        # natural key granularity matches the D-07 duplicate definition
+        # (CoW-safe assign — no chained assignment, pandas 3).
+        valid = valid.assign(datetime=valid["datetime"].dt.floor("min"))
 
     # Derive via app.derivations only — never re-implement thresholds here.
     records = []
@@ -332,7 +346,10 @@ def merge_readings(
     added = updated = unchanged = 0
     for row in clean_df.itertuples(index=False):
         dt = row.datetime.to_pydatetime()  # naive — DATA-05 round-trip
-        incoming_notes = row.notes if row.notes is not None else None
+        # WR-01: normalize NaN (reaches here on any path bypassing transform's
+        # object-dtype normalization) to None so identical re-ingests compare
+        # equal and count `unchanged` — never `updated` forever (DATA-03).
+        incoming_notes = None if pd.isna(row.notes) else str(row.notes)
         current = existing.get(dt)
         if current is None:
             session.add(
