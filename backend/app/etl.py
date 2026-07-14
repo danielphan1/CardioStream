@@ -30,6 +30,7 @@ Datetimes are naive local time end-to-end (DATA-05) — no tz anywhere.
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, time
 
@@ -127,8 +128,14 @@ def parse_omron(path_or_buffer, max_rows: int = 10_000) -> pd.DataFrame:
     """
     df = pd.read_excel(path_or_buffer, engine="openpyxl")
 
-    # Normalize headers to lowercase snake_case.
-    df.columns = [str(c).strip().lower().replace(" ", "_") for c in df.columns]
+    # Normalize headers to lowercase snake_case. The real OMRON export
+    # (verified 2026-07-14) suffixes vitals with units — 'Systolic (mmHg)',
+    # 'Pulse (bpm)' — so a trailing parenthesized token is stripped before
+    # snake_casing; the assumed plain headers pass through unchanged.
+    df.columns = [
+        re.sub(r"\s*\([^)]*\)\s*$", "", str(c).strip()).lower().replace(" ", "_")
+        for c in df.columns
+    ]
 
     # Drop fully blank rows (trailing noise in device exports).
     df = df.dropna(how="all").reset_index(drop=True)
@@ -153,13 +160,19 @@ def parse_omron(path_or_buffer, max_rows: int = 10_000) -> pd.DataFrame:
         dtype="datetime64[ns]",
     )
 
+    # The real export writes '-' into empty Notes cells; treat it as missing
+    # so WR-01 NaN-notes merge convergence holds across re-ingests.
+    notes = df["notes"].map(
+        lambda v: pd.NA if (isinstance(v, str) and v.strip() == "-") else v
+    )
+
     out = pd.DataFrame(
         {
             "datetime": combined,
             "systolic": df["systolic"],
             "diastolic": df["diastolic"],
             "pulse": df["pulse"],
-            "notes": df["notes"].astype("str"),  # pandas 3.0 str dtype, NaN preserved
+            "notes": notes.astype("str"),  # pandas 3.0 str dtype, NaN preserved
         }
     )
     return out[_OUTPUT_COLUMNS]
