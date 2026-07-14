@@ -1,0 +1,41 @@
+{
+  "phase": "2",
+  "phase_name": "Read API & Dashboard",
+  "timestamp": "2026-07-14T05:30:00Z",
+  "areas_completed": ["Chart presentation", "Visual style & colors", "Filter controls"],
+  "areas_remaining": ["Stats strip & table"],
+  "decisions": {
+    "Project-wide (stated during area selection)": [
+      {"question": "Relationship to Tableau prototype", "answer": "NOT like the Tableau prototype. Standalone project — do not consider Tableau as an example for the rest of the project. Overrides DASH-11 'matching Tableau styling' wording; four chart types remain.", "options_presented": ["(freeform)"]}
+    ],
+    "Chart presentation": [
+      {"question": "How should the four charts be presented?", "answer": "One large hero + three mini previews. Clicking a mini rotates it into the hero slot; former hero becomes a mini.", "options_presented": ["One at a time", "All four in a grid", "One large + mini previews"]},
+      {"question": "Default hero chart on load", "answer": "BP Timeline", "options_presented": ["BP Timeline", "Pulse Trend", "BP Categories", "AM vs PM"]},
+      {"question": "What do mini previews show?", "answer": "Live mini charts — real Recharts renders updating with active filters", "options_presented": ["Live mini charts", "Simplified sparklines", "Icon + title cards"]},
+      {"question": "Mini preview placement", "answer": "Row below the hero (hero full width; minis wrap on narrow screens)", "options_presented": ["Row below the hero", "Column beside the hero", "You decide"]},
+      {"question": "Swap transition", "answer": "Quick animated swap ~200–300ms, instant fallback under prefers-reduced-motion", "options_presented": ["Quick animated swap", "Instant swap", "You decide"]},
+      {"question": "Point inspection (hover banned)", "answer": "Click/tap with generous hit area + keyboard arrow navigation via Recharts accessibilityLayer; large-text tooltip stays until dismissed", "options_presented": ["Click/tap + keyboard", "Fixed detail panel", "No point inspection"]},
+      {"question": "AHA bands behind BP Timeline", "answer": "Subtle low-opacity tinted zones with small edge labels; data lines stay the star", "options_presented": ["Subtle tinted zones", "Bold colored bands", "Toggle-able bands"]},
+      {"question": "Y-axis scaling", "answer": "Fixed clinical range — BP ~40–220 mmHg, Pulse ~30–120 bpm; positions stay meaningful across filter changes", "options_presented": ["Fixed clinical range", "Auto-fit with padding", "Hybrid floor/ceiling"]},
+      {"question": "BP Categories bar labels", "answer": "Count + percent per bar (e.g. 'Stage 1 — 34 readings (26%)')", "options_presented": ["Count + percent", "Count only", "Percent only"]},
+      {"question": "Dots at each reading on line charts", "answer": "Dots on lines — discrete measurements made visible; doubles as click targets", "options_presented": ["Dots on lines", "Smooth lines only", "Dots only when zoomed in"]},
+      {"question": "Systolic/diastolic line identification", "answer": "Direct line labels in large text at line ends, in line color", "options_presented": ["Direct line labels", "Legend above the chart", "Both"]},
+      {"question": "Zero-readings empty state", "answer": "Message + guidance: why it's empty, newest-reading date, big 'Show all data' button", "options_presented": ["Message + guidance", "Auto-widen the range", "Simple empty message"]}
+    ],
+    "Visual style & colors": [
+      {"question": "Overall theme (freeform)", "answer": "Naval/nautical theme — sailboats, ocean, water. Ocean-like colors, minimalistic, pastels + navy.", "options_presented": ["(freeform)"]},
+      {"question": "Palette split vs high-contrast constraint", "answer": "Pastels as canvas only — pastel ocean tones for backgrounds/cards/surfaces; navy and deep tones carry all text, data lines, interactive elements (WCAG-safe)", "options_presented": ["Pastels as canvas only", "Pastels everywhere, darkened", "Navy-dominant"]},
+      {"question": "BP category colors", "answer": "Keep clinical semantics — recognizable green/yellow/orange/red (+ blue-grey Hypotension), tuned deeper/desaturated to harmonize with ocean palette", "options_presented": ["Keep clinical semantics", "Full ocean recolor", "Hybrid"]},
+      {"question": "Light or dark theme", "answer": "Both with a large toggle — light airy nautical AND dark 'night sea'; toggle becomes a voice command later", "options_presented": ["Light, airy nautical", "Dark 'night sea'", "Both with a toggle"]},
+      {"question": "Nautical imagery literalness", "answer": "Subtle motifs — sailboat/anchor mark in header, wave-curve dividers, nautical empty states; charts stay clean", "options_presented": ["Subtle motifs", "Palette only", "Fully illustrated"]}
+    ],
+    "Filter controls": [
+      {"question": "Date-range presets (7/30/90/All) presentation", "answer": "Segmented button row — four large side-by-side buttons, active one filled navy; 1:1 mapping to future voice commands", "options_presented": ["Segmented button row", "Dropdown select", "You decide"]},
+      {"question": "Custom date range entry (no precision pointing)", "answer": "Large month/day pickers — From/To fields opening oversized calendar with ≥48px day cells, plus direct typing for keyboard users", "options_presented": ["Large month/day pickers", "Typed dates only", "Month-chip shortcuts"]},
+      {"question": "AM/PM and BP-category filter mechanics", "answer": "Button groups, single-select — AM/PM as [All|AM|PM] segmented buttons; category as one row of large chips, tap to isolate, tap again for all", "options_presented": ["Button groups, single-select", "Multi-select categories", "Dropdowns for both"]},
+      {"question": "Filter placement", "answer": "Horizontal bar above hero — between header and hero chart, wrapping on narrow screens; state always visible", "options_presented": ["Horizontal bar above hero", "Collapsible side panel", "Below the hero chart"]}
+    ]
+  },
+  "deferred_ideas": [],
+  "canonical_refs": ["CLAUDE.md", ".planning/REQUIREMENTS.md", ".planning/ROADMAP.md", ".planning/PROJECT.md", "backend/app/models.py", "backend/app/derivations.py"]
+}
