@@ -100,6 +100,45 @@ class TestParseOmron:
         assert pd.isna(df.loc[0, "datetime"])
         assert df.loc[1, "datetime"] == pd.Timestamp("2025-03-01 08:05:00")
 
+    def test_parse_ambiguous_slash_date_rejected(self, omron_xlsx):
+        """WR-04: '03/04/2025' (March 4 month-first vs 3 April day-first) is
+        genuinely ambiguous — NaT from parse, RejectedRow from transform,
+        never a silently guessed date."""
+        path = omron_xlsx(
+            [
+                {
+                    "Date": "03/04/2025",
+                    "Time": "8:05 AM",
+                    "Systolic": 120,
+                    "Diastolic": 80,
+                    "Pulse": 55,
+                },
+            ]
+        )
+        df = parse_omron(path)
+        assert pd.isna(df.loc[0, "datetime"])
+        clean, rejected = transform(df)
+        assert len(clean) == 0
+        assert len(rejected) == 1
+        assert "datetime" in rejected[0].reason
+
+    def test_parse_unambiguous_dayfirst_date_parses(self, omron_xlsx):
+        """WR-04: '13/04/2025' cannot be month-first (no month 13) — both
+        parse orders agree on April 13, so it parses."""
+        path = omron_xlsx(
+            [
+                {
+                    "Date": "13/04/2025",
+                    "Time": "8:05 AM",
+                    "Systolic": 120,
+                    "Diastolic": 80,
+                    "Pulse": 55,
+                },
+            ]
+        )
+        df = parse_omron(path)
+        assert df.loc[0, "datetime"] == pd.Timestamp("2025-04-13 08:05:00")
+
     def test_parse_drops_blank_trailing_rows(self, omron_xlsx):
         path = omron_xlsx(
             [
