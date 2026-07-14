@@ -11,7 +11,7 @@ Every test gets a fresh in-memory SQLite engine via the function-scoped
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, time
 
 import pandas as pd
 import pytest
@@ -224,3 +224,88 @@ def test_datetimes_naive_roundtrip(session, omron_xlsx):
     # The boundary pair survived exactly: 11:59 stayed AM-side, noon stayed noon.
     assert datetime(2025, 3, 1, 11, 59) in stored
     assert datetime(2025, 3, 1, 12, 0) in stored
+
+
+# --- Plan 01-08 gap closure: WR-01 (NaN notes) + WR-03 (minute natural key) ---
+
+
+CLEAN_COLUMNS = [
+    "datetime",
+    "systolic",
+    "diastolic",
+    "pulse",
+    "am_pm",
+    "bp_category",
+    "pulse_category",
+    "map",
+    "pulse_pressure",
+    "notes",
+]
+
+
+def test_nan_notes_merge_converges(session):
+    """WR-01: a clean frame carrying float NaN notes (any path that bypasses
+    transform's object-dtype normalization) still converges — identical
+    re-ingest counts unchanged, never updated forever (DATA-03)."""
+    clean = pd.DataFrame(
+        [
+            {
+                "datetime": pd.Timestamp("2025-03-01 08:05"),
+                "systolic": 118,
+                "diastolic": 75,
+                "pulse": 62,
+                "am_pm": "AM",
+                "bp_category": "Normal",
+                "pulse_category": "Normal",
+                "map": 89.3,
+                "pulse_pressure": 43,
+                "notes": float("nan"),
+            }
+        ],
+        columns=CLEAN_COLUMNS,
+    )
+
+    first = merge_readings(session, clean, [])
+    assert first.added == 1
+
+    second = merge_readings(session, clean, [])
+    assert (second.added, second.updated, second.unchanged) == (0, 0, 1)
+
+    row = session.scalars(select(Reading)).one()
+    assert row.notes is None
+
+
+def test_transform_floors_datetime_to_minute(session):
+    """WR-03: the STORED datetime is floored to minute precision, matching
+    the pipeline's own D-07 minute-granularity duplicate definition."""
+    clean_df, rejected = transform(
+        _raw([("2025-03-01 08:05:10", 118, 75, 62, None)])
+    )
+    assert rejected == []
+    assert clean_df.iloc[0]["datetime"] == pd.Timestamp("2025-03-01 08:05:00")
+
+
+def test_cross_file_same_minute_different_seconds_no_duplicate(session, omron_xlsx):
+    """WR-03 cross-file: a re-export of the same reading re-stamped 30 seconds
+    later in the same minute merges as unchanged — never a second row."""
+    row_a = {
+        "Date": "2025-03-01",
+        "Time": time(8, 5, 10),
+        "Systolic": 118,
+        "Diastolic": 75,
+        "Pulse": 62,
+        "Notes": "morning",
+    }
+    row_b = dict(row_a)
+    row_b["Time"] = time(8, 5, 40)
+
+    first_path = omron_xlsx([row_a], "first.xlsx")
+    first, _ = _ingest(first_path, session)
+    assert first.added == 1
+    count_after_first = _db_count(session)
+
+    second_path = omron_xlsx([row_b], "second.xlsx")
+    second, _ = _ingest(second_path, session)
+    assert (second.added, second.updated, second.unchanged) == (0, 0, 1)
+    # Direct DB row-count equality, not just the summary's claim.
+    assert _db_count(session) == count_after_first == 1
