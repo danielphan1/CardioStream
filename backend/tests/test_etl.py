@@ -415,6 +415,145 @@ class TestTransform:
         assert isinstance(r.row_index, int)
         assert isinstance(r.reason, str)
 
+    def test_d08_text_decimal_systolic_rejected_siblings_survive(self):
+        """Gap 1 / CR-01: '118.5' becomes a RejectedRow — never a ValueError
+        that aborts the whole file (D-08)."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": "118.5",
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 2, 8, 5),
+                        "systolic": 118,
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 1
+        assert clean.iloc[0]["systolic"] == 118
+        assert len(rejected) == 1
+        assert "systolic" in rejected[0].reason
+
+    def test_d08_float_systolic_129_9_rejected_never_truncated(self):
+        """Gap 1 / WR-02 boundary pin: 129.9 is rejected — never silently
+        floor-truncated to 129/'Elevated' when 130 would be 'Stage 1'."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 129.9,
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                ]
+            )
+        )
+        assert len(rejected) == 1
+        assert "systolic" in rejected[0].reason
+        assert len(clean) == 0
+        assert not (clean["systolic"] == 129).any()
+        assert not (clean["bp_category"] == "Elevated").any()
+
+    def test_d08_float_diastolic_89_5_rejected(self):
+        """Gap 1 / WR-02 boundary pin: diastolic 89.5 rejected, reason names
+        the field."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 89.5,
+                        "pulse": 62,
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 0
+        assert len(rejected) == 1
+        assert "diastolic" in rejected[0].reason
+
+    def test_d08_text_inf_and_nan_vitals_rejected(self):
+        """Non-finite text vitals ('inf', 'nan') become RejectedRows naming
+        the field — never an exception."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": "inf",
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 2, 8, 5),
+                        "systolic": 120,
+                        "diastolic": 80,
+                        "pulse": "nan",
+                    },
+                ]
+            )
+        )
+        assert len(clean) == 0
+        assert len(rejected) == 2
+        assert "systolic" in rejected[0].reason
+        assert "pulse" in rejected[1].reason
+
+    def test_integer_valued_inputs_still_accepted(self):
+        """Text '118' and native float 130.0 are integer-valued and pass;
+        130.0 stores as 130 -> 'Stage 1' (never a category off-by-one)."""
+        clean, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": "118",
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                    {
+                        "datetime": datetime(2025, 3, 2, 8, 5),
+                        "systolic": 130.0,
+                        "diastolic": 76,
+                        "pulse": 62,
+                    },
+                ]
+            )
+        )
+        assert rejected == []
+        assert len(clean) == 2
+        assert clean.iloc[0]["systolic"] == 118
+        assert clean.iloc[1]["systolic"] == 130
+        assert clean.iloc[1]["bp_category"] == "Stage 1"
+
+    def test_d08_decimal_rejection_reason_does_not_echo_values(self):
+        """Log hygiene (T-1-04): the non-integer rejection reason never echoes
+        the offending value or the row's other vitals."""
+        _, rejected = transform(
+            _raw_df(
+                [
+                    {
+                        "datetime": datetime(2025, 3, 1, 8, 5),
+                        "systolic": "118.5",
+                        "diastolic": 93,
+                        "pulse": 67,
+                    },
+                ]
+            )
+        )
+        assert len(rejected) == 1
+        assert "118.5" not in rejected[0].reason
+        assert "93" not in rejected[0].reason
+        assert "67" not in rejected[0].reason
+
     def test_transform_of_parse_output_end_to_end(self, omron_xlsx):
         """Full pipeline: file -> parse_omron -> transform."""
         path = omron_xlsx(
