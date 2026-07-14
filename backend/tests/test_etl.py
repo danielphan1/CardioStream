@@ -621,3 +621,137 @@ class TestTransform:
         assert clean.iloc[0]["notes"] == "e2e"
         assert len(rejected) == 1
         assert "datetime" in rejected[0].reason
+
+
+class TestRealExportFormat:
+    """Regression tests for the REAL OMRON export format (verified 2026-07-14).
+
+    The real 'OMRON Report' export differs from the assumed format (A1):
+    - headers carry unit suffixes: 'Systolic (mmHg)', 'Diastolic (mmHg)',
+      'Pulse (bpm)'
+    - the Date column holds full second-precision datetimes, Time is text
+      like '9:21 am'
+    - empty Symptoms/Consumed/Notes cells hold a '-' placeholder, not blank
+
+    All values below are synthetic — no real health readings (T-1-04).
+    """
+
+    @staticmethod
+    def _real_format_xlsx(tmp_path, rows: list[dict]):
+        cols = [
+            "Date",
+            "Time",
+            "Systolic (mmHg)",
+            "Diastolic (mmHg)",
+            "Pulse (bpm)",
+            "Symptoms",
+            "Consumed",
+            "Notes",
+        ]
+        df = pd.DataFrame([{c: row.get(c) for c in cols} for row in rows], columns=cols)
+        path = tmp_path / "real_format_export.xlsx"
+        df.to_excel(path, index=False)
+        return path
+
+    def test_unit_suffixed_headers_map_to_vitals(self, tmp_path):
+        """'Systolic (mmHg)' etc. must land in the systolic/diastolic/pulse columns."""
+        path = self._real_format_xlsx(
+            tmp_path,
+            [
+                {
+                    "Date": datetime(2025, 3, 1, 9, 21, 31),
+                    "Time": "9:21 am",
+                    "Systolic (mmHg)": 120,
+                    "Diastolic (mmHg)": 80,
+                    "Pulse (bpm)": 55,
+                    "Symptoms": "-",
+                    "Consumed": "-",
+                    "Notes": "-",
+                }
+            ],
+        )
+        df = parse_omron(path)
+        assert df.loc[0, "systolic"] == 120
+        assert df.loc[0, "diastolic"] == 80
+        assert df.loc[0, "pulse"] == 55
+        # Time column wins for the time-of-day; minute precision (D-07/WR-03)
+        assert df.loc[0, "datetime"] == pd.Timestamp("2025-03-01 09:21:00")
+
+    def test_dash_placeholder_notes_normalized_to_missing(self, tmp_path):
+        """OMRON's '-' empty-cell placeholder must become missing, not a '-' note.
+
+        A literal '-' note would defeat the NaN-notes merge convergence fix
+        (WR-01) the moment the same file is re-ingested with real blanks.
+        """
+        path = self._real_format_xlsx(
+            tmp_path,
+            [
+                {
+                    "Date": datetime(2025, 3, 1, 8, 5, 10),
+                    "Time": "8:05 am",
+                    "Systolic (mmHg)": 118,
+                    "Diastolic (mmHg)": 76,
+                    "Pulse (bpm)": 62,
+                    "Notes": "-",
+                },
+                {
+                    "Date": datetime(2025, 3, 1, 20, 30, 0),
+                    "Time": "8:30 pm",
+                    "Systolic (mmHg)": 131,
+                    "Diastolic (mmHg)": 82,
+                    "Pulse (bpm)": 58,
+                    "Notes": "after walk",
+                },
+            ],
+        )
+        df = parse_omron(path)
+        assert pd.isna(df.loc[0, "notes"])
+        assert df.loc[1, "notes"] == "after walk"
+
+    def test_real_format_end_to_end_zero_rejects(self, tmp_path):
+        """A well-formed real-format file flows parse -> transform with 0 rejects."""
+        path = self._real_format_xlsx(
+            tmp_path,
+            [
+                {
+                    "Date": datetime(2025, 3, 1, 9, 21, 31),
+                    "Time": "9:21 am",
+                    "Systolic (mmHg)": 120,
+                    "Diastolic (mmHg)": 80,
+                    "Pulse (bpm)": 55,
+                    "Notes": "-",
+                },
+                {
+                    "Date": datetime(2025, 3, 2, 21, 17, 57),
+                    "Time": "9:17 pm",
+                    "Systolic (mmHg)": 141,
+                    "Diastolic (mmHg)": 94,
+                    "Pulse (bpm)": 54,
+                    "Notes": "-",
+                },
+            ],
+        )
+        clean, rejected = transform(parse_omron(path))
+        assert len(clean) == 2
+        assert rejected == []
+        assert clean.iloc[0]["bp_category"] == "Stage 1"
+        assert clean.iloc[1]["bp_category"] == "Stage 2"
+        assert clean.iloc[1]["am_pm"] == "PM"
+
+    def test_assumed_format_still_parses(self, omron_xlsx):
+        """The committed synthetic sample's plain headers must keep working."""
+        path = omron_xlsx(
+            [
+                {
+                    "Date": date(2025, 3, 1),
+                    "Time": time(8, 5),
+                    "Systolic": 120,
+                    "Diastolic": 80,
+                    "Pulse": 55,
+                    "Notes": "plain headers",
+                }
+            ]
+        )
+        df = parse_omron(path)
+        assert df.loc[0, "systolic"] == 120
+        assert df.loc[0, "notes"] == "plain headers"
