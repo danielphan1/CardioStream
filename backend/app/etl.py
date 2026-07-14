@@ -25,6 +25,7 @@ Datetimes are naive local time end-to-end (DATA-05) — no tz anywhere.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from datetime import date, datetime, time
 
@@ -187,6 +188,12 @@ def _validate_row(row: pd.Series) -> str | None:
             num = float(val)
         except (TypeError, ValueError):
             return f"{field}: not a number"
+        # isfinite BEFORE the <= 0 comparison: NaN fails all comparisons and
+        # would otherwise slip through the positivity check.
+        if not math.isfinite(num):
+            return f"{field}: not a finite number"
+        if not num.is_integer():
+            return f"{field}: not a whole number"
         if num <= 0:
             return f"{field}: not a positive number"
     return None
@@ -200,9 +207,15 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
     - clean_df columns: datetime, systolic, diastolic, pulse, am_pm,
       bp_category, pulse_category, map, pulse_pressure, notes — all derived
       values computed EXCLUSIVELY via :mod:`app.derivations` (DATA-01).
-    - D-08: rows with NaT datetime or missing/non-numeric/non-positive vitals
-      are excluded and reported as :class:`RejectedRow`; one bad row never
-      aborts the file.
+    - D-08: rows with NaT datetime or missing/non-numeric/non-finite/
+      non-integer/non-positive vitals are excluded and reported as
+      :class:`RejectedRow`; one bad row never aborts the file.
+      Non-integer vitals are REJECTED, never rounded or truncated: OMRON
+      exports carry integer vitals, so a fractional value is format drift or
+      a re-typed cell — and rounding/truncating can silently move a reading
+      across an AHA category boundary (129.9: truncation gives 'Elevated',
+      rounding gives 'Stage 1' — neither guess is acceptable for medical
+      data).
     - D-07: intra-file duplicate datetimes (minute granularity) resolve
       last-in-file-order wins; displaced rows are surfaced in ``rejected``,
       never silently dropped.
@@ -234,9 +247,12 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
     records = []
     notes_values: list[str | None] = []
     for _, row in valid.iterrows():
-        sbp = int(row["systolic"])
-        dbp = int(row["diastolic"])
-        pulse = int(row["pulse"])
+        # Coerce through the validated float so the loop is structurally
+        # unable to raise on any value the gate passed (text "118" ->
+        # float 118.0 -> int 118) — gate and coercion agree by construction.
+        sbp = int(float(row["systolic"]))
+        dbp = int(float(row["diastolic"]))
+        pulse = int(float(row["pulse"]))
         dt = row["datetime"].to_pydatetime()
         records.append(
             {
