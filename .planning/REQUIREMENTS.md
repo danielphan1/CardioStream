@@ -8,12 +8,12 @@
 ### Data Foundation
 
 - [x] **DATA-01**: ETL pipeline ingests OMRON Excel/CSV exports and computes derived fields (AM/PM, BP category, pulse category, MAP, pulse pressure) — categories computed in ETL only, single source of truth
-- [ ] **DATA-02**: BP categories follow AHA classification extended with Hypotension; pulse categories include Bradycardia (<60 bpm) / Normal / Tachycardia
-- [ ] **DATA-03**: ETL is idempotent — re-uploading a cumulative/overlapping OMRON export never duplicates rows (DB unique constraint on reading datetime)
+- [x] **DATA-02**: BP categories follow AHA classification extended with Hypotension; pulse categories include Bradycardia (<60 bpm) / Normal / Tachycardia
+- [x] **DATA-03**: ETL is idempotent — re-uploading a cumulative/overlapping OMRON export never duplicates rows (DB unique constraint on reading datetime)
 - [ ] **DATA-04**: Database is seeded with the existing 132 real readings (Feb 22 – Jun 13, 2025)
 - [ ] **DATA-05**: All timestamps stored as naive local time end-to-end — no UTC conversion anywhere (protects AM/PM analysis)
 - [ ] **DATA-06**: Migrations exist for future tables (lab_results, incidents, procedures); tables stay empty in v1
-- [ ] **DATA-07**: Automated tests cover ETL derivations: BP category boundaries, pulse category boundaries, MAP calculation, AM/PM logic, idempotent re-ingest
+- [x] **DATA-07**: Automated tests cover ETL derivations: BP category boundaries, pulse category boundaries, MAP calculation, AM/PM logic, idempotent re-ingest
 - [x] **DATA-08**: Real health data never enters the public repo — gitignored data directory plus a synthetic sample file for development and demos
 
 ### API
@@ -94,12 +94,12 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DATA-01 | Phase 1 | Complete |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 1 | Pending |
 | DATA-05 | Phase 1 | Pending |
 | DATA-06 | Phase 1 | Pending |
-| DATA-07 | Phase 1 | Pending |
+| DATA-07 | Phase 1 | Complete |
 | DATA-08 | Phase 1 | Complete |
 | API-01 | Phase 2 | Pending |
 | API-02 | Phase 2 | Pending |

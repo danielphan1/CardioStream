@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Automated test suite passes: AHA + Hypotension category boundaries, bradycardia/tachycardia boundaries, MAP calculation, AM/PM logic, and double-ingest idempotency
   4. Public repo contains no real health data — real files are gitignored and a committed synthetic sample with the same schema and outlier character works for development
   5. Alembic migrations create the readings table plus empty future tables (lab_results, incidents, procedures), with all timestamps stored as naive local time
-**Plans:** 7/8 plans complete (1 gap-closure plan pending)
+**Plans:** 8/8 plans complete
 
 Plans:
 - [x] 01-01-PLAN.md — Privacy-first repo scaffold: gitignore-first commit, backend layout, pinned deps, real-data drop checkpoint
@@ -40,7 +40,7 @@ Plans:
 - [x] 01-05-PLAN.md — Seeded synthetic sample generator + committed OMRON-format xlsx + character regression test
 - [x] 01-06-PLAN.md — Idempotent merge loader: D-05 upsert, D-06 IngestSummary, double-ingest proof
 - [x] 01-07-PLAN.md — python -m app.seed, golden-master diff vs bp_data_cleaned.csv, README + final privacy audit
-- [ ] 01-08-PLAN.md — Gap closure: D-08 validation/coercion agreement (CR-01+WR-02), NaN-notes convergence + minute-key (WR-01+WR-03), ambiguous-date guard (WR-04)
+- [x] 01-08-PLAN.md — Gap closure: D-08 validation/coercion agreement (CR-01+WR-02), NaN-notes convergence + minute-key (WR-01+WR-03), ambiguous-date guard (WR-04)
 
 ### Phase 2: Read API & Dashboard
 **Goal**: Anyone can see and manually explore Chris's data across all four charts — the manual filter state that voice commands will later mutate
@@ -100,7 +100,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Foundation | 7/7 | Complete   | 2026-07-13 |
+| 1. Data Foundation | 8/8 | Complete   | 2026-07-14 |
 | 2. Read API & Dashboard | 0/TBD | Not started | - |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
