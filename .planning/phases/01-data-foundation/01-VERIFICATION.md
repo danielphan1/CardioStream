@@ -1,9 +1,14 @@
 ---
 phase: 01-data-foundation
 verified: 2026-07-14T04:30:00Z
-status: human_needed
-score: 24/25 must-haves verified
-overrides_applied: 0
+status: passed
+score: 24/25 must-haves verified (1 accepted override)
+overrides_applied: 1
+overrides:
+  - must_have: "Database contains all 132 real readings with derived fields matching bp_data_cleaned.csv in a golden-master diff (DATA-04 / SC1)"
+    reason: "Human UAT executed 2026-07-14: real OMRON export landed in data/; real-format parse fix applied test-first (commits ddf62be, ba289d2); seed on fresh migrated DB verified added=132 then 0/132 unchanged (idempotency proven); all 6 BP categories present, range 2025-02-22..2025-06-13. The bp_data_cleaned.csv reference file does not exist (user confirmed 'I don't have it'), so the golden-master diff is permanently blocked as specified; derived-field correctness is covered by the 83-test boundary suite instead. Skipif-guarded test remains and runs automatically if the file ever appears. Tracked in 01-HUMAN-UAT.md (status: blocked)."
+    accepted_by: "danielphan1 (user approval via execute-phase human_needed checkpoint)"
+    accepted_at: "2026-07-14T05:30:00Z"
 re_verification:
   previous_status: gaps_found
   previous_score: 16/18
