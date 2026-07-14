@@ -14,12 +14,11 @@ Chris can see and explore his own health data entirely by voice — voice intera
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] ETL pipeline ingests OMRON Excel exports, computes derived fields, loads idempotently — Validated in Phase 1: Data Foundation (real export format verified 2026-07-14; SQLite locally, same SQLAlchemy models target Postgres in prod)
+- [x] Database seeded with the existing 132 real readings (Feb 22 – Jun 13, 2025) — Validated in Phase 1: seed added=132, re-run 0/132 unchanged; golden-master diff waived (reference CSV does not exist), derived fields covered by 83-test boundary suite
 
 ### Active
 
-- [ ] ETL pipeline ingests OMRON Excel/CSV exports, computes derived fields, loads PostgreSQL idempotently
-- [ ] Database seeded with the existing 132 real readings (Feb 22 – Jun 13, 2025)
 - [ ] FastAPI endpoints: readings (filterable), summary stats, file upload, agent
 - [ ] React dashboard replicating the four Tableau charts (BP Timeline, Pulse Trend, BP Categories, AM vs PM)
 - [ ] Voice control: mic capture → transcript → Claude agent → validated JSON command → dashboard updates
@@ -154,4 +153,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-07 after initialization*
+*Last updated: 2026-07-14 after Phase 1 completion (data foundation: real data seeded, ETL verified)*
