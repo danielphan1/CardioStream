@@ -1,111 +1,82 @@
+/*
+ * Design-token system — 02-UI-SPEC.md locked palette (D-12/D-13/D-14/D-15).
+ * ALL color custom properties for BOTH themes live here; later plans consume
+ * var(--...) and never invent color values. Hex pairs are contrast-computed
+ * in the UI-SPEC tables — do not re-derive.
+ *
+ * Dark mode is a manual toggle (D-15): Tailwind 4 defaults to
+ * prefers-color-scheme, so @custom-variant rebinds `dark:` to the `.dark`
+ * class on <html> (RESEARCH Pitfall 12).
+ */
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* 18px body floor — ACC-01 */
+  --text-base: 1.125rem;
+  --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+}
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Surfaces + ink — light theme ("airy nautical", default) */
+  --color-foam: #F2F7F5; /* page background */
+  --color-sky: #E2EDF2; /* cards, filter bar surface */
+  --color-ink: #14213D; /* ALL text, icons, borders (D-13) */
+  --color-accent: #14213D; /* reserved fills only (UI-SPEC accent list) */
+  --color-accent-text: #FFFFFF;
+  --color-focus: #1D4E89; /* 3px focus-visible ring */
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Chart series */
+  --line-systolic: #1D3557;
+  --line-diastolic: #26707D;
+  --ref-bradycardia: #4A6B8A;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Clinical category colors (D-14) — chips, bars, AND timeline bands */
+  --cat-hypotension: #4A6B8A;
+  --cat-normal: #2F7D5C;
+  --cat-elevated: #8F6A00;
+  --cat-stage1: #B34700;
+  --cat-stage2: #B3261E;
+  --cat-crisis: #7F1D1D;
+  --band-opacity: 0.10;
+  --cat-chip-text: #FFFFFF;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+.dark {
+  /* Surfaces + ink — dark theme ("night sea") */
+  --color-foam: #0B1626;
+  --color-sky: #13233A;
+  --color-ink: #E8F1EF;
+  --color-accent: #8FC1D4;
+  --color-accent-text: #0B1626;
+  --color-focus: #8FC1D4;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+  --line-systolic: #A8CBEA;
+  --line-diastolic: #6FC7C4;
+  --ref-bradycardia: #8FB3D1;
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  --cat-hypotension: #8FB3D1;
+  --cat-normal: #63C68F;
+  --cat-elevated: #E0B84E;
+  --cat-stage1: #EE9B57;
+  --cat-stage2: #EF7B70;
+  --cat-crisis: #F2564D;
+  --band-opacity: 0.14;
+  --cat-chip-text: #0B1626;
 }
 
 body {
-  margin: 0;
+  background: var(--color-foam);
+  color: var(--color-ink);
+  font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+/* UI-SPEC focus contract (ACC-02): visible ring on every interactive element */
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
 }
