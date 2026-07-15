@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import verify_token
 from app.config import get_settings
-from app.routers import readings
+from app.routers import readings, stats
 
 app = FastAPI(title="Chris's Health Dashboard API")
 
@@ -27,3 +27,4 @@ app.add_middleware(
 )
 
 app.include_router(readings.router, dependencies=[Depends(verify_token)])
+app.include_router(stats.router, dependencies=[Depends(verify_token)])
