@@ -7,16 +7,18 @@ Pinned invariants:
   - ``ReadingFilters`` is the ONE filter semantics shared by ``GET /readings``
     and ``GET /stats/summary``; Phase 3's agent resolves into this exact
     filter set — never fork per-endpoint filter logic.
-  - ``end_date`` is INCLUSIVE: the DateTime column is compared strictly below
-    ``end_date + 1 day`` at midnight, so a 23:xx reading ON the end date is
-    kept (RESEARCH Pitfall 4).
+  - ``end_date`` is INCLUSIVE: the DateTime column is compared ``<=`` the end
+    of day (``23:59:59.999999``) on ``end_date``, so a 23:xx reading ON the
+    end date is kept (RESEARCH Pitfall 4). End-of-day comparison (not
+    ``end_date + 1 day``) is deliberate: it cannot overflow at
+    ``date.max`` (``9999-12-31``), which must return 200, never 500.
   - Canonical BP labels are verbatim from ``app.derivations`` — spaces
     included, never snake_cased (URL-encode in query params).
   - Naive local datetimes end-to-end; no timezone handling anywhere (DATA-05).
 """
 
 from collections.abc import Iterator
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Annotated, Literal
 
 from fastapi import Query
@@ -63,10 +65,9 @@ class ReadingFilters:
             stmt = stmt.where(
                 Reading.datetime_ >= datetime.combine(self.start_date, datetime.min.time())
             )
-        if self.end_date:  # inclusive end date — Pitfall 4
+        if self.end_date:  # inclusive end date — Pitfall 4, safe at date.max
             stmt = stmt.where(
-                Reading.datetime_
-                < datetime.combine(self.end_date + timedelta(days=1), datetime.min.time())
+                Reading.datetime_ <= datetime.combine(self.end_date, datetime.max.time())
             )
         if self.am_pm:
             stmt = stmt.where(Reading.am_pm == self.am_pm)

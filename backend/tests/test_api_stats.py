@@ -160,3 +160,10 @@ def test_empty_database_all_null(client, session) -> None:
 def test_invalid_params_return_422(client, seeded) -> None:
     assert client.get("/stats/summary", params={"am_pm": "MORNING"}).status_code == 422
     assert client.get("/stats/summary", params={"start_date": "nope"}).status_code == 422
+
+
+def test_end_date_at_date_max_returns_200(client, seeded) -> None:
+    """WR-01 regression: end_date=9999-12-31 (date.max) must not overflow to 500."""
+    r = client.get("/stats/summary", params={"end_date": "9999-12-31"})
+    assert r.status_code == 200
+    assert r.json()["count"] == 4

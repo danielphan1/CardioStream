@@ -84,6 +84,17 @@ def test_end_date_is_inclusive_of_late_evening_reading(client, seeded) -> None:
     assert any(item["datetime"] == "2025-03-04T23:15:00" for item in body)
 
 
+def test_end_date_at_date_max_returns_200(client, seeded) -> None:
+    """WR-01 regression: end_date=9999-12-31 (date.max) must not overflow to 500.
+
+    The inclusive-end-date comparison uses end-of-day, not ``end_date + 1 day``,
+    so the maximum representable date is a valid, safe boundary.
+    """
+    r = client.get("/readings", params={"end_date": "9999-12-31"})
+    assert r.status_code == 200
+    assert len(r.json()) == 5  # all rows are on/before date.max
+
+
 def test_am_pm_filter(client, seeded) -> None:
     r = client.get("/readings", params={"am_pm": "AM"})
     assert r.status_code == 200
