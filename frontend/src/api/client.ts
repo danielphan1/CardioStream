@@ -24,9 +24,18 @@ export async function getJson<T>(
     if (value !== undefined) search.set(key, value);
   }
   const qs = search.toString();
-  const res = await fetch(`${BASE}${path}${qs ? `?${qs}` : ""}`);
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}${qs ? `?${qs}` : ""}`);
+  } catch {
+    throw new ApiError(0, path); // network / CORS failure — status 0
+  }
   if (!res.ok) throw new ApiError(res.status, path);
-  return (await res.json()) as T;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new ApiError(res.status, path); // 2xx with unparseable body
+  }
 }
 
 export function getReadings(filters: ResolvedFilters): Promise<Reading[]> {
