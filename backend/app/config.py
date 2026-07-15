@@ -12,6 +12,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./dev.db"
+    # Explicit CORS origins for the API (API-01/API-02) — Vite dev server by
+    # default. Never a wildcard and never allow_credentials: the deployed site
+    # uses Bearer tokens, per the locked CORS model (CLAUDE.md).
+    cors_origins: list[str] = ["http://localhost:5173"]
 
 
 @lru_cache
