@@ -610,20 +610,23 @@ def test_bp_category_filter_uses_canonical_label(client, session):
 | A5 | The `dataviz` project skill referenced in CONTEXT.md discretion does not exist in this repo or user skills directory (verified absent); visual refinement flows through `/gsd-ui-phase 2` UI-SPEC instead | Discretion handling | None — UI-SPEC covers it |
 | A6 | Candidate palette hex values (navy `#14213D`, foam `#F2F7F5`, category colors deep green/amber/orange/red/blue-grey) are starting points only; exact values must be contrast-verified during UI-SPEC | Patterns | ACC-01 requires recorded WCAG ratios before ship — treat palette as unlocked until checked |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What anchors the date presets — today or the newest reading?**
    - What we know: Data ends 2025-06-13 (verified in dev.db); today is 2026-07-14. Presets computed from "today" return zero rows — the 7/30/90-day buttons would all show the D-11 empty state forever until new uploads arrive, and even then batches arrive weeks late.
    - What's unclear: The user locked the four presets (D-17) but not their reference point. Phase 3's API-05 resolves symbolic ranges server-side — whatever Phase 2 chooses must match.
    - Recommendation: **Anchor presets to `latest_reading`** ("last 30 days of data"). Label honestly in the filter-bar sentence (e.g. "30 days · to Jun 13 2025"). Record as a decision so Phase 3's server-side resolver uses the same anchor. Default preset on first load: "30 days" once anchoring is confirmed, else "all".
+   - **RESOLVED (plan 02-03 Task 1):** Presets anchor to `latest_reading`, never today — `resolveFilters` in lib/dates.ts implements this, and its module docstring records the decision so Phase 3's API-05 server-side resolver copies the same anchor.
 
 2. **Default `datePreset` on load**
    - What we know: D-03 locks BP Timeline as default hero; no decision locks the default date range.
    - Recommendation: Depends on Question 1 — "all" is the only always-safe default; "30d (anchored)" is the better product answer.
+   - **RESOLVED (plan 02-03 Task 2):** Default `datePreset` is "all" — the always-safe default; first load shows Chris's full range.
 
 3. **Where `frontend/` npm test/lint wiring surfaces in CI**
    - What we know: No CI exists yet; backend tests run via pytest locally.
    - Recommendation: Out of scope to build CI this phase; just ensure `npm test -- --run` and `npm run build` pass locally as plan verification steps.
+   - **RESOLVED (plans 02-03..02-07):** No CI this phase — local `npm test -- --run` and `npm run build` are the verification gates in every plan's `<automated>` commands.
 
 ## Environment Availability
 
