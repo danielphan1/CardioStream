@@ -20,6 +20,7 @@ import pandas as pd
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
 
 from app.models import Base
 
@@ -70,8 +71,17 @@ def omron_xlsx(tmp_path, omron_df):
 
 @pytest.fixture
 def engine():
-    """Function-scoped in-memory SQLite engine with the full schema created."""
-    eng = create_engine("sqlite://")
+    """Function-scoped in-memory SQLite engine with the full schema created.
+
+    StaticPool + check_same_thread=False: TestClient runs sync endpoints in a
+    threadpool, so the API tests (plan 02-01) need one shared connection that
+    is usable across threads — behavior-neutral for single-threaded ETL tests.
+    """
+    eng = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     Base.metadata.create_all(eng)
     yield eng
     eng.dispose()
