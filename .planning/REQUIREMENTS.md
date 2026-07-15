@@ -52,7 +52,7 @@
 
 ### Accessibility
 
-- [ ] **ACC-01**: All interactive targets ≥48px; body text ≥18px; high-contrast palette (including chart colors)
+- [x] **ACC-01**: All interactive targets ≥48px; body text ≥18px; high-contrast palette (including chart colors)
 - [ ] **ACC-02**: Fully keyboard navigable with visible focus; no drag, hover-only, or precise-pointing interactions anywhere
 - [ ] **ACC-03**: Every primary action (switch chart, change filters, view data) is operable by voice
 
@@ -113,7 +113,7 @@
 | DASH-08 | Phase 2 | Pending |
 | DASH-09 | Phase 2 | Pending |
 | DASH-11 | Phase 2 | Pending |
-| ACC-01 | Phase 2 | Pending |
+| ACC-01 | Phase 2 | Complete |
 | ACC-02 | Phase 2 | Pending |
 | API-04 | Phase 3 | Pending |
 | API-05 | Phase 3 | Pending |
