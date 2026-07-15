@@ -82,3 +82,23 @@ def session(engine):
     """A Session bound to the function-scoped in-memory engine."""
     with Session(engine) as s:
         yield s
+
+
+# --- API fixtures (plan 02-01) -------------------------------------------------
+# Endpoint tests reuse the in-memory `session` fixture by overriding the app's
+# get_db dependency (RESEARCH Pitfall 10) — the module-level engine in app.db
+# is never hit by tests.
+
+
+@pytest.fixture
+def client(session):
+    """TestClient wired to the in-memory session via dependency override."""
+    from fastapi.testclient import TestClient
+
+    from app.deps import get_db
+    from app.main import app
+
+    app.dependency_overrides[get_db] = lambda: session
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
