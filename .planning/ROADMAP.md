@@ -60,14 +60,14 @@ Plans:
   4. Charts render Chris's full data range (systolic 60–211, mostly-bradycardic pulse) without axis clipping or misleading scales
   5. Every interactive target is ≥48px, body text ≥18px, palette (including chart colors) is high-contrast, and the entire dashboard is keyboard navigable with visible focus — no drag, hover-only, or precision interactions
 
-**Plans:** 7 plans
+**Plans:** 3/7 plans executed
 **UI hint**: yes
 Plans:
 **Wave 1**
 
 - [x] 02-01-PLAN.md — Read API: GET /readings + GET /stats/summary (shared ReadingFilters, alias-correct JSON, auth stub, CORS)
 - [x] 02-02-PLAN.md — Frontend scaffold + two-theme design tokens, theme store, typed API client
-- [ ] 02-03-PLAN.md — Filter foundations: zustand filter store (agent command schema), date resolution anchored to latest_reading, palette, query hooks
+- [x] 02-03-PLAN.md — Filter foundations: zustand filter store (agent command schema), date resolution anchored to latest_reading, palette, query hooks
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -134,7 +134,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
-| 2. Read API & Dashboard | 2/7 | In progress | - |
+| 2. Read API & Dashboard | 3/7 | In Progress|  |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |
