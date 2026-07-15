@@ -52,8 +52,17 @@ Plans:
   3. Summary stats strip shows correct avg/min/max systolic/diastolic/pulse, reading count, and % per category for the current filter set, matching `GET /stats/summary`
   4. Charts render Chris's full data range (systolic 60–211, mostly-bradycardic pulse) without axis clipping or misleading scales
   5. Every interactive target is ≥48px, body text ≥18px, palette (including chart colors) is high-contrast, and the entire dashboard is keyboard navigable with visible focus — no drag, hover-only, or precision interactions
-**Plans**: TBD
+**Plans:** 7 plans
 **UI hint**: yes
+
+Plans:
+- [x] 02-01-PLAN.md — Read API: GET /readings + GET /stats/summary (shared ReadingFilters, alias-correct JSON, auth stub, CORS)
+- [x] 02-02-PLAN.md — Frontend scaffold + two-theme design tokens, theme store, typed API client
+- [ ] 02-03-PLAN.md — Filter foundations: zustand filter store (agent command schema), date resolution anchored to latest_reading, palette, query hooks
+- [ ] 02-04-PLAN.md — Four chart components: BP Timeline w/ AHA bands, Pulse Trend w/ 60 bpm line, BP Categories bars, AM vs PM
+- [ ] 02-05-PLAN.md — Header (DASH-11) + filter controls UI: presets, AM/PM, category chips, oversized custom date range
+- [ ] 02-06-PLAN.md — Stats strip (DASH-08), readings table w/ category chips (DASH-09), guided empty state
+- [ ] 02-07-PLAN.md — ChartDeck hero/mini rotation, App assembly, visual + accessibility verification checkpoint
 
 ### Phase 3: Agent via Text Input
 **Goal**: Natural-language commands typed into the dashboard reliably control it — the full Claude pipeline works before voice adds complexity
@@ -101,7 +110,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
-| 2. Read API & Dashboard | 2/2 | Complete   | 2026-07-15 |
+| 2. Read API & Dashboard | 2/7 | In progress | - |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |
