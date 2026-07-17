@@ -80,3 +80,12 @@ body {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/*
+ * Timeline band opacity (D-08): a class rule wins over the SVG fill-opacity
+ * presentation attribute, and — unlike an attribute — resolves the
+ * theme-dependent var (0.10 light / 0.14 dark) so bands flip with `.dark`.
+ */
+.chart-band {
+  fill-opacity: var(--band-opacity);
+}

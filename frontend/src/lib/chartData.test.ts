@@ -187,12 +187,7 @@ describe("prefersReducedMotion", () => {
     try {
       expect(prefersReducedMotion()).toBe(true);
     } finally {
-      if (original === undefined) {
-        // @ts-expect-error restoring jsdom's undefined matchMedia
-        delete window.matchMedia;
-      } else {
-        window.matchMedia = original;
-      }
+      window.matchMedia = original;
     }
   });
 });
