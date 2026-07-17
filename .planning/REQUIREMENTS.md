@@ -26,12 +26,12 @@
 
 ### Dashboard
 
-- [ ] **DASH-01**: BP Timeline chart — dual-line systolic + diastolic over time
-- [ ] **DASH-02**: Pulse Trend chart — line with bradycardia reference line at 60 bpm
-- [ ] **DASH-03**: BP Categories chart — horizontal bars in clinical order with AHA color coding plus blue/grey Hypotension
-- [ ] **DASH-04**: AM vs PM comparison chart — grouped bars of average systolic/diastolic/pulse
-- [ ] **DASH-05**: Category color bands (AHA zones) rendered behind the BP timeline
-- [ ] **DASH-06**: Charts handle Chris's full data range gracefully (systolic 60–211, mostly-bradycardic pulse) — no misleading axis clipping
+- [x] **DASH-01**: BP Timeline chart — dual-line systolic + diastolic over time
+- [x] **DASH-02**: Pulse Trend chart — line with bradycardia reference line at 60 bpm
+- [x] **DASH-03**: BP Categories chart — horizontal bars in clinical order with AHA color coding plus blue/grey Hypotension
+- [x] **DASH-04**: AM vs PM comparison chart — grouped bars of average systolic/diastolic/pulse
+- [x] **DASH-05**: Category color bands (AHA zones) rendered behind the BP timeline
+- [x] **DASH-06**: Charts handle Chris's full data range gracefully (systolic 60–211, mostly-bradycardic pulse) — no misleading axis clipping
 - [ ] **DASH-07**: Filter controls — date-range presets (7/30/90 days, all) + custom range, AM/PM, BP category — applied consistently across all charts
 - [ ] **DASH-08**: Summary statistics strip — avg/min/max systolic/diastolic/pulse, reading count, % per category — recomputes when filters change
 - [ ] **DASH-09**: Readings table — date-sorted raw data view with category color chips
@@ -103,12 +103,12 @@
 | DATA-08 | Phase 1 | Complete |
 | API-01 | Phase 2 | Pending |
 | API-02 | Phase 2 | Pending |
-| DASH-01 | Phase 2 | Pending |
-| DASH-02 | Phase 2 | Pending |
-| DASH-03 | Phase 2 | Pending |
-| DASH-04 | Phase 2 | Pending |
-| DASH-05 | Phase 2 | Pending |
-| DASH-06 | Phase 2 | Pending |
+| DASH-01 | Phase 2 | Complete |
+| DASH-02 | Phase 2 | Complete |
+| DASH-03 | Phase 2 | Complete |
+| DASH-04 | Phase 2 | Complete |
+| DASH-05 | Phase 2 | Complete |
+| DASH-06 | Phase 2 | Complete |
 | DASH-07 | Phase 2 | Pending |
 | DASH-08 | Phase 2 | Pending |
 | DASH-09 | Phase 2 | Pending |
