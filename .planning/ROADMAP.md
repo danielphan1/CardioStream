@@ -60,7 +60,7 @@ Plans:
   4. Charts render Chris's full data range (systolic 60–211, mostly-bradycardic pulse) without axis clipping or misleading scales
   5. Every interactive target is ≥48px, body text ≥18px, palette (including chart colors) is high-contrast, and the entire dashboard is keyboard navigable with visible focus — no drag, hover-only, or precision interactions
 
-**Plans:** 3/7 plans executed
+**Plans:** 6/7 plans executed
 **UI hint**: yes
 Plans:
 **Wave 1**
@@ -71,9 +71,9 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-04-PLAN.md — Four chart components: BP Timeline w/ AHA bands, Pulse Trend w/ 60 bpm line, BP Categories bars, AM vs PM
-- [ ] 02-05-PLAN.md — Header (DASH-11) + filter controls UI: presets, AM/PM, category chips, oversized custom date range
-- [ ] 02-06-PLAN.md — Stats strip (DASH-08), readings table w/ category chips (DASH-09), guided empty state
+- [x] 02-04-PLAN.md — Four chart components: BP Timeline w/ AHA bands, Pulse Trend w/ 60 bpm line, BP Categories bars, AM vs PM
+- [x] 02-05-PLAN.md — Header (DASH-11) + filter controls UI: presets, AM/PM, category chips, oversized custom date range
+- [x] 02-06-PLAN.md — Stats strip (DASH-08), readings table w/ category chips (DASH-09), guided empty state
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -134,7 +134,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
-| 2. Read API & Dashboard | 3/7 | In Progress|  |
+| 2. Read API & Dashboard | 6/7 | In Progress|  |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |
