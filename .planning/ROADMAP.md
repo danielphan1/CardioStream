@@ -14,7 +14,7 @@ Build from the data up: first a tested, privacy-safe ETL foundation seeded with 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Data Foundation** - Repo + privacy setup, schema/migrations, idempotent OMRON ETL with tested derivations, 132 readings seeded (completed 2026-07-13)
-- [ ] **Phase 2: Read API & Dashboard** - `/readings` + `/stats` endpoints and the four-chart dashboard with manual filters, stats strip, and readings table (in progress — API + scaffold done, dashboard UI plans pending)
+- [x] **Phase 2: Read API & Dashboard** - `/readings` + `/stats` endpoints and the four-chart dashboard with manual filters, stats strip, and readings table (completed 2026-07-17)
 - [ ] **Phase 3: Agent via Text Input** - Claude-powered `/agent` endpoint with validated JSON commands, driven by the text input box
 - [ ] **Phase 4: Voice Capture** - Continuous-listening mic sessions on Chrome/Edge and Safari/iOS with unmissable state indicators and live transcript
 - [ ] **Phase 5: Upload, Auth Gate & Deployment** - Caregiver upload page, shared-password Bearer gate on every route, Vercel + Railway deploy, smoke test
@@ -60,7 +60,7 @@ Plans:
   4. Charts render Chris's full data range (systolic 60–211, mostly-bradycardic pulse) without axis clipping or misleading scales
   5. Every interactive target is ≥48px, body text ≥18px, palette (including chart colors) is high-contrast, and the entire dashboard is keyboard navigable with visible focus — no drag, hover-only, or precision interactions
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 **UI hint**: yes
 Plans:
 **Wave 1**
@@ -77,7 +77,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-07-PLAN.md — ChartDeck hero/mini rotation, App assembly, visual + accessibility verification checkpoint
+- [x] 02-07-PLAN.md — ChartDeck hero/mini rotation, App assembly, visual + accessibility verification checkpoint
 
 ### Phase 3: Agent via Text Input
 
@@ -134,7 +134,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
-| 2. Read API & Dashboard | 6/7 | In Progress|  |
+| 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
 | 3. Agent via Text Input | 0/TBD | Not started | - |
 | 4. Voice Capture | 0/TBD | Not started | - |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |
