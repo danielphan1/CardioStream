@@ -33,8 +33,8 @@
 - [ ] **DASH-05**: Category color bands (AHA zones) rendered behind the BP timeline
 - [ ] **DASH-06**: Charts handle Chris's full data range gracefully (systolic 60–211, mostly-bradycardic pulse) — no misleading axis clipping
 - [ ] **DASH-07**: Filter controls — date-range presets (7/30/90 days, all) + custom range, AM/PM, BP category — applied consistently across all charts
-- [ ] **DASH-08**: Summary statistics strip — avg/min/max systolic/diastolic/pulse, reading count, % per category — recomputes when filters change
-- [ ] **DASH-09**: Readings table — date-sorted raw data view with category color chips
+- [x] **DASH-08**: Summary statistics strip — avg/min/max systolic/diastolic/pulse, reading count, % per category — recomputes when filters change
+- [x] **DASH-09**: Readings table — date-sorted raw data view with category color chips
 - [ ] **DASH-10**: Upload page for caregivers showing the post-upload result summary
 - [ ] **DASH-11**: "Chris's Health Dashboard" header bar matching the Tableau prototype styling
 
@@ -110,8 +110,8 @@
 | DASH-05 | Phase 2 | Pending |
 | DASH-06 | Phase 2 | Pending |
 | DASH-07 | Phase 2 | Pending |
-| DASH-08 | Phase 2 | Pending |
-| DASH-09 | Phase 2 | Pending |
+| DASH-08 | Phase 2 | Complete |
+| DASH-09 | Phase 2 | Complete |
 | DASH-11 | Phase 2 | Pending |
 | ACC-01 | Phase 2 | Partial |
 | ACC-02 | Phase 2 | Pending |
