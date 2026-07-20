@@ -16,6 +16,8 @@ from typing import get_args
 import pytest
 from pydantic import ValidationError
 
+from app.agent import copy as agent_copy
+from app.agent.prompt import SYSTEM_PROMPT, build_messages
 from app.agent.schemas import (
     AMPM_TOKEN_TO_LABEL,
     BP_TOKEN_TO_LABEL,
@@ -198,3 +200,74 @@ def test_bp_token_map_values_match_deps_bpcategory():
 
 def test_ampm_token_map():
     assert AMPM_TOKEN_TO_LABEL == {"all": "all", "am": "AM", "pm": "PM"}
+
+
+# --------------------------------------------------------------------------- #
+# prompt.build_messages — one-turn memory (D-12) + SYSTEM_PROMPT (Task 3)
+# --------------------------------------------------------------------------- #
+
+
+def test_build_messages_no_context_single_user_message():
+    assert build_messages("show pulse", None) == [{"role": "user", "content": "show pulse"}]
+
+
+def test_build_messages_with_context_is_three_ordered_messages():
+    ctx = ClarifyContext(original_text="show me the mornings one", question="Which chart?")
+    assert build_messages("mornings", ctx) == [
+        {"role": "user", "content": "show me the mornings one"},
+        {"role": "assistant", "content": "Which chart?"},
+        {"role": "user", "content": "mornings"},
+    ]
+
+
+def test_system_prompt_is_non_empty_str_constant():
+    assert isinstance(SYSTEM_PROMPT, str) and SYSTEM_PROMPT
+    # It is a constant, not a function — two reads are identical.
+    assert SYSTEM_PROMPT == SYSTEM_PROMPT
+
+
+def test_system_prompt_enumerates_all_four_chart_tokens():
+    for token in ("bp_timeline", "pulse_trend", "bp_categories", "am_pm_comparison"):
+        assert token in SYSTEM_PROMPT
+
+
+def test_system_prompt_forbids_date_computation():
+    assert "never" in SYSTEM_PROMPT.lower()
+
+
+# --------------------------------------------------------------------------- #
+# copy.py — fixed safety templates (D-10, D-11, D-16, VOICE-09)
+# --------------------------------------------------------------------------- #
+
+
+def test_unclear_message_embeds_at_least_two_examples():
+    hits = [ex for ex in agent_copy.EXAMPLE_COMMANDS if ex in agent_copy.UNCLEAR_MESSAGE]
+    assert len(hits) >= 2
+
+
+def test_data_question_message_verbatim():
+    assert agent_copy.DATA_QUESTION_MESSAGE == "Your averages are in the stats bar below."
+
+
+def test_chart_phrases_cover_all_four_tokens():
+    assert set(agent_copy.CHART_PHRASES) == {
+        "bp_timeline",
+        "pulse_trend",
+        "bp_categories",
+        "am_pm_comparison",
+    }
+
+
+def test_unavailable_message_is_non_empty():
+    assert agent_copy.UNAVAILABLE_MESSAGE
+
+
+def test_medical_refusal_pairs_chart_phrase():
+    msg = agent_copy.medical_refusal("bp_timeline")
+    assert "blood pressure" in msg
+    assert "care team" in msg
+
+
+def test_medical_refusal_plain_when_no_chart():
+    msg = agent_copy.medical_refusal(None)
+    assert "care team" in msg
