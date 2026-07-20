@@ -53,7 +53,7 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
     s.setActiveChart(f.activeChart);
     touched.add("chart");
   }
-  if (f.datePreset != null && f.datePreset !== "custom") {
+  if (f.datePreset != null) {
     s.setDatePreset(f.datePreset); // store clears customRange itself
     touched.add("dateRange");
   }
