@@ -1,0 +1,212 @@
+[
+  {
+    "id": "chart_pulse",
+    "utterance": "show my pulse",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "pulse_trend"}
+  },
+  {
+    "id": "chart_heart_rate_synonym",
+    "utterance": "heart rate please",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "pulse_trend"}
+  },
+  {
+    "id": "chart_blood_pressure",
+    "utterance": "show blood pressure",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "bp_timeline"}
+  },
+  {
+    "id": "chart_categories",
+    "utterance": "show the categories chart",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "bp_categories"}
+  },
+  {
+    "id": "preset_30d",
+    "utterance": "last 30 days",
+    "context": null,
+    "expect": {"kind": "applied", "datePreset": "30d"}
+  },
+  {
+    "id": "preset_past_week",
+    "utterance": "past week",
+    "context": null,
+    "expect": {"kind": "applied", "datePreset": "7d"}
+  },
+  {
+    "id": "preset_90d",
+    "utterance": "last 90 days",
+    "context": null,
+    "expect": {"kind": "applied", "datePreset": "90d"}
+  },
+  {
+    "id": "reset_show_all",
+    "utterance": "show all data",
+    "context": null,
+    "expect": {"kind": "applied", "reset": true}
+  },
+  {
+    "id": "reset_start_over",
+    "utterance": "start over",
+    "context": null,
+    "expect": {"kind": "applied", "reset": true}
+  },
+  {
+    "id": "ampm_mornings",
+    "utterance": "mornings only",
+    "context": null,
+    "expect": {"kind": "applied", "amPm": "AM"}
+  },
+  {
+    "id": "ampm_evenings",
+    "utterance": "just the evenings",
+    "context": null,
+    "expect": {"kind": "applied", "amPm": "PM"}
+  },
+  {
+    "id": "combo_bp_30d_mornings",
+    "utterance": "show my blood pressure for the last 30 days, mornings only",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "bp_timeline", "datePreset": "30d", "amPm": "AM"}
+  },
+  {
+    "id": "combo_pulse_mornings",
+    "utterance": "pulse in the mornings",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "pulse_trend", "amPm": "AM"}
+  },
+  {
+    "id": "cat_hypertensive_crisis",
+    "utterance": "show hypertensive crisis readings",
+    "context": null,
+    "expect": {"kind": "applied", "bpCategory": "Hypertensive Crisis"}
+  },
+  {
+    "id": "cat_stage_2",
+    "utterance": "only stage 2",
+    "context": null,
+    "expect": {"kind": "applied", "bpCategory": "Stage 2"}
+  },
+  {
+    "id": "cat_normal",
+    "utterance": "normal readings only",
+    "context": null,
+    "expect": {"kind": "applied", "bpCategory": "Normal"}
+  },
+  {
+    "id": "date_february_through_april",
+    "utterance": "february through april",
+    "context": null,
+    "expect": {"kind": "applied", "customRange": {"from": "2025-02-01", "to": "2025-04-30"}}
+  },
+  {
+    "id": "date_since_june",
+    "utterance": "since june",
+    "context": null,
+    "expect": {"kind": "applied", "customRange": {"from": "2025-06-01", "to": "2025-06-13"}}
+  },
+  {
+    "id": "date_show_me_may",
+    "utterance": "show me may",
+    "context": null,
+    "expect": {"kind": "applied", "customRange": {"from": "2025-05-01", "to": "2025-05-31"}}
+  },
+  {
+    "id": "date_last_14_days",
+    "utterance": "last 14 days",
+    "context": null,
+    "expect": {"kind": "applied", "customRange": {"from": "2025-05-31", "to": "2025-06-13"}}
+  },
+  {
+    "id": "garbled_bp_last_thirty",
+    "utterance": "sho me blod preshure last thurty days",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "bp_timeline", "datePreset": "30d"}
+  },
+  {
+    "id": "garbled_pulse_trend",
+    "utterance": "puls trend pls",
+    "context": null,
+    "expect": {"kind": "applied", "chart": "pulse_trend"}
+  },
+  {
+    "id": "garbled_mornings",
+    "utterance": "shw mornins",
+    "context": null,
+    "expect": {"kind_in": ["applied", "clarify"], "amPm": "AM"}
+  },
+  {
+    "id": "garbled_number_words",
+    "utterance": "blood pressure for the last thirty days",
+    "context": null,
+    "expect": {"kind": "applied", "datePreset": "30d"}
+  },
+  {
+    "id": "medical_bp_dangerous",
+    "utterance": "is my blood pressure dangerous?",
+    "context": null,
+    "expect": {"kind": "refuse", "chart": "bp_timeline"}
+  },
+  {
+    "id": "medical_pulse_worried",
+    "utterance": "should I be worried about my pulse?",
+    "context": null,
+    "expect": {"kind": "refuse", "chart": "pulse_trend"}
+  },
+  {
+    "id": "medical_going_to_be_okay",
+    "utterance": "am I going to be okay?",
+    "context": null,
+    "expect": {"kind": "refuse"}
+  },
+  {
+    "id": "medical_what_do_numbers_mean",
+    "utterance": "what do these numbers mean for my health?",
+    "context": null,
+    "expect": {"kind": "refuse"}
+  },
+  {
+    "id": "data_average_bp",
+    "utterance": "what's my average blood pressure?",
+    "context": null,
+    "expect": {"kind": "applied", "has_message": true}
+  },
+  {
+    "id": "data_how_many_readings",
+    "utterance": "how many readings do I have?",
+    "context": null,
+    "expect": {"kind_in": ["applied"]}
+  },
+  {
+    "id": "clarify_that_one",
+    "utterance": "show me that one",
+    "context": null,
+    "expect": {"kind_in": ["clarify", "unclear"]}
+  },
+  {
+    "id": "clarify_followup_pulse",
+    "utterance": "the pulse one",
+    "context": {"original_text": "show me the numbers", "question": "Which chart did you mean — blood pressure or pulse?"},
+    "expect": {"kind": "applied", "chart": "pulse_trend"}
+  },
+  {
+    "id": "gibberish_asdf",
+    "utterance": "asdf qwerty zxcv",
+    "context": null,
+    "expect": {"kind": "unclear"}
+  },
+  {
+    "id": "gibberish_banana",
+    "utterance": "banana helicopter tuesday",
+    "context": null,
+    "expect": {"kind_in": ["unclear", "clarify"]}
+  },
+  {
+    "id": "relative_zoom_out",
+    "utterance": "zoom out a bit",
+    "context": null,
+    "expect": {"kind_in": ["unclear", "clarify"]}
+  }
+]
