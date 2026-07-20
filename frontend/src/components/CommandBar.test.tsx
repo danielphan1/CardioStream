@@ -1,0 +1,236 @@
+// Behavior tests for CommandBar (D-01..D-07, D-12; VOICE-06/07/08) — locks the
+// idle→working→confirmed/clarify/error state machine, the store side effects of
+// an applied command, the D-12 one-turn clarify-context round-trip, D-03 text
+// persistence, and VOICE-07 friendly-copy-for-every-failure contract.
+//
+// postAgent is the ONLY mock: real useAgent, a real QueryClientProvider, and the
+// real zustand stores (reset between tests) so the mutation path and store
+// effects are exercised end to end. ApiError stays real so `instanceof` in the
+// component's onError works.
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
+
+import { ApiError } from "../api/client";
+import { postAgent } from "../api/client";
+import type { AgentReply } from "../api/types";
+import { useAgentPulse } from "../lib/agent";
+import { useFilters } from "../store/filters";
+import { CommandBar } from "./CommandBar";
+
+// Keep the real module (ApiError, getJson, …) — replace only postAgent.
+vi.mock("../api/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../api/client")>();
+  return { ...actual, postAgent: vi.fn() };
+});
+
+const mockPostAgent = postAgent as unknown as Mock;
+
+function reply(overrides: Partial<AgentReply> = {}): AgentReply {
+  return {
+    kind: "applied",
+    filters: null,
+    message: "",
+    context: null,
+    ...overrides,
+  };
+}
+
+function renderBar(latestReading: string | null = null) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <CommandBar latestReading={latestReading} />
+    </QueryClientProvider>,
+  );
+}
+
+function typeAndSubmit(value: string) {
+  const input = screen.getByRole("textbox", {
+    name: "Type a dashboard command",
+  });
+  fireEvent.change(input, { target: { value } });
+  // Enter-key submit (D-04): submitting the form is what the Enter key does in
+  // a single-line input with a submit button.
+  fireEvent.submit(input.closest("form")!);
+}
+
+beforeEach(() => {
+  mockPostAgent.mockReset();
+  useFilters.setState({
+    activeChart: "bp_timeline",
+    datePreset: "all",
+    customRange: { from: null, to: null },
+    amPm: "all",
+    bpCategory: "all",
+  });
+  useAgentPulse.setState({ seq: 0, fields: [] });
+});
+
+afterEach(() => {
+  vi.clearAllTimers();
+});
+
+describe("CommandBar", () => {
+  it("submits the trimmed text with null context via Enter (D-04)", async () => {
+    mockPostAgent.mockResolvedValue(reply({ kind: "unclear", message: "?" }));
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    await waitFor(() => expect(mockPostAgent).toHaveBeenCalledTimes(1));
+    // Assert on the first arg only — React Query passes a second context arg.
+    expect(mockPostAgent.mock.calls[0][0]).toEqual({
+      text: "show my pulse",
+      context: null,
+    });
+  });
+
+  it("keeps the submitted text visible and locks controls while working (D-03)", async () => {
+    // Never-resolving promise → the bar stays in the working state.
+    mockPostAgent.mockReturnValue(new Promise<AgentReply>(() => {}));
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(await screen.findByText("Working…")).toBeInTheDocument();
+    expect(input).toBeDisabled();
+    expect(input.value).toBe("show my pulse"); // text NOT cleared during working
+    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+  });
+
+  it("applies filters, echoes full state, and clears the input (D-07)", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+    );
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    const region = await screen.findByText(/^Showing pulse/);
+    expect(region).toBeInTheDocument();
+    // Store side effect: the chart actually switched.
+    expect(useFilters.getState().activeChart).toBe("pulse_trend");
+    // D-03: applied is the only kind that clears the input.
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input.value).toBe("");
+  });
+
+  it("appends the D-16 stats-bar pointer to the confirmation when present", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({
+        kind: "applied",
+        filters: { activeChart: "bp_timeline" },
+        message: "Your averages are in the stats bar below.",
+      }),
+    );
+    renderBar();
+
+    typeAndSubmit("what's my average bp");
+
+    const region = await screen.findByText(/Showing blood pressure/);
+    expect(region.textContent).toMatch(
+      /Your averages are in the stats bar below\.$/,
+    );
+  });
+
+  it("resends the clarify context on the follow-up submit (D-12)", async () => {
+    const context = {
+      original_text: "show me the numbers",
+      question: "Which chart?",
+    };
+    mockPostAgent
+      .mockResolvedValueOnce(reply({ kind: "clarify", message: "Which chart?", context }))
+      .mockResolvedValueOnce(
+        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      );
+    renderBar();
+
+    typeAndSubmit("show me the numbers");
+    // The clarifying question surfaces in the bar.
+    expect(await screen.findByText("Which chart?")).toBeInTheDocument();
+
+    typeAndSubmit("pulse");
+
+    await waitFor(() => expect(mockPostAgent).toHaveBeenCalledTimes(2));
+    // Second call carries the stored one-turn context verbatim (first arg only).
+    expect(mockPostAgent.mock.calls[1][0]).toEqual({
+      text: "pulse",
+      context,
+    });
+  });
+
+  it("renders an unclear reply verbatim and keeps the text for editing (D-11)", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({
+        kind: "unclear",
+        message: "Didn't catch that. Try: 'show my pulse' or 'last 30 days'.",
+      }),
+    );
+    renderBar();
+
+    typeAndSubmit("asdfghjkl");
+
+    expect(
+      await screen.findByText(
+        "Didn't catch that. Try: 'show my pulse' or 'last 30 days'.",
+      ),
+    ).toBeInTheDocument();
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input.value).toBe("asdfghjkl"); // NOT cleared — user can edit & retry
+  });
+
+  it("maps a 429 to fixed friendly copy, never the raw error (VOICE-07)", async () => {
+    mockPostAgent.mockRejectedValue(new ApiError(429, "/agent"));
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    expect(
+      await screen.findByText(
+        "One moment — a lot of commands at once. Try again in a few seconds.",
+      ),
+    ).toBeInTheDocument();
+    // The raw ApiError message must never surface.
+    expect(screen.queryByText(/API request failed/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/429/)).not.toBeInTheDocument();
+  });
+
+  it("maps a network failure to offline copy with an example command (VOICE-07)", async () => {
+    mockPostAgent.mockRejectedValue(new ApiError(0, "/agent"));
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    const region = await screen.findByText(/Couldn't reach the assistant/);
+    expect(region.textContent).toContain("show my pulse");
+  });
+
+  it("exposes accessible names and a polite live region", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+    );
+    renderBar();
+
+    // Input has a real accessible name independent of the placeholder (Pitfall 8).
+    expect(
+      screen.getByRole("textbox", { name: "Type a dashboard command" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send" })).toBeInTheDocument();
+
+    typeAndSubmit("show my pulse");
+    const region = await screen.findByText(/^Showing pulse/);
+    // The announced reply lives in an aria-live=polite container (D-05/D-06).
+    expect(region.closest("[aria-live='polite']")).not.toBeNull();
+  });
+});
