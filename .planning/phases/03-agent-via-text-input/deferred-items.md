@@ -5,8 +5,10 @@ boundary: only issues directly caused by the current task's changes are auto-fix
 
 ## From plan 03-04 execution (2026-07-20)
 
-### D1 — Pre-existing type error in `frontend/src/lib/agent.ts` (from plan 03-02)
+### D1 — Pre-existing type error in `frontend/src/lib/agent.ts` (from plan 03-02) — RESOLVED
 
+- **Status:** RESOLVED 2026-07-20 in commit `5a45802` (post-merge build gate). Dropped
+  the redundant `&& f.datePreset !== "custom"` clause; `npm run build` (`tsc -b`) now green.
 - **File/line:** `frontend/src/lib/agent.ts:56`
 - **Symptom:** `tsc -b` (the real build via `npm run build`) fails with
   `TS2367: This comparison appears to be unintentional because the types

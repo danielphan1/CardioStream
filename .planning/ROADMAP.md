@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Data Foundation** - Repo + privacy setup, schema/migrations, idempotent OMRON ETL with tested derivations, 132 readings seeded (completed 2026-07-13)
 - [x] **Phase 2: Read API & Dashboard** - `/readings` + `/stats` endpoints and the four-chart dashboard with manual filters, stats strip, and readings table (completed 2026-07-17)
-- [ ] **Phase 3: Agent via Text Input** - Claude-powered `/agent` endpoint with validated JSON commands, driven by the text input box
+- [x] **Phase 3: Agent via Text Input** - Claude-powered `/agent` endpoint with validated JSON commands, driven by the text input box (completed 2026-07-20)
 - [ ] **Phase 4: Voice Capture** - Continuous-listening mic sessions on Chrome/Edge and Safari/iOS with unmissable state indicators and live transcript
 - [ ] **Phase 5: Upload, Auth Gate & Deployment** - Caregiver upload page, shared-password Bearer gate on every route, Vercel + Railway deploy, smoke test
 
@@ -135,6 +135,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
-| 3. Agent via Text Input | 2/4 | In Progress|  |
+| 3. Agent via Text Input | 4/4 | Complete   | 2026-07-20 |
 | 4. Voice Capture | 0/TBD | Not started | - |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |
