@@ -61,3 +61,33 @@ export type ResolvedFilters = {
   am_pm?: "AM" | "PM";
   bp_category?: BPCategory;
 };
+
+// ── Agent wire contract (API-04/VOICE-08) — byte-identical mirror of backend
+// plan 03-01 schemas.py JSON form. The server does ALL token translation;
+// nothing here translates canonical labels (PATTERNS "Canonical labels vs.
+// wire tokens"). Voice (Phase 4) reuses these types unchanged.
+
+// Follow-up round-trip when the agent asks a clarifying question (API-04).
+export type ClarifyContext = { original_text: string; question: string };
+
+// POST /agent body — text plus optional clarification context (VOICE-08).
+export type AgentRequest = { text: string; context: ClarifyContext | null };
+
+// Server-composed filter delta — only these closed-union fields mutate the
+// store (T-03-07). Wire key is `from` (backend serializes `from_` alias "from").
+export type AppliedFilters = {
+  activeChart?: ChartId | null;
+  datePreset?: "7d" | "30d" | "90d" | "all" | null;
+  customRange?: { from: string; to: string } | null;
+  amPm?: "all" | "AM" | "PM" | null;
+  bpCategory?: "all" | BPCategory | null;
+  reset?: boolean;
+};
+
+// Agent reply envelope (API-04) — four-kind discriminated union.
+export type AgentReply = {
+  kind: "applied" | "clarify" | "refuse" | "unclear";
+  filters: AppliedFilters | null;
+  message: string;
+  context: ClarifyContext | null;
+};
