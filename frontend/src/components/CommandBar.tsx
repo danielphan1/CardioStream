@@ -148,7 +148,10 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   return (
     <section
       aria-label="Command bar"
-      className={`bg-[var(--color-sky)] p-4 ${
+      // The full-width sky band + content-column gutters come from the App
+      // wrapper (D-01) — the section itself stays bg-transparent so there is
+      // exactly one bg layer. Only vertical padding + the working ring live here.
+      className={`py-4 ${
         working ? "rounded-lg ring-2 ring-[var(--color-accent)]" : ""
       }`}
     >
