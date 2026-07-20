@@ -11,6 +11,7 @@
 import type { ReactNode } from "react";
 
 import { ChartDeck } from "./components/ChartDeck";
+import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
 import { Header } from "./components/Header";
@@ -100,6 +101,15 @@ function App() {
   return (
     <div className="min-h-screen">
       <Header />
+      {/* Command bar (D-01) — full-width sky band under the header, top billing
+          for the primary control. Inner div matches main's content-column
+          gutters so the input aligns with the dashboard below. Phase 4 mounts
+          the mic button into this same bar. */}
+      <section className="bg-[var(--color-sky)]">
+        <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
+          <CommandBar latestReading={latestReading} />
+        </div>
+      </section>
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); 32px vertical
           rhythm between sections; single column (UI-SPEC responsive). */}
       <main className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 py-8 md:px-8 xl:px-16">

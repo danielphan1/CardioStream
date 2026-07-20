@@ -6,8 +6,10 @@
 // All filter state lives in the zustand store (store/filters.ts) — this
 // component only takes `latestReading` for the honest preset-anchor date
 // (RESEARCH Open Question 1: presets anchor to the newest reading).
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useAgentPulse } from "../lib/agent";
+import type { PulseField } from "../lib/agent";
 import { fmtLongDate, presetLabel } from "../lib/dates";
 import type { DatePreset } from "../lib/dates";
 import { categoryColor, CHIP_TEXT, CLINICAL_ORDER } from "../lib/palette";
@@ -52,6 +54,29 @@ export function FilterBar({ latestReading }: FilterBarProps) {
   // no focus-trap complexity, D-18).
   const [customOpen, setCustomOpen] = useState(false);
 
+  // D-08 pulse: when an agent command touches a filter group, the matching
+  // control group flashes briefly so the agent and the manual controls read as
+  // one system. `seq` bumps on every apply (even when the same fields repeat),
+  // so this effect re-fires reliably. The animation is gated behind
+  // `motion-safe:` — reduced-motion users get NO pulse — and a static
+  // `ring-2` fallback keeps the change perceivable without motion.
+  const pulseSeq = useAgentPulse((s) => s.seq);
+  const pulseFields = useAgentPulse((s) => s.fields);
+  const [pulsing, setPulsing] = useState<PulseField[]>([]);
+  useEffect(() => {
+    if (pulseSeq === 0) return; // no apply yet
+    setPulsing(pulseFields);
+    const t = setTimeout(() => setPulsing([]), 1500);
+    return () => clearTimeout(t);
+  }, [pulseSeq, pulseFields]);
+
+  // Chart switches are intentionally NOT pulsed here — ChartDeck's keyed
+  // mount-fade already signals agent-driven chart changes (CONTEXT).
+  const pulseClass = (field: PulseField) =>
+    pulsing.includes(field)
+      ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
+      : "";
+
   const isDayPreset =
     datePreset === "7d" || datePreset === "30d" || datePreset === "90d";
 
@@ -69,7 +94,11 @@ export function FilterBar({ latestReading }: FilterBarProps) {
     <section className="bg-[var(--color-sky)] p-4">
       <div className="flex flex-wrap gap-4">
         {/* Date preset segmented row (D-17) */}
-        <div role="group" aria-label="Date range" className="flex flex-wrap gap-2">
+        <div
+          role="group"
+          aria-label="Date range"
+          className={`flex flex-wrap gap-2${pulseClass("dateRange")}`}
+        >
           {DAY_PRESETS.map(({ key, label }) => (
             <button
               key={key}
@@ -96,7 +125,11 @@ export function FilterBar({ latestReading }: FilterBarProps) {
         </div>
 
         {/* AM/PM segment (D-19) */}
-        <div role="group" aria-label="Time of day" className="flex flex-wrap gap-2">
+        <div
+          role="group"
+          aria-label="Time of day"
+          className={`flex flex-wrap gap-2${pulseClass("amPm")}`}
+        >
           {AM_PM_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
@@ -112,7 +145,11 @@ export function FilterBar({ latestReading }: FilterBarProps) {
 
         {/* Category chip row (D-19) — single-select toggle; clinical colors
             are information (D-14), so inactive chips stay solid-colored. */}
-        <div role="group" aria-label="Blood pressure category" className="flex flex-wrap gap-2">
+        <div
+          role="group"
+          aria-label="Blood pressure category"
+          className={`flex flex-wrap gap-2${pulseClass("bpCategory")}`}
+        >
           {CLINICAL_ORDER.map((cat) => {
             const isActive = bpCategory === cat;
             return (
@@ -146,9 +183,10 @@ export function FilterBar({ latestReading }: FilterBarProps) {
         </div>
       </div>
 
-      {/* Custom range disclosure — inline expanding section, not a popover */}
+      {/* Custom range disclosure — inline expanding section, not a popover.
+          Part of the "dateRange" group, so it pulses with the presets (D-08). */}
       {customOpen && (
-        <div className="mt-4">
+        <div className={`mt-4${pulseClass("dateRange")}`}>
           <DateRangePicker
             from={customRange.from}
             to={customRange.to}
