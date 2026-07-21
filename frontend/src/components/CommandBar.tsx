@@ -19,12 +19,15 @@
 // State machine + clarify context live in local useState (PATTERNS: like
 // FilterBar's customOpen), NOT the zustand store, which stays the pure command
 // schema. Only server-composed AppliedFilters reach the store (T-03-16/17).
+import { Mic, MicOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ApiError } from "../api/client";
 import type { AgentReply, ClarifyContext } from "../api/types";
 import { useAgent } from "../hooks/useAgent";
+import { useVoiceCommand } from "../hooks/useVoiceCommand";
 import { applyAgentFilters, composeConfirmation } from "../lib/agent";
+import { WAKE_WORD } from "../lib/voice";
 import { useFilters } from "../store/filters";
 
 type CommandBarProps = {
@@ -48,6 +51,11 @@ const RATE_LIMIT_COPY =
   "One moment — a lot of commands at once. Try again in a few seconds.";
 const OFFLINE_COPY =
   "Couldn't reach the assistant. The buttons below still work. Try: 'show my pulse'.";
+// D-14 hard-failure fallback: shown when voice enters the fatal paused state
+// (mic denied/revoked, no hardware, restart-loop exhausted). A peer of the fixed
+// copy above — the raw recognizer error is NEVER rendered (VOICE-07). The text
+// input below stays fully usable so the caregiver is never trapped (VOICE-08).
+const VOICE_PAUSED_COPY = "Voice paused — tap to resume";
 
 // Non-color state markers (aria-hidden — the aria-live text carries the meaning
 // for screen readers; the glyph is a purely visual reinforcement, no color-only
@@ -62,6 +70,19 @@ const MARKER: Record<Status, string> = {
 
 export function CommandBar({ latestReading }: CommandBarProps) {
   const { mutate } = useAgent();
+
+  // Voice layer on the SAME bar (D-06): the hook owns every recognizer volatility
+  // and exposes a stable state contract; this component only renders it. Firefox /
+  // unsupported → supported=false → the mic is absent and the text path is the
+  // whole story (VOICE-08).
+  const {
+    supported,
+    state: voiceState,
+    interim,
+    message: voiceMessage,
+    start,
+    stop,
+  } = useVoiceCommand({ latestReading });
 
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -143,64 +164,141 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   }
 
   const working = status === "working";
+  const voiceWorking = voiceState === "working";
+  const anyWorking = working || voiceWorking;
+  // A session is open (mic tap stops it) while armed/streaming/working; when off
+  // or paused the mic tap starts/resumes it (D-01/D-13).
+  const sessionOpen =
+    voiceState === "listening" ||
+    voiceState === "triggered" ||
+    voiceState === "working";
   const placeholder = `Try: "${EXAMPLES[exampleIdx]}"`;
+
+  // The whole bar transforms to signal state (D-06): the existing accent ring is
+  // retained for WORKING; armed/listening adds a green ring with a motion-safe
+  // pulse and a static ring-2 fallback for reduced motion (D-09), copying the
+  // FilterBar pulseClass structure. Colors are existing tokens only (no hex).
+  const ringClass = anyWorking
+    ? "rounded-lg ring-2 ring-[var(--color-accent)]"
+    : voiceState === "listening" || voiceState === "triggered"
+      ? "rounded-lg ring-2 ring-[var(--cat-normal)] motion-safe:animate-pulse"
+      : "";
+
+  // One announced line, one thing at a time (D-06/D-11). Every state pairs a
+  // WORD + ICON + COLOR — never color alone (D-07). Green (--cat-normal) is the
+  // armed hint and the live transcript; the confirmation replaces the transcript
+  // in this same spot; off falls back to the text-command message.
+  let lineText = "";
+  let lineGreen = false;
+  let lineGlyph: "mic" | "micoff" | "marker" | null = null;
+  if (voiceState === "triggered") {
+    lineText = interim; // stripped command streaming in green (D-10/D-11)
+    lineGreen = true;
+    lineGlyph = "mic";
+  } else if (voiceState === "listening") {
+    if (voiceMessage !== "") {
+      lineText = voiceMessage; // confirmation replaces the transcript (D-11)
+      lineGlyph = "mic";
+    } else {
+      lineText = `LISTENING — say "${WAKE_WORD}…"`; // armed hint (D-10)
+      lineGreen = true;
+      lineGlyph = "mic";
+    }
+  } else if (voiceState === "paused") {
+    lineText = VOICE_PAUSED_COPY; // D-14 fixed copy
+    lineGlyph = "micoff";
+  } else {
+    lineText = message; // voice off → the text path owns the region
+    lineGlyph = MARKER[status] !== "" ? "marker" : null;
+  }
+
+  function onMicClick() {
+    if (sessionOpen) stop();
+    else start(); // synchronous start inside the tap (D-01 user gesture)
+  }
 
   return (
     <section
       aria-label="Command bar"
       // The full-width sky band + content-column gutters come from the App
       // wrapper (D-01) — the section itself stays bg-transparent so there is
-      // exactly one bg layer. Only vertical padding + the working ring live here.
-      className={`py-4 ${
-        working ? "rounded-lg ring-2 ring-[var(--color-accent)]" : ""
-      }`}
+      // exactly one bg layer. Only vertical padding + the state ring live here.
+      className={`py-4 ${ringClass}`}
     >
       <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-3">
+        {/* Mic button (D-01/D-13) — a ≥48px (min-h-12 min-w-12) ink-bordered
+            control, NOT an accent fill; its glyph + aria-label swap with state.
+            Absent on Firefox/unsupported so the text path stands alone (VOICE-08). */}
+        {supported && (
+          <button
+            type="button"
+            onClick={onMicClick}
+            aria-label={sessionOpen ? "Stop voice control" : "Start voice control"}
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] text-[var(--color-ink)]"
+          >
+            {voiceState === "paused" ? (
+              <MicOff aria-hidden="true" className="h-6 w-6" />
+            ) : (
+              <Mic aria-hidden="true" className="h-6 w-6" />
+            )}
+          </button>
+        )}
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          disabled={working}
+          disabled={anyWorking}
           aria-label="Type a dashboard command"
           placeholder={placeholder}
           className="min-h-12 flex-grow rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-4 text-[18px] text-[var(--color-ink)] disabled:opacity-70"
         />
         <button
           type="submit"
-          disabled={working}
+          disabled={anyWorking}
           className="min-h-12 rounded-lg bg-[var(--color-accent)] px-6 text-xl font-bold text-[var(--color-accent-text)] disabled:opacity-70"
         >
           Send
         </button>
       </form>
 
-      {/* Working… indicator (D-03) — spinner + ≥18px label, both shown while the
-          round-trip is in flight. */}
-      {working && (
-        <p className="mt-3 flex items-center gap-2 text-[18px] text-[var(--color-ink)]">
+      {/* Working… indicator (D-03/D-11) — spinner + ≥18px WORD, shown while a text
+          OR voice command round-trips. The spin is motion-safe with a static ring
+          glyph fallback under prefers-reduced-motion (D-09). The voice path shows
+          the WORKING… word so the state reads by word, not color alone (D-07). */}
+      {anyWorking && (
+        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-ink)]">
           <span
             aria-hidden="true"
-            className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[var(--color-ink)] border-t-transparent"
+            className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-ink)] border-t-transparent motion-safe:animate-spin"
           />
-          Working…
+          {voiceWorking ? "WORKING…" : "Working…"}
         </p>
       )}
 
-      {/* Reply region (D-05/D-06) — announced politely, persists until the next
-          submit. message renders as a plain React text node only (T-03-16: no
-          raw HTML injection). The state glyph is a separate aria-hidden span so
-          it never contaminates the announced/queried message string. */}
-      {!working && message !== "" && (
+      {/* One announced region (D-05/D-06/D-11) — the armed hint, the live green
+          transcript, the WORKING/paused word, and the confirmation all resolve in
+          THIS spot, one at a time. Text renders as a plain node only (T-03-16: no
+          raw HTML). The glyph is aria-hidden visual reinforcement; the WORD is the
+          announced meaning (color + word + icon triad, never color alone, D-07). */}
+      {!anyWorking && lineText !== "" && (
         <p
           aria-live="polite"
-          className="mt-3 flex items-start gap-2 text-[18px] text-[var(--color-ink)]"
+          className={`mt-3 flex items-start gap-2 text-[18px] ${
+            lineGreen ? "text-[var(--cat-normal)]" : "text-[var(--color-ink)]"
+          }`}
         >
-          {MARKER[status] !== "" && (
+          {lineGlyph === "mic" && (
+            <Mic aria-hidden="true" className="h-6 w-6 shrink-0" />
+          )}
+          {lineGlyph === "micoff" && (
+            <MicOff aria-hidden="true" className="h-6 w-6 shrink-0" />
+          )}
+          {lineGlyph === "marker" && (
             <span aria-hidden="true" className="font-bold">
               {MARKER[status]}
             </span>
           )}
-          <span>{message}</span>
+          <span>{lineText}</span>
         </p>
       )}
     </section>
