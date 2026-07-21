@@ -7,7 +7,7 @@
 // real zustand stores (reset between tests) so the mutation path and store
 // effects are exercised end to end. ApiError stays real so `instanceof` in the
 // component's onError works.
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
@@ -17,6 +17,10 @@ import { postAgent } from "../api/client";
 import type { AgentReply } from "../api/types";
 import { useAgentPulse } from "../lib/agent";
 import { useFilters } from "../store/filters";
+import {
+  FakeRecognition,
+  installFakeRecognition,
+} from "../tests/fakeRecognition";
 import { CommandBar } from "./CommandBar";
 
 // Keep the real module (ApiError, getJson, …) — replace only postAgent.
@@ -232,5 +236,122 @@ describe("CommandBar", () => {
     const region = await screen.findByText(/^Showing pulse/);
     // The announced reply lives in an aria-live=polite container (D-05/D-06).
     expect(region.closest("[aria-live='polite']")).not.toBeNull();
+  });
+});
+
+// Voice layer mounted on the SAME bar (D-06): mic button, 3-state indicator
+// (color + word + icon, D-07), live green transcript (D-10/D-11), reduced-motion
+// fallback (D-09), and the D-14 paused fallback that keeps the text input usable.
+// jsdom has no SpeechRecognition, so FakeRecognition is installed here (the outer
+// suite leaves it absent → supported=false → text-only, exercising VOICE-08).
+describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
+  let getRec: () => FakeRecognition | null;
+
+  beforeEach(() => {
+    getRec = installFakeRecognition();
+  });
+
+  afterEach(() => {
+    delete (window as { webkitSpeechRecognition?: unknown })
+      .webkitSpeechRecognition;
+  });
+
+  function startSession(): FakeRecognition {
+    fireEvent.click(
+      screen.getByRole("button", { name: "Start voice control" }),
+    );
+    return getRec()!;
+  }
+
+  it("swaps the mic aria-label from Start to Stop when a session opens (D-01/D-13)", () => {
+    renderBar();
+    expect(
+      screen.getByRole("button", { name: "Start voice control" }),
+    ).toBeInTheDocument();
+
+    startSession();
+
+    expect(
+      screen.getByRole("button", { name: "Stop voice control" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the armed hint interpolating the wake word while listening (D-10)", () => {
+    renderBar();
+    startSession();
+
+    expect(
+      screen.getByText('LISTENING — say "dashboard…"'),
+    ).toBeInTheDocument();
+  });
+
+  it("ignores room speech without the wake word — no command is sent (D-02)", () => {
+    mockPostAgent.mockResolvedValue(reply());
+    renderBar();
+    const rec = startSession();
+
+    act(() => rec.emitResult("what a nice day", false));
+    act(() => rec.emitResult("please pass the salt", true));
+
+    // Room speech never becomes a command; the bar stays armed.
+    expect(mockPostAgent).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('LISTENING — say "dashboard…"'),
+    ).toBeInTheDocument();
+  });
+
+  it("streams the stripped interim transcript once triggered (D-10/D-11)", () => {
+    renderBar();
+    const rec = startSession();
+
+    act(() => rec.emitResult("dashboard show my pulse", false));
+
+    // Word stripped; the armed hint is replaced by the live transcript.
+    expect(screen.getByText("show my pulse")).toBeInTheDocument();
+    expect(
+      screen.queryByText('LISTENING — say "dashboard…"'),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the WORKING… word while the command round-trips (D-11)", async () => {
+    // Never-resolving promise → the bar stays in the working state.
+    mockPostAgent.mockReturnValue(new Promise<AgentReply>(() => {}));
+    renderBar();
+    const rec = startSession();
+
+    act(() => rec.emitResult("dashboard show my pulse", true));
+
+    expect(await screen.findByText("WORKING…")).toBeInTheDocument();
+  });
+
+  it("replaces the transcript with the confirmation in one spot (D-11)", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+    );
+    renderBar();
+    const rec = startSession();
+
+    act(() => rec.emitResult("dashboard show my pulse", true));
+
+    expect(await screen.findByText(/^Showing pulse/)).toBeInTheDocument();
+    // Charts switched via the store; the transcript is gone (one spot, D-11).
+    expect(useFilters.getState().activeChart).toBe("pulse_trend");
+    expect(screen.queryByText("show my pulse")).not.toBeInTheDocument();
+  });
+
+  it("enters the paused fallback on a fatal error, keeping the text input usable (D-14/VOICE-08)", () => {
+    renderBar();
+    const rec = startSession();
+
+    act(() => rec.emitError("not-allowed"));
+
+    // D-14 fixed copy (never the raw recognizer error) + the text box still works.
+    expect(
+      screen.getByText("Voice paused — tap to resume"),
+    ).toBeInTheDocument();
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input).not.toBeDisabled();
   });
 });
