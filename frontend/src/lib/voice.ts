@@ -29,11 +29,15 @@ export const BACKOFF_CAP_MS = 2000;
  *     the trailing text trimmed.
  */
 export function extractCommand(transcript: string): string | null {
-  const lower = transcript.toLowerCase();
-  const idx = lower.indexOf(WAKE_WORD);
-  if (idx === -1) return null; // untriggered → ignore (D-02)
+  // T-04-01: the wake word must OPEN a command clause — either at the start of the
+  // utterance or right after sentence punctuation (e.g. a filler "um, dashboard …").
+  // A trailing word boundary rejects substrings ("dashboards" → no match), and the
+  // clause-opening anchor rejects referential mentions ("the dashboard for pulse")
+  // so room speech that merely names the dashboard never reaches /agent (D-02).
+  const m = new RegExp(`(?:^|[,.:;!?-]\\s*)${WAKE_WORD}\\b`, "i").exec(transcript);
+  if (m == null) return null; // untriggered → ignore (D-02)
   return transcript
-    .slice(idx + WAKE_WORD.length)
+    .slice(m.index + m[0].length) // skip the (optional) lead + the wake word
     .replace(/^[\s,.:;-]+/, "") // strip the comma/space that follows the word (D-03)
     .trim();
 }

@@ -63,6 +63,19 @@ describe("extractCommand (D-02/D-03/D-10)", () => {
       "show my blood pressure",
     );
   });
+
+  it("does NOT trigger on a substring — 'dashboards' is not the wake word (T-04-01)", () => {
+    expect(extractCommand("dashboards show pulse")).toBeNull();
+  });
+
+  it("does NOT trigger on a referential mention — 'the dashboard for pulse' (T-04-01)", () => {
+    expect(extractCommand("the dashboard for pulse")).toBeNull();
+  });
+
+  it("still triggers on a clause-opening wake word", () => {
+    expect(extractCommand("dashboard show pulse")).toBe("show pulse");
+    expect(extractCommand("Dashboard, show pulse")).toBe("show pulse");
+  });
 });
 
 describe("classifyError (D-12)", () => {
