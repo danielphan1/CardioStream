@@ -107,13 +107,13 @@ Plans:
   4. Every chart switch and every filter available in the manual UI can be triggered by voice — command schema and UI filters verified in lockstep, so all primary actions are voice-operable
   5. A 10-minute continuous session with long silences keeps listening (recognizer restarts survive silence timeouts and error loops without caregiver intervention)
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 **UI hint**: yes
 
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Pure voice helpers (wake-word gate/strip, capability + iOS detection, error classification, backoff), FakeRecognition harness, ambient types, and the VOICE-05/ACC-03 parity test
+- [x] 04-01-PLAN.md — Pure voice helpers (wake-word gate/strip, capability + iOS detection, error classification, backoff), FakeRecognition harness, ambient types, and the VOICE-05/ACC-03 parity test
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -149,5 +149,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
 | 3. Agent via Text Input | 4/4 | Complete    | 2026-07-21 |
-| 4. Voice Capture | 0/3 | Planned | - |
+| 4. Voice Capture | 1/3 | In Progress|  |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |

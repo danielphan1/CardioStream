@@ -40,11 +40,11 @@
 
 ### Voice & Agent
 
-- [ ] **VOICE-01**: Mic capture via Web Speech API works on Chrome/Edge and Safari/iOS (webkit-prefixed, restart-loop handling)
+- [x] **VOICE-01**: Mic capture via Web Speech API works on Chrome/Edge and Safari/iOS (webkit-prefixed, restart-loop handling)
 - [ ] **VOICE-02**: Continuous listening session — caregiver taps the large mic button once; Chris then issues multiple commands hands-free
 - [ ] **VOICE-03**: Unmissable listening-state indicator — Chris can always tell from a distance whether the dashboard is listening, processing, or stopped
 - [ ] **VOICE-04**: Live transcript of recognized speech is displayed while listening
-- [ ] **VOICE-05**: Voice commands can switch charts and apply any filter available in the UI (chart, date range, AM/PM, category) — command schema and UI filters stay in lockstep
+- [x] **VOICE-05**: Voice commands can switch charts and apply any filter available in the UI (chart, date range, AM/PM, category) — command schema and UI filters stay in lockstep
 - [x] **VOICE-06**: Every applied command produces a large-text confirmation of what changed ("Showing blood pressure, last 30 days, mornings")
 - [x] **VOICE-07**: Unrecognized or ambiguous commands produce a clear, non-technical error/clarification message instead of silent failure
 - [x] **VOICE-08**: Text input box drives the same agent endpoint as voice (fallback for Firefox, noise, recognition failure)
@@ -54,7 +54,7 @@
 
 - [x] **ACC-01**: All interactive targets ≥48px; body text ≥18px; high-contrast palette (including chart colors) *(partial — 18px floor + palette shipped in 02-02; ≥48px targets unverifiable until interactive UI exists)*
 - [x] **ACC-02**: Fully keyboard navigable with visible focus; no drag, hover-only, or precise-pointing interactions anywhere
-- [ ] **ACC-03**: Every primary action (switch chart, change filters, view data) is operable by voice
+- [x] **ACC-03**: Every primary action (switch chart, change filters, view data) is operable by voice
 
 ### Security & Privacy
 
@@ -122,12 +122,12 @@
 | VOICE-08 | Phase 3 | Complete |
 | VOICE-09 | Phase 3 | Complete |
 | SEC-02 | Phase 3 | Complete |
-| VOICE-01 | Phase 4 | Pending |
+| VOICE-01 | Phase 4 | Complete |
 | VOICE-02 | Phase 4 | Pending |
 | VOICE-03 | Phase 4 | Pending |
 | VOICE-04 | Phase 4 | Pending |
-| VOICE-05 | Phase 4 | Pending |
-| ACC-03 | Phase 4 | Pending |
+| VOICE-05 | Phase 4 | Complete |
+| ACC-03 | Phase 4 | Complete |
 | API-03 | Phase 5 | Pending |
 | DASH-10 | Phase 5 | Pending |
 | SEC-01 | Phase 5 | Pending |
