@@ -168,6 +168,38 @@ describe("useVoiceCommand newest wins (D-05)", () => {
   });
 });
 
+describe("useVoiceCommand stop/pause supersede (D-05, WR-01)", () => {
+  it("stop() during an in-flight command drops the late reply — no store mutation, stays off", async () => {
+    let resolveReply!: (r: AgentReply) => void;
+    mockPostAgent.mockReturnValueOnce(
+      new Promise<AgentReply>((res) => {
+        resolveReply = res;
+      }),
+    );
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    // Command submitted → "working", request still in flight.
+    act(() => rec.emitResult("dashboard show pulse trend", true));
+    expect(result.current.state).toBe("working");
+
+    // Caregiver taps stop while the reply is still round-tripping (~1s).
+    act(() => result.current.stop());
+    expect(result.current.state).toBe("off");
+
+    // The late reply lands AFTER stop — the seq guard must drop it: the store
+    // stays untouched and the bar must NOT flip back to "listening" (no zombie UI).
+    await act(async () => {
+      resolveReply(
+        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      );
+    });
+    expect(useFilters.getState().activeChart).toBe("bp_timeline"); // unchanged post-stop
+    expect(result.current.state).toBe("off"); // not resurrected to "listening"
+  });
+});
+
 describe("useVoiceCommand restart resilience (D-12/D-13/D-14, Pitfall 2/5)", () => {
   it("recoverable error + onend restarts the recognizer after backoff (D-12)", () => {
     vi.useFakeTimers();

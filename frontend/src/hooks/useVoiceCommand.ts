@@ -98,6 +98,7 @@ export function useVoiceCommand({
   // goes false so onend can't relaunch the loop; the bar shows fixed copy only.
   function enterPaused() {
     armedRef.current = false;
+    seqRef.current++; // supersede any in-flight reply so it can't mutate post-pause (D-05)
     clearRestartTimer();
     setVoiceState("paused");
     setMessage(PAUSED_COPY);
@@ -228,6 +229,7 @@ export function useVoiceCommand({
 
   function stop() {
     armedRef.current = false; // D-13: explicit stop — do not restart
+    seqRef.current++; // supersede any in-flight reply so it can't resurrect the UI (D-05)
     clearRestartTimer();
     setVoiceState("off");
     setInterim("");
