@@ -23,14 +23,20 @@
 
 | Field | Value |
 |-------|-------|
-| iPhone model | ____________________ |
-| iOS version | ____________________ |
-| Safari version | ____________________ |
-| Desktop OS | ____________________ |
-| Desktop browser + version (Chrome/Edge) | ____________________ |
-| Android device (optional) + Chrome version | ____________________ |
+| iPhone model | (not recorded — approved by user; specific model string not provided) |
+| iOS version | (not recorded) |
+| Safari version | (not recorded) |
+| Desktop OS | (not recorded) |
+| Desktop browser + version (Chrome/Edge) | Chrome / Edge (versions not recorded) |
+| Android device (optional) + Chrome version | (not used) |
 | `WAKE_WORD` under test | `dashboard` (default, D-04) |
-| Test date / tester | ____________________ |
+| Test date / tester | 2026-07-21 / user |
+
+> **RESULT — APPROVED by user on 2026-07-21.** The user executed this script on a
+> real iPhone (Safari) plus desktop Chrome/Edge and confirmed the checkpoint passed.
+> Exact device model / OS / browser version strings were not captured, so they are
+> intentionally left unrecorded rather than fabricated. The specific criteria the
+> user reported passing are enumerated in **[Pass criteria](#pass-criteria-checkpoint-gate)** below.
 
 ---
 
@@ -106,18 +112,18 @@ chart switches → `dashboard mornings only` → confirm — on each target:
 
 ## Pass criteria (checkpoint gate)
 
-The checkpoint is **approved** only when ALL of the following hold:
+**CHECKPOINT APPROVED by user on 2026-07-21.** All required gates below were reported
+passing on a real iPhone (Safari) plus desktop Chrome/Edge:
 
-- [ ] **§2 restart-loop spike** passes on the real iPhone (new command applies
-      after 60s silence without re-tapping) — **SC1**.
-- [ ] **§3 10-minute continuous session** passes on the real iPhone with no
+- [x] **§2 restart-loop spike** passed on the real iPhone — a new command applied
+      after 60s silence without re-tapping — **SC1**.
+- [x] **§3 10-minute continuous session** passed on the real iPhone with no
       caregiver intervention — **SC5**.
-- [ ] **§4 trigger-gating** holds — room speech without "dashboard" never mutates
+- [x] **§4 trigger-gating** held — room speech without "dashboard" never mutated
       the dashboard (D-02).
-- [ ] **§5 paused fallback** shows the fixed copy and the text input still works
+- [x] **§5 paused fallback** showed the fixed copy and the text input still worked
       (D-14 / VOICE-08).
-- [ ] **§6 core flow** passes on desktop Chrome/Edge.
+- [x] **§6 core flow** passed on desktop Chrome/Edge.
 
-If any of the above FAILS, record the exact failing step + observed behaviour +
-device/OS/browser and report it so a `--gaps` plan can target the fix. Resume the
-checkpoint by typing **"approved"** (all pass) or a description of the failing step.
+No failing steps were reported, so no `--gaps` plan is required. The user resumed the
+blocking `checkpoint:human-verify` by typing **"approved"**.
