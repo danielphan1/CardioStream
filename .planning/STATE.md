@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-07-21T18:35:24.490Z"
+status: verifying
+last_updated: "2026-07-21T20:26:13.065Z"
 last_activity: 2026-07-21
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 22
-  completed_plans: 21
-  percent: 60
+  completed_plans: 22
+  percent: 80
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 ## Current Position
 
-Phase: 04 (voice-capture) — EXECUTING
+Phase: 04 (voice-capture) — COMPLETE
 Plan: 3 of 3
-Status: BLOCKED at human-verify checkpoint (04-03 Task 3) — Tasks 1 & 2 complete and committed; awaiting real-iPhone (Safari) + desktop Chrome/Edge on-device verification of the restart loop + 10-minute session before the plan can close
+Status: Phase complete — ready for verification. 04-03 shipped the CommandBar voice UI + iOS test checklist; the Task 3 blocking human-verify checkpoint was APPROVED on a real iPhone (Safari) + desktop Chrome/Edge — restart loop + 10-min session pass (SC1/SC5).
 Last activity: 2026-07-21
 
-Progress: [██████████] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [██████████] 95%
 | Phase 02 P07 | 6min | 3 tasks | 3 files |
 | Phase 04 P01 | 5min | 3 tasks | 6 files |
 | Phase 04 P02 | 8min | 2 tasks | 2 files |
+| Phase 04 P03 | 35min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 04]: 04-01: computeBackoff exponential 200ms base / 2000ms cap (D-12); unknown recognizer errors default recoverable, bounded by the cap
 - [Phase ?]: [Phase 04]: 04-01: VOICE-05/ACC-03 parity enforced by bidirectional frontend<->backend token equality read from schemas.py on disk — drift on either side breaks the build
 - [Phase ?]: [Phase 04]: 04-02: useVoiceCommand holds ONE recognizer started in the caregiver tap and kept armed via an explicit onend/onerror backoff restart loop; fatal errors enter paused (D-14), stale replies dropped by a monotonic seq guard (D-05), zero new fetch (reuses useAgent().mutate)
+- [Phase 04]: 04-03: Voice layer mounted in place on the existing CommandBar (D-06, no second component) — ≥48px mic button, color+word+icon 3-state indicator with motion-safe pulse + static reduced-motion fallback, live green stripped transcript replaced in-place by the confirmation; real-iOS restart loop + 10-min session APPROVED on device (SC1/SC5) — Clears the Phase 4 device-risk blocker (iOS Safari MEDIUM confidence)
 
 ### Pending Todos
 
@@ -87,7 +89,7 @@ None yet.
 
 - [Phase 1]: Real OMRON export format (serial dates, Date/Time columns) must be verified against the actual file the user adds to the repo
 - [Phase 3]: Verify Anthropic structured-outputs API surface (GA `messages.parse()` vs beta header) at implementation time; Pydantic re-validation stays regardless
-- [Phase 4]: iOS Safari voice behavior is MEDIUM confidence — test restart loop on a real iPhone in the first days of the phase; plan `/gsd-plan-phase --research-phase 4`
+- [Phase 4]: ~~iOS Safari voice behavior is MEDIUM confidence — test restart loop on a real iPhone~~ RESOLVED 2026-07-21: the 04-03 Task 3 on-device human-verify checkpoint was APPROVED — restart loop + 10-min continuous session pass on a real iPhone (Safari); core flow passes on desktop Chrome/Edge.
 - [Phase 1 / 01-01]: Real OMRON export + bp_data_cleaned.csv not yet present in data/ — plans 01-04 and 01-07 must target the assumed format and auto-skip real-data tests until files appear; verify real format when files land
 
 ## Deferred Items
@@ -100,6 +102,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-21T18:35:24.484Z
+Last session: 2026-07-21T20:17:34.154Z
 Stopped at: 04-03 Tasks 1 & 2 complete (CommandBar voice UI + iOS test checklist, committed); PAUSED at Task 3 blocking human-verify checkpoint — needs a real iPhone
-Resume file: .planning/phases/04-voice-capture/04-IOS-TEST-CHECKLIST.md
+Resume file: None

@@ -42,8 +42,8 @@
 
 - [x] **VOICE-01**: Mic capture via Web Speech API works on Chrome/Edge and Safari/iOS (webkit-prefixed, restart-loop handling)
 - [x] **VOICE-02**: Continuous listening session — caregiver taps the large mic button once; Chris then issues multiple commands hands-free
-- [ ] **VOICE-03**: Unmissable listening-state indicator — Chris can always tell from a distance whether the dashboard is listening, processing, or stopped
-- [ ] **VOICE-04**: Live transcript of recognized speech is displayed while listening
+- [x] **VOICE-03**: Unmissable listening-state indicator — Chris can always tell from a distance whether the dashboard is listening, processing, or stopped
+- [x] **VOICE-04**: Live transcript of recognized speech is displayed while listening
 - [x] **VOICE-05**: Voice commands can switch charts and apply any filter available in the UI (chart, date range, AM/PM, category) — command schema and UI filters stay in lockstep
 - [x] **VOICE-06**: Every applied command produces a large-text confirmation of what changed ("Showing blood pressure, last 30 days, mornings")
 - [x] **VOICE-07**: Unrecognized or ambiguous commands produce a clear, non-technical error/clarification message instead of silent failure
@@ -124,8 +124,8 @@
 | SEC-02 | Phase 3 | Complete |
 | VOICE-01 | Phase 4 | Complete |
 | VOICE-02 | Phase 4 | Complete |
-| VOICE-03 | Phase 4 | Pending |
-| VOICE-04 | Phase 4 | Pending |
+| VOICE-03 | Phase 4 | Complete |
+| VOICE-04 | Phase 4 | Complete |
 | VOICE-05 | Phase 4 | Complete |
 | ACC-03 | Phase 4 | Complete |
 | API-03 | Phase 5 | Pending |

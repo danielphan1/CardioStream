@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Data Foundation** - Repo + privacy setup, schema/migrations, idempotent OMRON ETL with tested derivations, 132 readings seeded (completed 2026-07-13)
 - [x] **Phase 2: Read API & Dashboard** - `/readings` + `/stats` endpoints and the four-chart dashboard with manual filters, stats strip, and readings table (completed 2026-07-17)
 - [x] **Phase 3: Agent via Text Input** - Claude-powered `/agent` endpoint with validated JSON commands, driven by the text input box (completed 2026-07-20)
-- [ ] **Phase 4: Voice Capture** - Continuous-listening mic sessions on Chrome/Edge and Safari/iOS with unmissable state indicators and live transcript
+- [x] **Phase 4: Voice Capture** - Continuous-listening mic sessions on Chrome/Edge and Safari/iOS with unmissable state indicators and live transcript (completed 2026-07-21)
 - [ ] **Phase 5: Upload, Auth Gate & Deployment** - Caregiver upload page, shared-password Bearer gate on every route, Vercel + Railway deploy, smoke test
 
 ## Phase Details
@@ -107,7 +107,7 @@ Plans:
   4. Every chart switch and every filter available in the manual UI can be triggered by voice — command schema and UI filters verified in lockstep, so all primary actions are voice-operable
   5. A 10-minute continuous session with long silences keeps listening (recognizer restarts survive silence timeouts and error loops without caregiver intervention)
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 **UI hint**: yes
 
 Plans:
@@ -121,7 +121,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 04-03-PLAN.md — CommandBar mic button + 3-state indicator + live transcript, iOS test checklist, and the real-device restart-loop + 10-min-session human-verify checkpoint
+- [x] 04-03-PLAN.md — CommandBar mic button + 3-state indicator + live transcript, iOS test checklist, and the real-device restart-loop + 10-min-session human-verify checkpoint
 
 ### Phase 5: Upload, Auth Gate & Deployment
 
@@ -149,5 +149,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
 | 3. Agent via Text Input | 4/4 | Complete    | 2026-07-21 |
-| 4. Voice Capture | 2/3 | In Progress|  |
+| 4. Voice Capture | 3/3 | Complete   | 2026-07-21 |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |
