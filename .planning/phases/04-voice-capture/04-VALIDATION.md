@@ -41,14 +41,14 @@ created: 2026-07-21
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 1 | VOICE-01, VOICE-05, ACC-03 | T-04-01 | Wake-word gate keeps room speech off the network; no transcript logging | unit | `cd frontend && npx vitest run src/lib/voice.test.ts` | ✅ | ⬜ pending |
-| 04-01-02 | 01 | 1 | VOICE-01 | T-04-SC | Native recognizer typed; zero new packages | type | `cd frontend && npx tsc -b` | ✅ | ⬜ pending |
-| 04-01-03 | 01 | 1 | VOICE-05, ACC-03 | T-04-01 | Every UI filter voice-reachable; FE↔BE vocabulary drift breaks build | unit | `cd frontend && npx vitest run src/lib/agent-parity.test.ts` | ✅ | ⬜ pending |
-| 04-02-01 | 02 | 2 | VOICE-01, VOICE-02 | T-04-01 / T-04-02 | Only extractCommand output crosses to /agent; newest-wins seq guard | unit | `cd frontend && npx vitest run src/hooks/useVoiceCommand.test.ts` | ✅ | ⬜ pending |
-| 04-02-02 | 02 | 2 | VOICE-01 | T-04-03 / T-04-05 | Backoff caps restart storm; fatal→paused; visibility guard | unit | `cd frontend && npx vitest run src/hooks/useVoiceCommand.test.ts` | ✅ | ⬜ pending |
-| 04-03-01 | 03 | 3 | VOICE-02, VOICE-03, VOICE-04 | T-04-04 / T-04-05 | Only fixed copy renders; LISTENING state unmissable; ≥48px target | unit | `cd frontend && npx vitest run src/components/CommandBar.test.tsx && npx tsc -b` | ✅ | ⬜ pending |
-| 04-03-02 | 03 | 3 | VOICE-01 | — | Device-test script authored (SC1/SC5) | file | `test -f .planning/phases/04-voice-capture/04-IOS-TEST-CHECKLIST.md && grep -Eqi '10[- ]?min' .planning/phases/04-voice-capture/04-IOS-TEST-CHECKLIST.md` | ⬜ | ⬜ pending |
-| 04-03-03 | 03 | 3 | VOICE-01 | T-04-05 | Real-device restart loop + 10-min session; no covert listening after stop | manual | checkpoint:human-verify (04-IOS-TEST-CHECKLIST.md) | ⬜ | ⬜ pending |
+| 04-01-01 | 01 | 1 | VOICE-01, VOICE-05, ACC-03 | T-04-01 | Wake-word gate keeps room speech off the network; no transcript logging | unit | `cd frontend && npx vitest run src/lib/voice.test.ts` | ✅ | ✅ green |
+| 04-01-02 | 01 | 1 | VOICE-01 | T-04-SC | Native recognizer typed; zero new packages | type | `cd frontend && npx tsc -b` | ✅ | ✅ green |
+| 04-01-03 | 01 | 1 | VOICE-05, ACC-03 | T-04-01 | Every UI filter voice-reachable; FE↔BE vocabulary drift breaks build | unit | `cd frontend && npx vitest run src/lib/agent-parity.test.ts` | ✅ | ✅ green |
+| 04-02-01 | 02 | 2 | VOICE-01, VOICE-02 | T-04-01 / T-04-02 | Only extractCommand output crosses to /agent; newest-wins seq guard | unit | `cd frontend && npx vitest run src/hooks/useVoiceCommand.test.ts` | ✅ | ✅ green |
+| 04-02-02 | 02 | 2 | VOICE-01 | T-04-03 / T-04-05 | Backoff caps restart storm; fatal→paused; visibility guard | unit | `cd frontend && npx vitest run src/hooks/useVoiceCommand.test.ts` | ✅ | ✅ green |
+| 04-03-01 | 03 | 3 | VOICE-02, VOICE-03, VOICE-04 | T-04-04 / T-04-05 | Only fixed copy renders; LISTENING state unmissable; ≥48px target | unit | `cd frontend && npx vitest run src/components/CommandBar.test.tsx && npx tsc -b` | ✅ | ✅ green |
+| 04-03-02 | 03 | 3 | VOICE-01 | — | Device-test script authored (SC1/SC5) | file | `test -f .planning/phases/04-voice-capture/04-IOS-TEST-CHECKLIST.md && grep -Eqi '10[- ]?min' .planning/phases/04-voice-capture/04-IOS-TEST-CHECKLIST.md` | ✅ | ✅ green |
+| 04-03-03 | 03 | 3 | VOICE-01 | T-04-05 | Real-device restart loop + 10-min session; no covert listening after stop | manual | checkpoint:human-verify (04-IOS-TEST-CHECKLIST.md) | ✅ | ✅ approved on-device 2026-07-21 |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -82,3 +82,23 @@ created: 2026-07-21
 - [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** approved 2026-07-21
+
+---
+
+## Validation Audit 2026-07-21
+
+Retroactive Nyquist audit of the existing VALIDATION.md against the live codebase (all Per-Task Map commands re-run).
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+**Evidence:**
+- `npx vitest run` — 144/144 passed (11 files); 87 of those are the phase-4 voice tests (`voice.test.ts`, `agent-parity.test.ts`, `useVoiceCommand.test.ts`, `CommandBar.test.tsx`).
+- `npx tsc -b` — exit 0 (type gate clean).
+- All 6 phase-4 source/test artifacts present on disk; `04-IOS-TEST-CHECKLIST.md` present with the 10-min session reference.
+- Manual checkpoint 04-03-03 confirmed APPROVED on-device 2026-07-21 (per 04-03-SUMMARY.md).
+
+All 7 automated verifications run green and the single manual-only verification is signed off. Statuses updated from `⬜ pending` → `✅ green`. Phase remains `nyquist_compliant: true`.
