@@ -413,22 +413,27 @@ Not applicable — this is an additive greenfield feature phase (new hook + UI o
 | A5 | iOS detection via platform/userAgent heuristic is reliable enough to pick `supportsContinuous` | Code Examples | LOW — worst case desktop uses the loop too (works, slightly noisier restart) |
 | A6 | The mutate-level `onSuccess` of a superseded voice command can still fire late (hence the seq guard is required) | Pitfall 7 | LOW — if TanStack already suppressed it, the guard is merely redundant/harmless |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+*All three are dispositioned below; the plans implement each recommendation. Q1 is genuinely device-only and is routed to the blocking `checkpoint:human-verify` in 04-03 Task 3 (SC1/SC5) — "resolved" here means the planning disposition is settled, not that the device result is in.*
 
 1. **Does the iOS restart loop actually survive a 10-minute session with long silences?** (SC5)
    - Known: iOS auto-stops on silence; the `onend` loop is the community-standard workaround.
    - Unclear: whether repeated restarts eventually hit a permission re-prompt, buffer clog, or background-suspend on a real device.
    - Recommendation: dedicate the **first plan of the phase** to a minimal on-device spike (tap → say a command → go silent 60s → say another) on a real iPhone before building the full UI. This is the STATE.md blocker made concrete.
+   - **RESOLVED:** device-only, no CI substitute — routed to the blocking on-device checkpoint (04-03 Task 3) executing 04-IOS-TEST-CHECKLIST.md steps 2–3. The full restart loop is unit-covered in CI via `FakeRecognition` ahead of the device test.
 
 2. **Final wake-word choice.**
    - Known: `"dashboard"` is a reasonable default; single named constant makes it swappable.
    - Unclear: real false-trigger rate in Chris's home.
    - Recommendation: ship `"dashboard"`, treat the constant as a UAT tuning knob.
+   - **RESOLVED:** ship `WAKE_WORD = "dashboard"` as a single named constant (D-04), implemented in 04-01 (`lib/voice.ts`); false-trigger rate is a UAT tuning knob recorded at the device checkpoint.
 
 3. **Pause-duration threshold for end-of-command.**
    - Known: the `final` result *is* the pause signal from the recognizer; no manual timer needed on most engines.
    - Unclear: whether iOS emits `isFinal` promptly or needs a supplementary silence timer.
    - Recommendation: rely on `isFinal` first; add a fallback silence timer only if device testing shows finals are slow.
+   - **RESOLVED:** rely on `isFinal` (no manual silence timer) — reflected in 04-02/04-03; a fallback timer is added only if the device checkpoint shows finals are slow on iOS.
 
 ## Environment Availability
 
