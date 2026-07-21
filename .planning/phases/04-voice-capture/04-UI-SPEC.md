@@ -1,10 +1,11 @@
 ---
 phase: 4
 slug: voice-capture
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-21
+reviewed_at: 2026-07-21
 ---
 
 # Phase 4 — UI Design Contract
@@ -41,7 +42,8 @@ Reuses the Phase 2 8-point scale verbatim (all multiples of 4). No new values.
 |-------|-------|---------------------|
 | xs | 4px | Icon-to-word gap inside a state indicator |
 | sm | 8px | Gap between mic icon and its label; gap between spinner and "WORKING…" |
-| md | 16px | Gap between the mic button and the text input inside the bar form (`gap-3` = 12px is the existing bar gap; keep it) |
+| gap-3 (inherited) | 12px | The existing CommandBar form gap (3×4, grid-aligned). Reused as-is when the mic button joins the flex row — do not introduce a new gap value. Documented here so it does not read as a stray off-scale exception. |
+| md | 16px | Gap between the mic button and the text input inside the bar form (defers to the inherited `gap-3` above where the bar form already sets it) |
 | lg | 24px | Vertical breathing above the transcript region if needed |
 | xl | 32px | (unchanged page rhythm — not touched this phase) |
 | 2xl | 48px | **Minimum interactive target** — the mic button is ≥48px (`min-h-12` + `min-w-12`), matching the existing Send button and every FilterBar control |
@@ -166,14 +168,14 @@ No component registries are used this phase. The only net-new runtime dependency
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS (non-blocking FLAG resolved — inherited `gap-3`/12px now documented in the scale)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-07-21
 
 ---
 
