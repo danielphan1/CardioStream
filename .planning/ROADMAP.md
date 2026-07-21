@@ -135,6 +135,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
-| 3. Agent via Text Input | 4/4 | Complete   | 2026-07-20 |
+| 3. Agent via Text Input | 4/4 | Complete    | 2026-07-21 |
 | 4. Voice Capture | 0/TBD | Not started | - |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |

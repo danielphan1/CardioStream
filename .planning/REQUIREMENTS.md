@@ -21,8 +21,8 @@
 - [ ] **API-01**: `GET /readings` returns readings filterable by start_date, end_date, am_pm, bp_category
 - [ ] **API-02**: `GET /stats/summary` returns averages, min/max, reading counts, and per-category counts for the current filter set
 - [ ] **API-03**: `POST /upload` accepts an OMRON export file, runs the ETL, and returns a result summary (readings added, duplicates skipped, total count, latest reading date)
-- [ ] **API-04**: `POST /agent` accepts a transcript/text command, calls Claude, and returns a Pydantic-validated JSON dashboard command — raw model output is never executed or passed through unvalidated
-- [ ] **API-05**: Agent date ranges are symbolic (e.g., last_n_days) and resolved server-side in local time — Claude never computes absolute dates
+- [x] **API-04**: `POST /agent` accepts a transcript/text command, calls Claude, and returns a Pydantic-validated JSON dashboard command — raw model output is never executed or passed through unvalidated
+- [x] **API-05**: Agent date ranges are symbolic (e.g., last_n_days) and resolved server-side in local time — Claude never computes absolute dates
 
 ### Dashboard
 
@@ -45,10 +45,10 @@
 - [ ] **VOICE-03**: Unmissable listening-state indicator — Chris can always tell from a distance whether the dashboard is listening, processing, or stopped
 - [ ] **VOICE-04**: Live transcript of recognized speech is displayed while listening
 - [ ] **VOICE-05**: Voice commands can switch charts and apply any filter available in the UI (chart, date range, AM/PM, category) — command schema and UI filters stay in lockstep
-- [ ] **VOICE-06**: Every applied command produces a large-text confirmation of what changed ("Showing blood pressure, last 30 days, mornings")
-- [ ] **VOICE-07**: Unrecognized or ambiguous commands produce a clear, non-technical error/clarification message instead of silent failure
-- [ ] **VOICE-08**: Text input box drives the same agent endpoint as voice (fallback for Firefox, noise, recognition failure)
-- [ ] **VOICE-09**: The agent describes what the dashboard shows and never gives medical advice, diagnosis, or alarm-style interpretation
+- [x] **VOICE-06**: Every applied command produces a large-text confirmation of what changed ("Showing blood pressure, last 30 days, mornings")
+- [x] **VOICE-07**: Unrecognized or ambiguous commands produce a clear, non-technical error/clarification message instead of silent failure
+- [x] **VOICE-08**: Text input box drives the same agent endpoint as voice (fallback for Firefox, noise, recognition failure)
+- [x] **VOICE-09**: The agent describes what the dashboard shows and never gives medical advice, diagnosis, or alarm-style interpretation
 
 ### Accessibility
 
@@ -59,7 +59,7 @@
 ### Security & Privacy
 
 - [ ] **SEC-01**: Shared-password gate protects the deployed site; authenticated via Bearer token (not cookies) enforced on every API route including /agent and /upload
-- [ ] **SEC-02**: Anthropic API key lives in backend environment variables only; all Claude calls go through the backend
+- [x] **SEC-02**: Anthropic API key lives in backend environment variables only; all Claude calls go through the backend
 - [ ] **SEC-03**: No analytics trackers, no third-party data sharing; database not publicly exposed
 
 ### Deployment
@@ -115,13 +115,13 @@
 | DASH-11 | Phase 2 | Pending |
 | ACC-01 | Phase 2 | Partial |
 | ACC-02 | Phase 2 | Complete |
-| API-04 | Phase 3 | Pending |
-| API-05 | Phase 3 | Pending |
-| VOICE-06 | Phase 3 | Pending |
-| VOICE-07 | Phase 3 | Pending |
-| VOICE-08 | Phase 3 | Pending |
-| VOICE-09 | Phase 3 | Pending |
-| SEC-02 | Phase 3 | Pending |
+| API-04 | Phase 3 | Complete |
+| API-05 | Phase 3 | Complete |
+| VOICE-06 | Phase 3 | Complete |
+| VOICE-07 | Phase 3 | Complete |
+| VOICE-08 | Phase 3 | Complete |
+| VOICE-09 | Phase 3 | Complete |
+| SEC-02 | Phase 3 | Complete |
 | VOICE-01 | Phase 4 | Pending |
 | VOICE-02 | Phase 4 | Pending |
 | VOICE-03 | Phase 4 | Pending |
