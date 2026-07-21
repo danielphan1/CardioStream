@@ -16,13 +16,14 @@ Chris can see and explore his own health data entirely by voice — voice intera
 
 - [x] ETL pipeline ingests OMRON Excel exports, computes derived fields, loads idempotently — Validated in Phase 1: Data Foundation (real export format verified 2026-07-14; SQLite locally, same SQLAlchemy models target Postgres in prod)
 - [x] Database seeded with the existing 132 real readings (Feb 22 – Jun 13, 2025) — Validated in Phase 1: seed added=132, re-run 0/132 unchanged; golden-master diff waived (reference CSV does not exist), derived fields covered by 83-test boundary suite
+- [x] Claude-powered `/agent` endpoint: text → structured-outputs command → Pydantic-validated JSON → dashboard filter updates — Validated in Phase 3: Agent via Text Input (constraint-free Literal schema, server-side symbolic date resolution, triple never-500 backstop, rate-limited + auth-gated route, key backend-only per SEC-02; live-model accuracy pending human UAT in 03-HUMAN-UAT.md)
+- [x] Text input box (CommandBar) as the voice fallback surface — Validated in Phase 3: full idle/working/confirmed/clarify/error state machine, aria-live confirmation, ≥48px targets, drives the same filter store voice will reuse in Phase 4
 
 ### Active
 
 - [ ] FastAPI endpoints: readings (filterable), summary stats, file upload, agent
 - [ ] React dashboard replicating the four Tableau charts (BP Timeline, Pulse Trend, BP Categories, AM vs PM)
-- [ ] Voice control: mic capture → transcript → Claude agent → validated JSON command → dashboard updates
-- [ ] Text input box as voice fallback
+- [ ] Voice control: mic capture → transcript → Claude agent → validated JSON command → dashboard updates (agent half done in Phase 3; mic capture is Phase 4)
 - [ ] Accessibility: large targets (≥48px), high contrast, ≥18px body text, keyboard navigable, no drag/hover-only/precision interactions
 - [ ] Simple shared-password gate before public deployment
 - [ ] Deployed: Vercel (frontend) + Railway or Render (backend + Postgres)
@@ -153,4 +154,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-14 after Phase 1 completion (data foundation: real data seeded, ETL verified)*
+*Last updated: 2026-07-20 after Phase 3 completion (agent via text input: `/agent` pipeline + CommandBar; live-model UAT pending)*
