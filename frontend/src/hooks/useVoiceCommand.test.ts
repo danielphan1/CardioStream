@@ -168,6 +168,102 @@ describe("useVoiceCommand newest wins (D-05)", () => {
   });
 });
 
+describe("useVoiceCommand restart resilience (D-12/D-13/D-14, Pitfall 2/5)", () => {
+  it("recoverable error + onend restarts the recognizer after backoff (D-12)", () => {
+    vi.useFakeTimers();
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+    expect(rec.start).toHaveBeenCalledTimes(1);
+
+    act(() => rec.emitError("no-speech")); // recoverable — not fatal
+    act(() => rec.onend?.()); // browser auto-stopped on silence (Pitfall 1)
+    expect(result.current.state).toBe("listening"); // no flicker to off
+
+    act(() => vi.advanceTimersByTime(200)); // computeBackoff(0) === 200ms
+    expect(rec.start).toHaveBeenCalledTimes(2); // invisible restart
+    vi.useRealTimers();
+  });
+
+  it("fatal not-allowed enters paused with no restart (D-14)", () => {
+    vi.useFakeTimers();
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    act(() => rec.emitError("not-allowed")); // fatal — permission denied
+    expect(result.current.state).toBe("paused");
+    expect(result.current.message).toMatch(/paused/i); // fixed copy, never raw error
+    expect(result.current.supported).toBe(true); // session closed, capability intact
+
+    act(() => rec.onend?.()); // onend fires after the fatal error
+    act(() => vi.advanceTimersByTime(5000));
+    expect(rec.start).toHaveBeenCalledTimes(1); // NO restart on fatal
+    vi.useRealTimers();
+  });
+
+  it("onend after an explicit stop() does not restart — stays off (D-13)", () => {
+    vi.useFakeTimers();
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    act(() => result.current.stop());
+    expect(result.current.state).toBe("off");
+
+    act(() => rec.onend?.()); // late onend from the aborted session
+    act(() => vi.advanceTimersByTime(5000));
+    expect(rec.start).toHaveBeenCalledTimes(1); // no relaunch (D-13)
+    vi.useRealTimers();
+  });
+
+  it("backoff grows on rapid restarts and resets after a successful final result", () => {
+    vi.useFakeTimers();
+    mockPostAgent.mockReturnValue(new Promise<AgentReply>(() => {})); // hold in-flight
+    const { result } = renderVoice();
+    act(() => result.current.start()); // start #1
+    const rec = FakeRecognition.instances[0];
+
+    // First silence cycle → computeBackoff(0) === 200ms.
+    act(() => rec.onend?.());
+    act(() => vi.advanceTimersByTime(200));
+    expect(rec.start).toHaveBeenCalledTimes(2);
+
+    // Second silence, still no result → computeBackoff(1) === 400ms (grown).
+    act(() => rec.onend?.());
+    act(() => vi.advanceTimersByTime(200)); // not yet
+    expect(rec.start).toHaveBeenCalledTimes(2);
+    act(() => vi.advanceTimersByTime(200)); // 400ms total
+    expect(rec.start).toHaveBeenCalledTimes(3);
+
+    // A real final result resets the consecutive-restart counter → back to base.
+    act(() => rec.emitResult("dashboard show pulse", true));
+    act(() => rec.onend?.());
+    act(() => vi.advanceTimersByTime(200)); // base backoff again after reset
+    expect(rec.start).toHaveBeenCalledTimes(4);
+    vi.useRealTimers();
+  });
+
+  it("holds the restart loop while the tab is hidden, resumes on return (Pitfall 2)", () => {
+    vi.useFakeTimers();
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    // Background the tab: a silence onend must NOT schedule a restart.
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+    act(() => rec.onend?.());
+    act(() => vi.advanceTimersByTime(2000));
+    expect(rec.start).toHaveBeenCalledTimes(1); // held while hidden
+
+    // Foreground again → visibilitychange resumes the session honestly.
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    expect(rec.start).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+});
+
 describe("useVoiceCommand unsupported fallback (VOICE-08)", () => {
   it("is a no-op with state 'off' when SpeechRecognition is unavailable (Firefox)", () => {
     delete (window as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;

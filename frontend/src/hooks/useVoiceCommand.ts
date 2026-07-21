@@ -19,6 +19,8 @@ import { ApiError } from "../api/client";
 import type { AgentReply } from "../api/types";
 import { applyAgentFilters, composeConfirmation } from "../lib/agent";
 import {
+  classifyError,
+  computeBackoff,
   extractCommand,
   getSpeechRecognitionCtor,
   isSpeechSupported,
@@ -42,6 +44,10 @@ const RATE_LIMIT_COPY =
   "One moment — a lot of commands at once. Try again in a few seconds.";
 const OFFLINE_COPY =
   "Couldn't reach the assistant. The buttons below still work. Try: 'show my pulse'.";
+// D-14 fatal fallback: a mic-permission/hardware error closes the session until a
+// fresh start(). Fixed friendly copy only — the raw recognizer error NEVER renders.
+const PAUSED_COPY =
+  "Voice is paused — tap the mic to start listening again.";
 
 type UseVoiceCommandOptions = { latestReading: string | null };
 
@@ -86,6 +92,32 @@ export function useVoiceCommand({
       clearTimeout(restartTimerRef.current);
       restartTimerRef.current = null;
     }
+  }
+
+  // D-14: a fatal recognizer error closes the session without restarting. armed
+  // goes false so onend can't relaunch the loop; the bar shows fixed copy only.
+  function enterPaused() {
+    armedRef.current = false;
+    clearRestartTimer();
+    setVoiceState("paused");
+    setMessage(PAUSED_COPY);
+  }
+
+  // D-12 invisible restart: schedule rec.start() after the growing backoff. Held
+  // while the tab is hidden (Pitfall 2); InvalidStateError swallowed (Pitfall 5).
+  function scheduleRestart() {
+    clearRestartTimer();
+    const delay = computeBackoff(consecutiveRestartsRef.current++);
+    restartTimerRef.current = setTimeout(() => {
+      restartTimerRef.current = null;
+      if (!armedRef.current) return; // stopped mid-wait → do not relaunch (D-13)
+      if (typeof document !== "undefined" && document.hidden) return; // backgrounded
+      try {
+        recRef.current?.start();
+      } catch {
+        /* InvalidStateError: already running → no-op (Pitfall 5) */
+      }
+    }, delay);
   }
 
   // D-05 newest-wins: a superseded command's late reply must NOT touch the store.
@@ -162,6 +194,25 @@ export function useVoiceCommand({
       rec.lang = "en-US";
       rec.continuous = supportsContinuous(); // honored on desktop; iOS ignores it
       rec.onresult = handleResult;
+      // Fatal → paused (D-14); recoverable → do nothing here, onend drives restart.
+      rec.onerror = (event) => {
+        if (classifyError(event.error) === "fatal") {
+          lastErrorFatalRef.current = true;
+          enterPaused();
+        }
+      };
+      // D-12/D-13: the recognizer stops on silence (iOS Pitfall 1) or after any
+      // error. While still armed and not fatal, invisibly relaunch with backoff;
+      // an explicit stop() (armed=false) leaves the session off — no flicker.
+      rec.onend = () => {
+        if (!armedRef.current) return; // caregiver tapped stop → stay off (D-13)
+        if (lastErrorFatalRef.current) {
+          enterPaused();
+          return;
+        }
+        if (typeof document !== "undefined" && document.hidden) return; // held hidden
+        scheduleRestart();
+      };
       recRef.current = rec;
     }
 
@@ -183,9 +234,30 @@ export function useVoiceCommand({
     recRef.current?.abort();
   }
 
-  // Teardown: clear any pending restart and release the recognizer on unmount.
+  // Pitfall 2: never listen in the background. When the tab hides, drop the pending
+  // restart and hold; when it returns to the foreground and we're still armed, resume
+  // the loop honestly. Listeners + the restart timer + the recognizer are all torn
+  // down on unmount (mirrors the FilterBar/CommandBar cleanup convention).
   useEffect(() => {
+    function onVisibility() {
+      const hidden = typeof document !== "undefined" && document.hidden;
+      if (hidden) {
+        clearRestartTimer(); // background → stop trying to restart
+        return;
+      }
+      if (armedRef.current && !lastErrorFatalRef.current) {
+        try {
+          recRef.current?.start(); // foreground again → resume the session
+        } catch {
+          /* InvalidStateError: already running → no-op (Pitfall 5) */
+        }
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", onVisibility);
     return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", onVisibility);
       clearRestartTimer();
       recRef.current?.abort();
     };
