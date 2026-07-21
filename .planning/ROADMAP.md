@@ -107,7 +107,7 @@ Plans:
   4. Every chart switch and every filter available in the manual UI can be triggered by voice — command schema and UI filters verified in lockstep, so all primary actions are voice-operable
   5. A 10-minute continuous session with long silences keeps listening (recognizer restarts survive silence timeouts and error loops without caregiver intervention)
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 **UI hint**: yes
 
 Plans:
@@ -117,7 +117,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 04-02-PLAN.md — useVoiceCommand hook: singleton recognizer lifecycle, onend/onerror restart loop with backoff, wake-word gating, newest-wins seq guard (reuses /agent unchanged)
+- [x] 04-02-PLAN.md — useVoiceCommand hook: singleton recognizer lifecycle, onend/onerror restart loop with backoff, wake-word gating, newest-wins seq guard (reuses /agent unchanged)
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -149,5 +149,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Foundation | 8/8 | Complete    | 2026-07-14 |
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
 | 3. Agent via Text Input | 4/4 | Complete    | 2026-07-21 |
-| 4. Voice Capture | 1/3 | In Progress|  |
+| 4. Voice Capture | 2/3 | In Progress|  |
 | 5. Upload, Auth Gate & Deployment | 0/TBD | Not started | - |

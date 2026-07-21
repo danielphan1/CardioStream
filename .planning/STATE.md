@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-21T09:06:41.814Z"
+last_updated: "2026-07-21T18:35:24.490Z"
 last_activity: 2026-07-21
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
   percent: 60
 ---
 
@@ -25,11 +25,11 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 ## Current Position
 
 Phase: 04 (voice-capture) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-07-21
 
-Progress: [█████████░] 91%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [█████████░] 91%
 | Phase 01 P08 | 7min | 3 tasks | 3 files |
 | Phase 02 P07 | 6min | 3 tasks | 3 files |
 | Phase 04 P01 | 5min | 3 tasks | 6 files |
+| Phase 04 P02 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 04]: 04-01: WAKE_WORD='dashboard' single named constant (D-04) — swappable in one place as a UAT tuning knob
 - [Phase ?]: [Phase 04]: 04-01: computeBackoff exponential 200ms base / 2000ms cap (D-12); unknown recognizer errors default recoverable, bounded by the cap
 - [Phase ?]: [Phase 04]: 04-01: VOICE-05/ACC-03 parity enforced by bidirectional frontend<->backend token equality read from schemas.py on disk — drift on either side breaks the build
+- [Phase ?]: [Phase 04]: 04-02: useVoiceCommand holds ONE recognizer started in the caregiver tap and kept armed via an explicit onend/onerror backoff restart loop; fatal errors enter paused (D-14), stale replies dropped by a monotonic seq guard (D-05), zero new fetch (reuses useAgent().mutate)
 
 ### Pending Todos
 
@@ -98,6 +100,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-21T09:06:20.205Z
-Stopped at: Phase 4 UI-SPEC approved
+Last session: 2026-07-21T18:35:24.484Z
+Stopped at: Completed 04-02-PLAN.md (useVoiceCommand hook)
 Resume file: None

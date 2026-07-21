@@ -41,7 +41,7 @@
 ### Voice & Agent
 
 - [x] **VOICE-01**: Mic capture via Web Speech API works on Chrome/Edge and Safari/iOS (webkit-prefixed, restart-loop handling)
-- [ ] **VOICE-02**: Continuous listening session — caregiver taps the large mic button once; Chris then issues multiple commands hands-free
+- [x] **VOICE-02**: Continuous listening session — caregiver taps the large mic button once; Chris then issues multiple commands hands-free
 - [ ] **VOICE-03**: Unmissable listening-state indicator — Chris can always tell from a distance whether the dashboard is listening, processing, or stopped
 - [ ] **VOICE-04**: Live transcript of recognized speech is displayed while listening
 - [x] **VOICE-05**: Voice commands can switch charts and apply any filter available in the UI (chart, date range, AM/PM, category) — command schema and UI filters stay in lockstep
@@ -123,7 +123,7 @@
 | VOICE-09 | Phase 3 | Complete |
 | SEC-02 | Phase 3 | Complete |
 | VOICE-01 | Phase 4 | Complete |
-| VOICE-02 | Phase 4 | Pending |
+| VOICE-02 | Phase 4 | Complete |
 | VOICE-03 | Phase 4 | Pending |
 | VOICE-04 | Phase 4 | Pending |
 | VOICE-05 | Phase 4 | Complete |
