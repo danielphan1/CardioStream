@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-07-07)
 
 Phase: 04 (voice-capture) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: BLOCKED at human-verify checkpoint (04-03 Task 3) — Tasks 1 & 2 complete and committed; awaiting real-iPhone (Safari) + desktop Chrome/Edge on-device verification of the restart loop + 10-minute session before the plan can close
 Last activity: 2026-07-21
 
 Progress: [██████████] 95%
@@ -101,5 +101,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-07-21T18:35:24.484Z
-Stopped at: Completed 04-02-PLAN.md (useVoiceCommand hook)
-Resume file: None
+Stopped at: 04-03 Tasks 1 & 2 complete (CommandBar voice UI + iOS test checklist, committed); PAUSED at Task 3 blocking human-verify checkpoint — needs a real iPhone
+Resume file: .planning/phases/04-voice-capture/04-IOS-TEST-CHECKLIST.md
