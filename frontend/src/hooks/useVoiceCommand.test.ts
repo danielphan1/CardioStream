@@ -262,6 +262,23 @@ describe("useVoiceCommand restart resilience (D-12/D-13/D-14, Pitfall 2/5)", () 
     expect(rec.start).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
+
+  it("aborts a LIVE recognizer when the tab hides — no background listening (T-04-05)", () => {
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+    expect(rec.abort).not.toHaveBeenCalled();
+
+    // The recognizer is actively running (continuous, no onend fired) when the
+    // caregiver switches tabs/apps. The hidden branch must stop the live session,
+    // not merely cancel a future restart.
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+    expect(rec.abort).toHaveBeenCalled(); // mic released, no audio in the background
+
+    // Restore for later tests.
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+  });
 });
 
 describe("useVoiceCommand unsupported fallback (VOICE-08)", () => {

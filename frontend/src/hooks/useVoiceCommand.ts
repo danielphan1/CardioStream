@@ -243,6 +243,7 @@ export function useVoiceCommand({
       const hidden = typeof document !== "undefined" && document.hidden;
       if (hidden) {
         clearRestartTimer(); // background → stop trying to restart
+        recRef.current?.abort(); // stop the LIVE session — never listen in the background (T-04-05)
         return;
       }
       if (armedRef.current && !lastErrorFatalRef.current) {
