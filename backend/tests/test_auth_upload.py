@@ -105,9 +105,7 @@ def test_requires_token_malformed_header_401(real_gate_client) -> None:
 
 def test_requires_token_tampered_token_401(real_gate_client) -> None:
     """A garbage/tampered token fails the signature check → 401 (itsdangerous BadData)."""
-    resp = real_gate_client.get(
-        "/readings", headers={"Authorization": "Bearer not-a-real-token"}
-    )
+    resp = real_gate_client.get("/readings", headers={"Authorization": "Bearer not-a-real-token"})
     assert resp.status_code == 401
 
 
@@ -117,8 +115,53 @@ def test_valid_token_unlocks_gated_route(real_gate_client) -> None:
     from app.auth import _serializer
 
     token = _serializer().dumps("authorized")
-    resp = real_gate_client.get(
-        "/readings", headers={"Authorization": f"Bearer {token}"}
-    )
+    resp = real_gate_client.get("/readings", headers={"Authorization": f"Bearer {token}"})
     assert resp.status_code == 200
     get_settings.cache_clear()
+
+
+# --- Task 3: /auth route (ungated, rate-limited, end-to-end) -------------------
+
+
+@pytest.fixture
+def auth_password(monkeypatch):
+    """Set a known SITE_PASSWORD for the /auth tests and clear the settings cache.
+
+    Mirrors the existing env-override discipline: cache_clear() before and after
+    so the module-level get_settings() lru_cache reflects the patched env.
+    """
+    monkeypatch.setenv("SITE_PASSWORD", "correct-horse")
+    get_settings.cache_clear()
+    yield "correct-horse"
+    get_settings.cache_clear()
+
+
+def test_auth_correct_password_issues_token_unlocks_gated(real_gate_client, auth_password) -> None:
+    """Correct password → 200 with a token that then unlocks GET /readings (200)."""
+    resp = real_gate_client.post("/auth", json={"password": auth_password})
+    assert resp.status_code == 200
+    token = resp.json()["token"]
+    assert token
+
+    gated = real_gate_client.get("/readings", headers={"Authorization": f"Bearer {token}"})
+    assert gated.status_code == 200
+
+
+def test_auth_wrong_password_401(real_gate_client, auth_password) -> None:
+    """A wrong password returns 401 (constant-time compare mismatch)."""
+    resp = real_gate_client.post("/auth", json={"password": "wrong"})
+    assert resp.status_code == 401
+
+
+def test_auth_is_ungated(real_gate_client, auth_password) -> None:
+    """/auth is reachable WITHOUT a Bearer token (it issues the token)."""
+    resp = real_gate_client.post("/auth", json={"password": auth_password})
+    assert resp.status_code == 200
+
+
+def test_auth_rate_limit_sixth_request_429(real_gate_client, auth_password) -> None:
+    """The 6th /auth request within a minute is rate-limited → 429 (Pitfall 5)."""
+    for _ in range(5):
+        real_gate_client.post("/auth", json={"password": "wrong"})
+    sixth = real_gate_client.post("/auth", json={"password": "wrong"})
+    assert sixth.status_code == 429
