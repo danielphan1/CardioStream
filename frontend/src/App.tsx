@@ -15,11 +15,13 @@ import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
 import { Header } from "./components/Header";
+import { LoginGate } from "./components/LoginGate";
 import { ReadingsTable } from "./components/ReadingsTable";
 import { StatsStrip } from "./components/StatsStrip";
 import { useReadings } from "./hooks/useReadings";
 import { useResolvedFilters, useStats } from "./hooks/useStats";
 import { presetLabel } from "./lib/dates";
+import { useAuth } from "./store/auth";
 import { useFilters } from "./store/filters";
 
 /** Skeleton hero + mini placeholders for the initial load only — after
@@ -37,7 +39,11 @@ function ChartSkeleton() {
   );
 }
 
-function App() {
+/** The authenticated dashboard. Extracted from App so that ALL data hooks
+ *  (useReadings/useStats via useResolvedFilters) live behind the auth gate —
+ *  when there is no token this component never mounts, so no request fires
+ *  before authentication (D-01, T-05-10). */
+function Dashboard() {
   const resolved = useResolvedFilters();
   const readings = useReadings(resolved);
   const stats = useStats(resolved);
@@ -125,6 +131,15 @@ function App() {
       </main>
     </div>
   );
+}
+
+/** Auth gate (D-01): until a token exists the app renders ONLY the LoginGate —
+ *  no header, no dashboard chrome, and crucially no data hooks mount (the
+ *  Dashboard tree is not rendered), so nothing fetches before authentication. */
+function App() {
+  const token = useAuth((s) => s.token);
+  if (token === null) return <LoginGate />;
+  return <Dashboard />;
 }
 
 export default App;

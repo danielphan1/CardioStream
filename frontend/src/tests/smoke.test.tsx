@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { StatsSummary } from '../api/types'
 import App from '../App'
+import { useAuth } from '../store/auth'
 
 const zeroStats: StatsSummary = {
   count: 0,
@@ -26,6 +27,9 @@ const zeroStats: StatsSummary = {
 }
 
 beforeEach(() => {
+  // App is now gated (D-01) — seed a token so the dashboard renders instead of
+  // the LoginGate. The gate itself is covered in LoginGate.test.tsx.
+  useAuth.setState({ token: 'test-token' })
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
@@ -42,6 +46,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  useAuth.setState({ token: null })
 })
 
 test('renders the assembled dashboard heading', async () => {
