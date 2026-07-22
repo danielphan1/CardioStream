@@ -35,9 +35,7 @@ def verify_token(authorization: str | None = Header(default=None)) -> None:
     same opaque 401.
     """
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
     token = authorization.removeprefix("Bearer ").strip()
     try:
         _serializer().loads(token)  # NO max_age -> non-expiring (D-02)
