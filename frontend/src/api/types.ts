@@ -47,6 +47,26 @@ export type StatsSummary = {
   latest_reading: string | null; // UNFILTERED newest reading (D-11 / preset anchor)
 };
 
+// ── Upload wire contract (API-03 / DASH-10) — byte-identical mirror of the
+// LOCKED backend etl.py IngestSummary / RejectedRow (Phase 1 D-06 lock; the
+// backend returns this shape verbatim from POST /upload). Counts, reasons, and
+// dates only — never a blood-pressure value (T-1-04). `reason` is field+problem
+// only (value-free), safe to render. `latest` is the DB's newest reading after
+// the merge as naive-local ISO (DATA-05), or null when the DB is empty.
+export type RejectedRow = {
+  row_index: number;
+  reason: string;
+};
+
+export type IngestSummary = {
+  added: number;
+  updated: number;
+  unchanged: number;
+  rejected: RejectedRow[];
+  total: number;
+  latest: string | null;
+};
+
 // Future agent command vocabulary (RESEARCH Code Example 3)
 export type ChartId =
   | "bp_timeline"

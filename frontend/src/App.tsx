@@ -18,11 +18,13 @@ import { Header } from "./components/Header";
 import { LoginGate } from "./components/LoginGate";
 import { ReadingsTable } from "./components/ReadingsTable";
 import { StatsStrip } from "./components/StatsStrip";
+import { UploadPage } from "./components/UploadPage";
 import { useReadings } from "./hooks/useReadings";
 import { useResolvedFilters, useStats } from "./hooks/useStats";
 import { presetLabel } from "./lib/dates";
 import { useAuth } from "./store/auth";
 import { useFilters } from "./store/filters";
+import { useView } from "./store/view";
 
 /** Skeleton hero + mini placeholders for the initial load only — after
  *  first load keepPreviousData keeps charts on screen (no spinner). */
@@ -133,12 +135,28 @@ function Dashboard() {
   );
 }
 
+/** The caregiver upload surface (D-05, post-auth). The Header persists across
+ *  both views; UploadPage mounts no data hooks so switching here fires no fetch.
+ *  Foam background matches the dashboard's min-h-screen wrapper. */
+function UploadView() {
+  return (
+    <div className="min-h-screen bg-[var(--color-foam)]">
+      <Header />
+      <UploadPage />
+    </div>
+  );
+}
+
 /** Auth gate (D-01): until a token exists the app renders ONLY the LoginGate —
  *  no header, no dashboard chrome, and crucially no data hooks mount (the
- *  Dashboard tree is not rendered), so nothing fetches before authentication. */
+ *  Dashboard tree is not rendered), so nothing fetches before authentication.
+ *  Once authed, a zustand view swap (D-05, no react-router) chooses between the
+ *  dashboard and the caregiver upload page. */
 function App() {
   const token = useAuth((s) => s.token);
+  const view = useView((s) => s.view);
   if (token === null) return <LoginGate />;
+  if (view === "upload") return <UploadView />;
   return <Dashboard />;
 }
 
