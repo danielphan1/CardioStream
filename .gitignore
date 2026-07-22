@@ -16,3 +16,6 @@ __pycache__/
 
 # OS
 .DS_Store
+
+# GSD agent worktrees (transient)
+.claude/worktrees/
