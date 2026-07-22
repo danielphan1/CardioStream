@@ -136,9 +136,12 @@ describe("LoginGate keyboard ritual (D-04, SEC-01)", () => {
     fireEvent.change(input, { target: { value: "wrong" } });
     fireEvent.click(screen.getByRole("button", { name: "Enter" }));
 
-    expect(
-      await screen.findByText("That password didn't work. Please try again."),
-    ).toBeInTheDocument();
+    // UI-SPEC bolds the first sentence, so the copy spans a <span> + text node;
+    // assert on the notice's combined textContent rather than a single node.
+    const notice = await screen.findByRole("alert");
+    expect(notice.textContent).toContain(
+      "That password didn't work. Please try again.",
+    );
     // No status code / raw error text ever surfaces (D-10).
     expect(screen.queryByText(/401/)).not.toBeInTheDocument();
     expect(screen.queryByText(/API request failed/)).not.toBeInTheDocument();
