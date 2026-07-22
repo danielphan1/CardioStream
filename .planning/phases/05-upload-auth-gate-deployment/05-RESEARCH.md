@@ -427,10 +427,17 @@ token_secret: str = "dev-insecure-secret"   # overridden in prod; dev default ke
 ```bash
 # Source: SC2 "curl-verified"; run against the deployed Railway base URL
 BASE="https://<app>.railway.app"
-for path in /readings /stats/summary /agent /upload; do
-  code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE$path")
-  [ "$code" = "401" ] || { echo "FAIL $path -> $code (expected 401)"; exit 1; }
-done
+# Curl each route with its REAL method — verify_token is a router-level
+# dependency (not middleware), so a method mismatch returns 405 BEFORE the gate.
+while read -r method path; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" -X "$method" "$BASE$path")
+  [ "$code" = "401" ] || { echo "FAIL $method $path -> $code (expected 401)"; exit 1; }
+done <<'ROUTES'
+GET /readings
+GET /stats/summary
+POST /agent
+POST /upload
+ROUTES
 # wrong password -> 401
 curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/auth" \
   -H 'Content-Type: application/json' -d '{"password":"wrong"}' | grep -q 401 || exit 1
@@ -440,7 +447,7 @@ TOKEN=$(curl -s -X POST "$BASE/auth" -H 'Content-Type: application/json' \
 curl -s -o /dev/null -w "%{http_code}" "$BASE/readings" -H "Authorization: Bearer $TOKEN" | grep -q 200
 echo "PASS"
 ```
-(`/readings`/`/stats` are GET but the ETL/agent are POST; the loop uses POST purely to assert the gate fires before method handling — a 401 precedes any 405. If a route returns 405 instead, switch that line to its real method; the gate still returns 401 first.)
+(Curl each route with its REAL method — `GET /readings`, `GET /stats/summary`, `POST /agent`, `POST /upload`. `verify_token` is a **router-level dependency, not middleware**, so it runs only on a full method match: a method mismatch — e.g. a POST to a GET-only route — returns **405 BEFORE the gate ever runs**, not 401. Using each route's real method is what proves the auth gate fires; do NOT rely on a POST-to-everything loop, which yields 405 on the GET-only routes and would fail the 401 assertion on a correctly-built app.)
 
 ## State of the Art
 
@@ -464,19 +471,22 @@ echo "PASS"
 | A4 | The real prod decision is to seed the 132 readings OR start empty | Runtime State Inventory | Medium — affects what the dashboard shows on first live load; **planner must surface this as an explicit decision task**, not assume. |
 | A5 | Upload accepts `.xlsx` only (ETL uses `pd.read_excel`/openpyxl) | Architecture Pattern 3 | Low — matches `parse_omron`; if OMRON also exports `.csv`, the extension guard + a `read_csv` branch would be needed, but the ETL today is xlsx-only. Confirm accepted extensions in planning (Claude's discretion D-10). |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Seed prod DB or start empty?**
+   - **RESOLVED:** made an explicit `checkpoint:decision` in Plan 06 Task 1 (seed the 132 readings vs. start empty).
    - What we know: dev SQLite has the 132 seed readings; prod Postgres will be empty at first deploy.
    - What's unclear: whether the caregiver expects the historical data present on day one.
    - Recommendation: make it an explicit planning decision (A4). Seeding is a one-time `python -m app.seed` (or equivalent) against the normalized prod URL right after `alembic upgrade head`.
 
 2. **`.csv` OMRON exports?**
+   - **RESOLVED:** MVP accepts `.xlsx` only — enforced by the `.xlsx`-only extension guard in Plan 03 (backend `POST /upload`) and Plan 05 (frontend `accept=".xlsx"`); anything else gets the friendly "not an OMRON export" rejection.
    - What we know: `parse_omron` uses `pd.read_excel` (xlsx only).
    - What's unclear: whether the real OMRON export is ever `.csv`.
    - Recommendation: accept `.xlsx` for MVP (matches the ETL); document the extension guard message ("This doesn't look like an OMRON export") as the catch-all for anything else.
 
 3. **Where does the shared `limiter` live?**
+   - **RESOLVED:** Plan 02 imports the existing single `limiter` from `app/routers/agent.py` (no second Limiter), keeping `app.state.limiter` one instance.
    - What we know: it's currently defined in `app/routers/agent.py` and imported by `main.py`.
    - What's unclear: whether importing it into `auth.py` from `agent.py` is acceptable coupling.
    - Recommendation: fine to import from `agent.py` (keeps one instance); or lift `limiter` to a small `app/ratelimit.py` if the planner prefers a neutral home. Either keeps `app.state.limiter` single.

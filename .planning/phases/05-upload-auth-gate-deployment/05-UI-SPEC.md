@@ -125,7 +125,7 @@ Voice: calm, first-person-neutral, sentence case, no exclamation marks, no techn
 | Success summary (D-09) | Assembled from the locked `IngestSummary` as plain sentences (see assembly rules below) — e.g. "Added 12 new readings. 3 were already on file. 0 skipped. Your data now goes through June 13, 2025." |
 | Rejected-rows summary | Folded into the summary's "{n} skipped." sentence; when n > 0 a disclosure appears (D-10) |
 | Reject disclosure toggle | "Show which rows" (collapsed default) / "Hide details" (expanded) — `ChevronDown` rotates; `aria-expanded` wired |
-| Rejected-row line (each) | "Row {row_number}: {reason}." — reason comes verbatim from the ETL's value-free `RejectedRow` (e.g. "missing systolic value", "the date could not be read") — never echoes a health value |
+| Rejected-row line (each) | "Row {row_index}: {reason}." — `row_index` and `reason` are the two fields of the ETL's value-free `RejectedRow` (backend/app/etl.py); `reason` comes verbatim (e.g. "missing systolic value", "the date could not be read") — never echoes a health value |
 | Non-OMRON / unparseable file (D-10) | "This doesn't look like an OMRON export. Nothing was added. Please choose the .xlsx file you exported from your OMRON app." (notice treatment; no summary rendered — the file ingested nothing) |
 | Generic upload failure (network / mapped non-401 error) | "Something went wrong reading that file. Nothing was added — please try again." (notice treatment; never a raw traceback or status code) |
 | Return-to-dashboard affordance | "Back to dashboard" (header view-toggle, see Layout) |
