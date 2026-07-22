@@ -22,7 +22,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.auth import verify_token
 from app.config import get_settings
-from app.routers import agent, readings, stats
+from app.routers import agent, auth, readings, stats
 from app.routers.agent import limiter
 
 app = FastAPI(title="Chris's Health Dashboard API")
@@ -38,6 +38,9 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+# /auth is the ONE ungated route — it issues the token every gated router
+# requires (chicken-and-egg), so it MUST NOT carry Depends(verify_token).
+app.include_router(auth.router)
 app.include_router(readings.router, dependencies=[Depends(verify_token)])
 app.include_router(stats.router, dependencies=[Depends(verify_token)])
 app.include_router(agent.router, dependencies=[Depends(verify_token)])
