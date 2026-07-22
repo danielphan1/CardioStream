@@ -17,6 +17,7 @@ one). Coverage:
 from __future__ import annotations
 
 import pytest
+from fastapi.testclient import TestClient
 
 from app.config import Settings, get_settings
 from app.routers.agent import limiter
@@ -29,6 +30,24 @@ def _reset_limiter():
     limiter.reset()
     yield
     limiter.reset()
+
+
+@pytest.fixture
+def real_gate_client(session):
+    """A TestClient that exercises the REAL ``verify_token`` dependency.
+
+    Only ``get_db`` is overridden (so DB-backed routes hit the in-memory
+    session); ``verify_token`` is intentionally NOT overridden here, unlike the
+    conftest ``client`` fixture — this module must prove the gate actually
+    enforces (401 without a token, 200 with a valid one).
+    """
+    from app.deps import get_db
+    from app.main import app
+
+    app.dependency_overrides[get_db] = lambda: session
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
 
 
 # --- Task 1: config -----------------------------------------------------------
@@ -66,4 +85,40 @@ def test_serializer_round_trip_signs_and_verifies() -> None:
 
     token = _serializer().dumps("authorized")
     assert _serializer().loads(token) == "authorized"
+    get_settings.cache_clear()
+
+
+# --- Task 2: verify_token enforcement -----------------------------------------
+
+
+def test_requires_token_missing_header_401(real_gate_client) -> None:
+    """A gated route with no Authorization header returns 401 (not 403)."""
+    resp = real_gate_client.get("/readings")
+    assert resp.status_code == 401
+
+
+def test_requires_token_malformed_header_401(real_gate_client) -> None:
+    """An Authorization header without the ``Bearer `` prefix returns 401."""
+    resp = real_gate_client.get("/readings", headers={"Authorization": "Basic abc"})
+    assert resp.status_code == 401
+
+
+def test_requires_token_tampered_token_401(real_gate_client) -> None:
+    """A garbage/tampered token fails the signature check → 401 (itsdangerous BadData)."""
+    resp = real_gate_client.get(
+        "/readings", headers={"Authorization": "Bearer not-a-real-token"}
+    )
+    assert resp.status_code == 401
+
+
+def test_valid_token_unlocks_gated_route(real_gate_client) -> None:
+    """A token from the shared serializer unlocks a gated route (200)."""
+    get_settings.cache_clear()
+    from app.auth import _serializer
+
+    token = _serializer().dumps("authorized")
+    resp = real_gate_client.get(
+        "/readings", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert resp.status_code == 200
     get_settings.cache_clear()
