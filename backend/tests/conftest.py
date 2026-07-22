@@ -105,10 +105,12 @@ def client(session):
     """TestClient wired to the in-memory session via dependency override."""
     from fastapi.testclient import TestClient
 
+    from app.auth import verify_token
     from app.deps import get_db
     from app.main import app
 
     app.dependency_overrides[get_db] = lambda: session
+    app.dependency_overrides[verify_token] = lambda: None
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
