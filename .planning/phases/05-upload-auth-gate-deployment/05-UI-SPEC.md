@@ -1,10 +1,11 @@
 ---
 phase: 5
 slug: upload-auth-gate-deployment
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-07-22
+reviewed_at: 2026-07-22
 ---
 
 # Phase 5 — UI Design Contract
