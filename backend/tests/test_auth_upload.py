@@ -165,3 +165,106 @@ def test_auth_rate_limit_sixth_request_429(real_gate_client, auth_password) -> N
         real_gate_client.post("/auth", json={"password": "wrong"})
     sixth = real_gate_client.post("/auth", json={"password": "wrong"})
     assert sixth.status_code == 429
+
+
+# --- Plan 05-03: POST /upload (gated, idempotent, never-500) -------------------
+# These reuse the real-verify_token `real_gate_client` (so the 401 gate is
+# genuinely exercised) plus the `omron_xlsx` fixture from conftest. `valid_token`
+# mints a token from the shared serializer; `_upload` posts a file the way a
+# browser would (multipart field name "file" matches the route parameter).
+
+_VALID_ROWS = [
+    {"Date": "2025-03-01", "Time": "8:05 AM", "Systolic": 118, "Diastolic": 76, "Pulse": 64},
+    {"Date": "2025-03-01", "Time": "9:30 PM", "Systolic": 132, "Diastolic": 84, "Pulse": 70},
+]
+
+
+@pytest.fixture
+def valid_token() -> str:
+    """A Bearer token signed by the shared serializer (unlocks gated routes)."""
+    get_settings.cache_clear()
+    from app.auth import _serializer
+
+    token = _serializer().dumps("authorized")
+    yield token
+    get_settings.cache_clear()
+
+
+def _upload(client, path, token, *, filename=None, content=None):
+    """POST a file to /upload as multipart; returns the response."""
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    name = filename or path.name
+    if content is not None:
+        payload = content
+    else:
+        payload = path.read_bytes()
+    return client.post(
+        "/upload",
+        files={"file": (name, payload, "application/octet-stream")},
+        headers=headers,
+    )
+
+
+def test_upload_valid_xlsx_ingests(real_gate_client, valid_token, omron_xlsx) -> None:
+    """A valid OMRON .xlsx with a token → 200 + IngestSummary with added > 0."""
+    path = omron_xlsx(_VALID_ROWS)
+    resp = _upload(real_gate_client, path, valid_token)
+    assert resp.status_code == 200
+    body = resp.json()
+    # Locked IngestSummary shape (D-06) — verbatim, not wrapped.
+    assert set(body) == {"added", "updated", "unchanged", "rejected", "total", "latest"}
+    assert body["added"] == 2
+    assert body["total"] == 2
+
+
+def test_upload_reupload_is_idempotent_noop(real_gate_client, valid_token, omron_xlsx) -> None:
+    """Re-uploading the same file → added=0, rows counted unchanged (D-08)."""
+    path = omron_xlsx(_VALID_ROWS)
+    first = _upload(real_gate_client, path, valid_token)
+    assert first.status_code == 200
+    assert first.json()["added"] == 2
+
+    second = _upload(real_gate_client, path, valid_token)
+    assert second.status_code == 200
+    body = second.json()
+    assert body["added"] == 0
+    assert body["unchanged"] == 2
+    assert body["total"] == 2
+
+
+def test_upload_non_xlsx_filename_400(real_gate_client, valid_token, omron_xlsx) -> None:
+    """A file whose name is not .xlsx → 400 'not-omron', nothing ingested."""
+    path = omron_xlsx(_VALID_ROWS)
+    resp = _upload(real_gate_client, path, valid_token, filename="omron_export.csv")
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "not-omron"
+
+    readings = real_gate_client.get(
+        "/readings", headers={"Authorization": f"Bearer {valid_token}"}
+    )
+    assert readings.json() == []
+
+
+def test_upload_garbage_xlsx_400_never_500(real_gate_client, valid_token) -> None:
+    """A .xlsx that is not a real OMRON export → 400, nothing ingested, never 500."""
+    resp = _upload(
+        real_gate_client,
+        None,
+        valid_token,
+        filename="garbage.xlsx",
+        content=b"this is not a real xlsx file, just bytes",
+    )
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "not-omron"
+
+    readings = real_gate_client.get(
+        "/readings", headers={"Authorization": f"Bearer {valid_token}"}
+    )
+    assert readings.json() == []
+
+
+def test_upload_without_token_401(real_gate_client, omron_xlsx) -> None:
+    """POST /upload with no Bearer token → 401 (gated like every data route)."""
+    path = omron_xlsx(_VALID_ROWS)
+    resp = _upload(real_gate_client, path, token=None)
+    assert resp.status_code == 401
