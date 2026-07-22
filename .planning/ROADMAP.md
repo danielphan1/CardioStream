@@ -136,7 +136,7 @@ Plans:
   4. End-to-end smoke test passes on the deployed site: log in, view all charts, issue a voice or text command that updates the dashboard, upload a file
   5. No analytics trackers or third-party data sharing anywhere; the database is not publicly reachable and platform logs contain no health values or transcripts
 
-**Plans:** 4/7 plans executed
+**Plans:** 5/7 plans executed
 **UI hint**: yes
 
 Plans:
@@ -152,7 +152,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 
-- [ ] 05-03-PLAN.md — Upload backend: thin gated POST /upload over the existing ETL, IngestSummary verbatim, idempotent + never-500 rejection
+- [x] 05-03-PLAN.md — Upload backend: thin gated POST /upload over the existing ETL, IngestSummary verbatim, idempotent + never-500 rejection
 
 **Wave 4** *(blocked on Waves 2-3)*
 
@@ -173,4 +173,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
 | 3. Agent via Text Input | 4/4 | Complete    | 2026-07-21 |
 | 4. Voice Capture | 3/3 | Complete    | 2026-07-21 |
-| 5. Upload, Auth Gate & Deployment | 4/7 | In Progress|  |
+| 5. Upload, Auth Gate & Deployment | 5/7 | In Progress|  |
