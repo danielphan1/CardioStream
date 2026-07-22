@@ -22,7 +22,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.auth import verify_token
 from app.config import get_settings
-from app.routers import agent, auth, readings, stats
+from app.routers import agent, auth, readings, stats, upload
 from app.routers.agent import limiter
 
 app = FastAPI(title="Chris's Health Dashboard API")
@@ -44,3 +44,4 @@ app.include_router(auth.router)
 app.include_router(readings.router, dependencies=[Depends(verify_token)])
 app.include_router(stats.router, dependencies=[Depends(verify_token)])
 app.include_router(agent.router, dependencies=[Depends(verify_token)])
+app.include_router(upload.router, dependencies=[Depends(verify_token)])
