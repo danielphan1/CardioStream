@@ -136,7 +136,7 @@ Plans:
   4. End-to-end smoke test passes on the deployed site: log in, view all charts, issue a voice or text command that updates the dashboard, upload a file
   5. No analytics trackers or third-party data sharing anywhere; the database is not publicly reachable and platform logs contain no health values or transcripts
 
-**Plans:** 2/7 plans executed
+**Plans:** 4/7 plans executed
 **UI hint**: yes
 
 Plans:
@@ -147,8 +147,8 @@ Plans:
 
 **Wave 2** *(02 blocked on 01; 05 blocked on 04)*
 
-- [ ] 05-02-PLAN.md — Auth backend: real itsdangerous verify_token (401 not 403, no-expiry), ungated rate-limited POST /auth, Settings + psycopg3/CORS config gotchas
-- [ ] 05-05-PLAN.md — Upload UI: view-swap store, UploadPage (immediate ingest → plain-language summary + rejects), discreet Header Upload/Log-out controls + logout confirm
+- [x] 05-02-PLAN.md — Auth backend: real itsdangerous verify_token (401 not 403, no-expiry), ungated rate-limited POST /auth, Settings + psycopg3/CORS config gotchas
+- [x] 05-05-PLAN.md — Upload UI: view-swap store, UploadPage (immediate ingest → plain-language summary + rejects), discreet Header Upload/Log-out controls + logout confirm
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -173,4 +173,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Read API & Dashboard | 7/7 | Complete   | 2026-07-17 |
 | 3. Agent via Text Input | 4/4 | Complete    | 2026-07-21 |
 | 4. Voice Capture | 3/3 | Complete    | 2026-07-21 |
-| 5. Upload, Auth Gate & Deployment | 2/7 | In Progress|  |
+| 5. Upload, Auth Gate & Deployment | 4/7 | In Progress|  |
