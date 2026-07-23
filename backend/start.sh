@@ -28,7 +28,7 @@ find_python() {
     if "$p" -c "import alembic.config, uvicorn" >/dev/null 2>&1; then
       printf '%s\n' "$p"; return 0
     fi
-  done < <(find /app /opt /root /usr/local -maxdepth 6 -type f -name 'python*' \
+  done < <(find /app /opt /root /usr/local /mise /nix -maxdepth 8 -type f -name 'python*' \
              -path '*/bin/*' 2>/dev/null)
   return 1
 }
