@@ -38,6 +38,21 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+@app.get("/health")
+def health() -> dict[str, str | bool]:
+    """Ungated liveness + agent-config probe (deploy diagnostic).
+
+    ``agent_configured`` mirrors the agent's own key gate
+    (``service._get_client`` returns ``None`` when the key is empty): it is
+    ``True`` iff the RUNNING container read a non-empty ``ANTHROPIC_API_KEY`` at
+    boot. config.py caches settings at import, so this reflects exactly what the
+    live process sees — letting a deploy be checked for the keyless "assistant
+    isn't connected" degradation without shell access. Returns a BOOLEAN only,
+    never the key or any part of it (SEC-02).
+    """
+    return {"status": "ok", "agent_configured": bool(get_settings().anthropic_api_key)}
+
+
 # /auth is the ONE ungated route — it issues the token every gated router
 # requires (chicken-and-egg), so it MUST NOT carry Depends(verify_token).
 app.include_router(auth.router)
