@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: milestone-complete
-last_updated: "2026-08-05T00:00:00.000Z"
-last_activity: 2026-08-05 -- 05-07 verified (DEPL-02 + SEC-03); milestone v1.0 complete (29/29 plans)
+status: Awaiting next milestone
+last_updated: "2026-08-05T19:24:50.119Z"
+last_activity: 2026-08-05 — Milestone v1.0 completed and archived
 progress:
   total_phases: 5
   completed_phases: 5
@@ -20,16 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Milestone v1.0 COMPLETE — ready to archive (/gsd-complete-milestone)
+**Current focus:** v1.0 shipped & archived. Next: v2 — activate the paid Claude API (agent inert in prod on $0 credits) + make the failure visible + post-MVP views.
 
 ## Current Position
 
-Phase: 05 (upload-auth-gate-deployment) — COMPLETE (5 of 5 phases)
-Plan: 7 of 7 — COMPLETE (05-07-SUMMARY written)
-Status: Milestone v1.0 COMPLETE — all 29 plans done; deployed, verified private and working
-Last activity: 2026-08-05 -- 05-07 DEPL-02 + SEC-03 signed off; T-05-20 & T-05-21 mitigated on the live deployment
-
-Progress: [██████████] 100% (29 of 29 plans)
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-08-05 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -88,6 +86,7 @@ None yet.
 
 ### Blockers/Concerns
 
+- [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and the never-500 backstop degrades it to `unclear`. `/health` shows `agent_configured:true` (key present) but calls fail. Voice/text control — the product's core value — does not function until credits are added (billing-only fix; ~$5 covers thousands of haiku commands). Deferred to v2 by user decision.
 - [Phase 1]: Real OMRON export format (serial dates, Date/Time columns) must be verified against the actual file the user adds to the repo
 - [Phase 3]: Verify Anthropic structured-outputs API surface (GA `messages.parse()` vs beta header) at implementation time; Pydantic re-validation stays regardless
 - [Phase 4]: ~~iOS Safari voice behavior is MEDIUM confidence — test restart loop on a real iPhone~~ RESOLVED 2026-07-21: the 04-03 Task 3 on-device human-verify checkpoint was APPROVED — restart loop + 10-min continuous session pass on a real iPhone (Safari); core flow passes on desktop Chrome/Edge.
@@ -95,11 +94,16 @@ None yet.
 
 ## Deferred Items
 
-Items acknowledged and carried forward from previous milestone close:
+Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| *(none)* | | | |
+| known-limitation | **Agent inert in prod** — Anthropic account has $0 credits / no payment method; every `/agent` call 400s → degrades to `unclear`. Billing-only fix, no code change. Live 35-fixture eval → 4/35. | → v2 | v1.0 close 2026-08-05 |
+| verification | 03-VERIFICATION — live-model behavioral eval (`human_needed`) | → v2 (same no-credits blocker) | v1.0 close 2026-08-05 |
+| uat | 03-HUMAN-UAT — 3 agent live-model scenarios | blocked → v2 (no credits) | v1.0 close 2026-08-05 |
+| debug | frontend-page-not-loading | diagnosed; resolved in practice (app deployed & rendering live) | v1.0 close 2026-08-05 |
+| uat | 01-HUMAN-UAT | partial, 0 pending scenarios (effectively complete) | v1.0 close 2026-08-05 |
+| verification | 02-VERIFICATION | "gaps" were remaining-phase-scope (dashboard UI), since built & verified live | v1.0 close 2026-08-05 |
 
 ## Session Continuity
 
@@ -107,3 +111,7 @@ Last session: 2026-08-05
 Stopped at: Milestone v1.0 COMPLETE. Plan 05-07 finished — smoke.sh PASS run against the live Railway URL (401 on every real-method route + wrong-pw 401 + correct-pw→token→200); DEPL-02 live-site walk signed off; SEC-03 audit signed off (no trackers [static sweep + live Network panel], Postgres private [no public TCP proxy], Railway logs clean of health values/transcripts/secrets). 05-07-SUMMARY.md written. Threats T-05-20 and T-05-21 mitigated on the live deployment.
 Next action: run /gsd-complete-milestone to archive v1.0 (optional), and commit the phase-05 completion docs (commit-on-request — not yet committed).
 Resume file: none — milestone complete.
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

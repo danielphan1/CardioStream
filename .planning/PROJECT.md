@@ -16,17 +16,20 @@ Chris can see and explore his own health data entirely by voice — voice intera
 
 - [x] ETL pipeline ingests OMRON Excel exports, computes derived fields, loads idempotently — Validated in Phase 1: Data Foundation (real export format verified 2026-07-14; SQLite locally, same SQLAlchemy models target Postgres in prod)
 - [x] Database seeded with the existing 132 real readings (Feb 22 – Jun 13, 2025) — Validated in Phase 1: seed added=132, re-run 0/132 unchanged; golden-master diff waived (reference CSV does not exist), derived fields covered by 83-test boundary suite
-- [x] Claude-powered `/agent` endpoint: text → structured-outputs command → Pydantic-validated JSON → dashboard filter updates — Validated in Phase 3: Agent via Text Input (constraint-free Literal schema, server-side symbolic date resolution, triple never-500 backstop, rate-limited + auth-gated route, key backend-only per SEC-02; live-model accuracy pending human UAT in 03-HUMAN-UAT.md)
+- [x] Claude-powered `/agent` endpoint: text → structured-outputs command → Pydantic-validated JSON → dashboard filter updates — Validated in Phase 3 at the **code level** (constraint-free Literal schema, server-side symbolic date resolution, triple never-500 backstop, rate-limited + auth-gated route, key backend-only per SEC-02). ⚠️ Live-model accuracy **NOT** validated — the deployed agent is inert on $0 API credits (every call 400s → `unclear`; live eval 4/35). → v2 (see 03-HUMAN-UAT.md)
 - [x] Text input box (CommandBar) as the voice fallback surface — Validated in Phase 3: full idle/working/confirmed/clarify/error state machine, aria-live confirmation, ≥48px targets, drives the same filter store voice will reuse in Phase 4
+- [x] FastAPI endpoints — readings (filterable), summary stats, file upload, agent — v1.0 (Phases 2/3/5); every route Bearer-gated
+- [x] React dashboard replicating the four Tableau charts (BP Timeline, Pulse Trend, BP Categories, AM vs PM) — v1.0 (Phase 2)
+- [x] Accessibility: ≥48px targets, high contrast, ≥18px body text, keyboard navigable, no drag/hover-only/precision interactions — v1.0
+- [x] Simple shared-password gate before public deployment — v1.0 (Phase 5: signed Bearer token, 401 on every route)
+- [x] Deployed: Vercel (frontend) + Railway (backend + private Postgres) — v1.0 (Phase 5); SEC-03 verified private (no trackers, private DB, clean logs)
+- [⚠️] Voice/text control (mic/text → transcript → Claude agent → validated JSON → dashboard) — BUILT and verified at the code + deterministic-test level (Phases 3–4), but **NOT validated end-to-end in production: the Anthropic account has $0 credits, so every `/agent` call degrades to `unclear`.** → v2
 
-### Active
+### Active (v2)
 
-- [ ] FastAPI endpoints: readings (filterable), summary stats, file upload, agent
-- [ ] React dashboard replicating the four Tableau charts (BP Timeline, Pulse Trend, BP Categories, AM vs PM)
-- [ ] Voice control: mic capture → transcript → Claude agent → validated JSON command → dashboard updates (agent half done in Phase 3; mic capture is Phase 4)
-- [ ] Accessibility: large targets (≥48px), high contrast, ≥18px body text, keyboard navigable, no drag/hover-only/precision interactions
-- [ ] Simple shared-password gate before public deployment
-- [ ] Deployed: Vercel (frontend) + Railway or Render (backend + Postgres)
+- [ ] Activate the paid Claude API (add billing/credits) so the natural-language agent works in production — billing-only, no code change (~$5 covers thousands of haiku commands)
+- [ ] Make the agent/billing failure visible: `/health` actually pings Claude, and the UI surfaces "assistant temporarily unavailable" instead of silently degrading every command to `unclear`
+- [ ] Post-MVP (promote from Out of Scope as v2 scope decides): spoken replies (SpeechSynthesis), data entry by voice, labs/incidents/procedures views
 
 ### Out of Scope
 
@@ -154,4 +157,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-07-20 after Phase 3 completion (agent via text input: `/agent` pipeline + CommandBar; live-model UAT pending)*
+*Last updated: 2026-08-05 after v1.0 MVP milestone — shipped & archived. Dashboard, upload, auth gate, and deployment are live and verified private (SEC-03). The natural-language agent is built and verified in code but **inert in production pending paid Claude API credits** — deferred to v2.*
