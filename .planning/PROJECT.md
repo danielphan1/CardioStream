@@ -10,6 +10,18 @@ This is also a portfolio project for the builder, demonstrating data engineering
 
 Chris can see and explore his own health data entirely by voice — voice interaction is the primary input method, not a gimmick. Every feature must be operable by voice; mouse/keyboard is the fallback, not the default.
 
+## Current Milestone: v1.1 — Polish & Records
+
+**Goal:** Make the shipped MVP more complete and more usable **without needing the paid API** — close the voice loop with spoken replies, surface the health records the schema already anticipates, refresh the visuals, and turn the silent agent outage into an honest "unavailable" state.
+
+**Target features:**
+- **Spoken replies** — the dashboard reads its confirmation aloud via Web SpeechSynthesis, closing the hands-free loop for Chris.
+- **Labs / incidents / procedures views** — read views + accessible manual entry for the three future tables (migrated-but-empty since v1.0).
+- **Agent failure made visible** — real agent-availability detection; the UI shows "assistant temporarily unavailable" instead of silently answering "didn't catch that."
+- **Overall visual refresh** — modernize theme, typography, spacing, and color across all screens, with accessibility preserved.
+
+**Explicitly NOT in v1.1:** activating the paid Claude API, and voice/text data-entry via the agent — both stay deferred (the NL agent is billing-gated from v1.0).
+
 ## Requirements
 
 ### Validated
@@ -25,11 +37,17 @@ Chris can see and explore his own health data entirely by voice — voice intera
 - [x] Deployed: Vercel (frontend) + Railway (backend + private Postgres) — v1.0 (Phase 5); SEC-03 verified private (no trackers, private DB, clean logs)
 - [⚠️] Voice/text control (mic/text → transcript → Claude agent → validated JSON → dashboard) — BUILT and verified at the code + deterministic-test level (Phases 3–4), but **NOT validated end-to-end in production: the Anthropic account has $0 credits, so every `/agent` call degrades to `unclear`.** → v2
 
-### Active (v2)
+### Active (v1.1 — Polish & Records)
 
-- [ ] Activate the paid Claude API (add billing/credits) so the natural-language agent works in production — billing-only, no code change (~$5 covers thousands of haiku commands)
-- [ ] Make the agent/billing failure visible: `/health` actually pings Claude, and the UI surfaces "assistant temporarily unavailable" instead of silently degrading every command to `unclear`
-- [ ] Post-MVP (promote from Out of Scope as v2 scope decides): spoken replies (SpeechSynthesis), data entry by voice, labs/incidents/procedures views
+- [ ] Spoken replies — dashboard reads its confirmation aloud (Web SpeechSynthesis), with a mute/quiet toggle; privacy-safe (confirmation copy only)
+- [ ] Labs / incidents / procedures — read views + accessible manual entry for the three migrated-but-empty future tables
+- [ ] Agent availability made visible — real liveness detection; "assistant temporarily unavailable" state instead of silently degrading every command to `unclear`
+- [ ] Overall visual refresh — modernized theme / typography / spacing / color across all screens, accessibility preserved (≥48px, ≥18px, high contrast, keyboard)
+
+### Deferred (needs the paid Claude API — future milestone)
+
+- [ ] Activate the paid Claude API so the natural-language agent works in production (billing-only, no code change)
+- [ ] Voice/text data entry via the agent ("log a reading of 120 over 80")
 
 ### Out of Scope
 
@@ -157,4 +175,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-05 after v1.0 MVP milestone — shipped & archived. Dashboard, upload, auth gate, and deployment are live and verified private (SEC-03). The natural-language agent is built and verified in code but **inert in production pending paid Claude API credits** — deferred to v2.*
+*Last updated: 2026-08-05 — v1.1 (Polish & Records) started. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 focuses on no-API polish: spoken replies, records views, agent-availability visibility, and an overall visual refresh.*
