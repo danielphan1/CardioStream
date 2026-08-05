@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-07-22T08:57:25.213Z"
-last_activity: 2026-07-22 -- Phase 05 execution started
+status: milestone-complete
+last_updated: "2026-08-05T00:00:00.000Z"
+last_activity: 2026-08-05 -- 05-07 verified (DEPL-02 + SEC-03); milestone v1.0 complete (29/29 plans)
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 29
-  completed_plans: 22
-  percent: 76
+  completed_plans: 29
+  percent: 100
 ---
 
 # Project State
@@ -20,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-07-07)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Phase 05 — upload-auth-gate-deployment
+**Current focus:** Milestone v1.0 COMPLETE — ready to archive (/gsd-complete-milestone)
 
 ## Current Position
 
-Phase: 05 (upload-auth-gate-deployment) — EXECUTING
-Plan: 1 of 7
-Status: Executing Phase 05
-Last activity: 2026-07-22 -- Phase 05 execution started
+Phase: 05 (upload-auth-gate-deployment) — COMPLETE (5 of 5 phases)
+Plan: 7 of 7 — COMPLETE (05-07-SUMMARY written)
+Status: Milestone v1.0 COMPLETE — all 29 plans done; deployed, verified private and working
+Last activity: 2026-08-05 -- 05-07 DEPL-02 + SEC-03 signed off; T-05-20 & T-05-21 mitigated on the live deployment
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% (29 of 29 plans)
 
 ## Performance Metrics
 
@@ -103,6 +103,7 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-07-22T08:23:42.472Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-upload-auth-gate-deployment/05-UI-SPEC.md
+Last session: 2026-08-05
+Stopped at: Milestone v1.0 COMPLETE. Plan 05-07 finished — smoke.sh PASS run against the live Railway URL (401 on every real-method route + wrong-pw 401 + correct-pw→token→200); DEPL-02 live-site walk signed off; SEC-03 audit signed off (no trackers [static sweep + live Network panel], Postgres private [no public TCP proxy], Railway logs clean of health values/transcripts/secrets). 05-07-SUMMARY.md written. Threats T-05-20 and T-05-21 mitigated on the live deployment.
+Next action: run /gsd-complete-milestone to archive v1.0 (optional), and commit the phase-05 completion docs (commit-on-request — not yet committed).
+Resume file: none — milestone complete.
