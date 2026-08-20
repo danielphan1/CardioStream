@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: planning
-last_updated: "2026-08-20T07:31:01.754Z"
+last_updated: "2026-08-20T07:43:39.320Z"
 last_activity: "2026-08-20 — ROADMAP.md created for v1.1: 7 phases (6–12), 21/21 requirements mapped, 100% coverage validated; REQUIREMENTS.md traceability populated"
 progress:
   total_phases: 7
@@ -91,10 +91,10 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 ## Session Continuity
 
-Last session: 2026-08-20T07:31:01.742Z
-Stopped at: Phase 6 context gathered
+Last session: 2026-08-20T07:43:39.310Z
+Stopped at: Phase 6 UI-SPEC approved
 Next action: `/gsd-plan-phase 6` to plan Agent Availability (Liveness Detection).
-Resume file: .planning/phases/06-agent-availability-liveness-detection/06-CONTEXT.md
+Resume file: .planning/phases/06-agent-availability-liveness-detection/06-UI-SPEC.md
 
 ## Operator Next Steps
 
