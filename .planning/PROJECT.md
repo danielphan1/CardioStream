@@ -37,13 +37,13 @@ Chris can see and explore his own health data entirely by voice — voice intera
 - [x] Simple shared-password gate before public deployment — v1.0 (Phase 5: signed Bearer token, 401 on every route)
 - [x] Deployed: Vercel (frontend) + Railway (backend + private Postgres) — v1.0 (Phase 5); SEC-03 verified private (no trackers, private DB, clean logs)
 - [⚠️] Voice/text control (mic/text → transcript → Claude agent → validated JSON → dashboard) — BUILT and verified at the code + deterministic-test level (Phases 3–4), but **NOT validated end-to-end in production: the Anthropic account has $0 credits, so every `/agent` call degrades to `unclear`.** → v2
+- [x] Agent availability made visible — real liveness detection; backend passive circuit breaker + `/health.agent_reachable`, frontend `AgentStatusBanner` (proactive on load, reactive on every reply) — Validated in Phase 6: Agent Availability (Liveness Detection) (4/4 roadmap success criteria, 216 backend + 195 frontend tests; one subjective "calm, non-alarming" visual check pending human confirmation, tracked in `06-HUMAN-UAT.md`)
 
 ### Active (v1.1 — Polish & Records)
 
 - [ ] Spoken replies — dashboard reads its confirmation aloud (Web SpeechSynthesis), with a mute/quiet toggle; privacy-safe (confirmation copy only)
 - [ ] Multi-dataset filtering & overlay — toggle any combination of BP / pulse / labs / incidents / procedures on or off (voice or click); selected types overlay together on one dashboard view; includes accessible manual-entry forms for the three migrated-but-empty future tables (labs, incidents, procedures)
 - [ ] Full site guide / instructions tab — accessible, voice-navigable walkthrough of every control, filter, chart, and upload flow for Chris and caregivers
-- [ ] Agent availability made visible — real liveness detection; "assistant temporarily unavailable" state instead of silently degrading every command to `unclear`
 - [ ] Overall visual refresh — modernized theme / typography / spacing / color across all screens, accessibility preserved (≥48px, ≥18px, high contrast, keyboard)
 
 ### Deferred (needs the paid Claude API — future milestone)
@@ -176,4 +176,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-19 — v1.1 (Polish & Records) scope expanded per client feedback: multi-dataset filtering/overlay (BP, pulse, labs, incidents/hospital stays, procedures combinable in one view) and a full site guide/instructions tab replace the narrower "labs/incidents/procedures read views" item. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 focuses on no-API polish: spoken replies, multi-dataset filtering/overlay, a full site guide, agent-availability visibility, and an overall visual refresh.*
+*Last updated: 2026-08-20 — Phase 6: Agent Availability (Liveness Detection) complete. Backend passive circuit breaker + `/health.agent_reachable`, frontend `AgentStatusBanner` (proactive on page load, reactive on every `/agent` reply) replace the old silent "unclear" mislabeling of real outages. LIVE-01..04 validated; one subjective visual check ("calm, non-alarming" appearance) pending human confirmation. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 remaining: spoken replies, multi-dataset filtering/overlay, a full site guide, and an overall visual refresh.*
