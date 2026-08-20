@@ -1,175 +1,166 @@
 # Feature Research
 
-**Domain:** Personal health-tracking dashboard (single-patient BP/pulse, voice-first, caregiver-supported)
-**Researched:** 2026-07-07
-**Confidence:** MEDIUM-HIGH (BP visualization conventions and AHA categories verified against heart.org and peer-reviewed HCI research: HIGH. Voice-dashboard interaction patterns from industry VUI guides: MEDIUM. Competitor feature inventory from app stores/vendor pages: MEDIUM.)
-
-## Domain Context (What "Competitors" Do)
-
-The reference products are consumer BP apps: **OMRON Connect**, **SmartBP**, **Withings Health Mate**, **Qardio**, plus caregiver platforms (Connected Caregiver, CareClinic). Their common feature set defines table stakes for "a BP dashboard that feels complete":
-
-- Timeline chart of systolic/diastolic (dual series), pulse trend
-- Color-coded readings by AHA category (green/yellow/orange/dark-orange/red)
-- Daily/weekly/monthly averages; AM vs PM grouped summaries (SmartBP explicitly ships "7/14/30 day summary grouped by daily AM/PM averages")
-- Date-range filtering
-- Reading list/table view alongside charts
-- PDF/CSV export for sharing with a doctor
-- Manual entry + device sync (Bluetooth/Apple Health)
-
-**None of them are voice-operable.** Voice in health apps today is either Alexa/Google skills for *logging* readings ("tell My Blood Pressure Journal my reading is 125 over 80") or clinician EHR assistants (Vanderbilt VEVA). A voice-*queried* patient dashboard is genuinely uncommon — this is the project's differentiator and it's real, not incremental.
+**Domain:** Voice-first accessible personal health dashboard — in-app guide/help, multi-dataset overlay filtering, spoken (TTS) confirmations, assistant-liveness UX
+**Researched:** 2026-08-19
+**Confidence:** MEDIUM-HIGH overall. Structural/accessibility guidance (WCAG 2.x, W3C Cognitive Accessibility patterns, Alexa/Google conversation-design guides, ARIA live-region behavior) is **HIGH** confidence — official, current documentation. Claims about how specific consumer products ("comparable products") implement these four features are **MEDIUM/LOW** — few health apps publish their internal help/TTS/liveness rationale, so findings are synthesized from adjacent domains (BI dashboards for overlay toggles, smart-speaker/voice-assistant design guides for TTS and liveness, W3C cognitive-accessibility patterns for help). Flagged per-row below.
 
 ## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
-Missing any of these and the product feels worse than the Tableau prototype or a free app.
-
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| BP timeline, dual-line systolic + diastolic | Universal convention in every BP app; the visual gap between lines communicates pulse pressure | LOW | Contrasting colors per line; distinct at a glance. Recharts LineChart with two series. |
-| Pulse trend line with 60 bpm reference line | Chris's data is ~88% bradycardic; without the threshold the chart is uninterpretable | LOW | Dashed/dotted reference line, distinct color, no point markers on the reference line (established convention). Recharts `ReferenceLine`. |
-| AHA category color coding (green/yellow/orange/dark-orange/red) | heart.org "rainbow chart" is the de facto standard; every consumer BP app uses it; users and clinicians recognize it instantly | LOW | Normal <120/80 green; Elevated 120–129/<80 yellow; Stage 1 130–139/80–89 orange; Stage 2 ≥140/90 dark orange; Crisis >180/120 red. 2025 AHA/ACC guideline kept these categories. **Add Hypotension (blue/grey) — not in the AHA chart but essential here (systolic readings down to 60).** |
-| BP categories distribution chart | Users want "how often am I in each zone" — time-in-category is the single most-cited patient question in BP visualization research | LOW | Horizontal bar with AHA colors, as planned. Order bars clinically (Hypotension → Crisis), not by count. |
-| AM vs PM comparison | AHA/AMA home-monitoring protocol is built around morning + evening readings; morning-evening difference is clinically meaningful | LOW | Grouped bars of average systolic/diastolic/pulse by AM/PM. |
-| Date-range filter (incl. presets: last 7/30/90 days, all) | Every app has it; also the natural unit of voice commands ("last 30 days") | LOW | Presets matter more than a date picker for voice; picker is caregiver fallback. |
-| Summary statistics strip | Apps lead with averages; AHA guidance bases decisions on averaged readings, not single ones | LOW | Show for current filter: avg/min/max systolic, diastolic, pulse; reading count; % in each category. Recompute when filters change. |
-| Readings table (raw data view) | Trust anchor — users and doctors want to see the actual numbers behind the charts | LOW | Sortable-by-date list with category color chips. Also the only sane way to verify an upload worked. |
-| File upload for OMRON exports | The data-entry mechanism for this product (caregiver flow); OMRON Connect itself exports CSV/Excel, so imports must be forgiving | MEDIUM | Duplicate detection (idempotent re-upload of overlapping exports), clear success/error report ("added 12 readings, skipped 3 duplicates"). Upload without feedback = caregiver distrust. |
-| Visible feedback for every voice command | VUI research is unanimous: without immediate confirmation, users don't know if they were heard | MEDIUM | Three states: listening indicator (live transcript), processing, and text confirmation of what changed ("Showing blood pressure, last 30 days, mornings"). This is table stakes *given* voice is primary. |
-| Text-input fallback for commands | Voice fails (noise, Safari auto-stop, Firefox); the same agent must be reachable by typing | LOW | Same `/agent` endpoint; large input box. |
-| Shared-password gate | Real health data on a public URL; minimum viable privacy | LOW | Session cookie after password; no accounts. |
-| Large targets / high contrast / large text | The primary user cannot do precise pointing; WCAG 2.2 minimum is 24px, Apple/Google recommend 44–48px — project's 48px floor is correct | LOW-MEDIUM | Also: no hover-only info (tooltips must have tap/voice equivalents), keyboard navigable, focus visible. |
+| **[Guide]** Static, always-available reference tab covering every control/chart/filter/upload flow | PROJECT.md explicit ask; W3C cognitive-accessibility guidance favors a persistent, findable "Provide Help and Support" surface over content that appears once and vanishes — users with memory/attention differences need to re-find help repeatedly, not just on first run | LOW-MEDIUM | New route + nav entry; content-only build once other 3 features' final control set is known (ordering dependency — see below) |
+| **[Guide]** Guide is keyboard-and-voice navigable, ≥18px text, ≥48px targets, high contrast | Non-negotiable per CLAUDE.md accessibility constraint; a help feature that itself fails accessibility is a contradiction for this project | LOW | Reuses existing design tokens/typography already established in FilterBar/CommandBar |
+| **[Guide]** "What can I say" voice-command list embedded in the guide | Standard pattern across all major voice assistants (Google Home, Alexa) — discoverability of vocabulary is the #1 unmet need in voice UIs since there's no visual menu to browse (MEDIUM confidence — WebSearch-verified across multiple smart-speaker help patterns, no single authoritative spec) | LOW | Content mirrors `EXAMPLE_COMMANDS` already centralized in `backend/app/agent/copy.py` — reuse, don't fork a second list |
+| **[Overlay]** Toggle control per dataset (BP, pulse, labs, incidents, procedures) with visible on/off state conveyed by more than color (word/icon + `aria-pressed`) | Standard dashboard pattern (Metabase multi-series, amCharts legend-toggle, Grafana); this project's own D-07 rule ("word + icon + color triad, never color alone") already establishes the accessibility bar it must clear | LOW-MEDIUM | FilterBar already has an `aria-pressed` toggle-button visual language (`inactiveClass`/`activeClass`) — reuse styling, but note the **interaction semantics differ**: FilterBar's groups are single-select (radio-like); overlay toggles must be independent multi-select (checkbox-like), which is new to this codebase |
+| **[Overlay]** Manual-entry forms for labs/incidents/procedures | Migrations exist but tables are empty; overlay is meaningless with no data — PROJECT.md explicitly scopes these forms into this feature | MEDIUM | Needs 3 new Pydantic schemas + FastAPI CRUD routes + 3 accessible forms (large touch targets, no drag/precision input, per CLAUDE.md) |
+| **[Overlay]** Distinct, colorblind-safe, non-color-only visual encoding per event type on the timeline (e.g., point marker for procedures, shaded range for multi-day incidents, annotated dot for labs) | Established pattern for event-overlay-on-time-series (Grafana annotations, Wavefront/Splunk event overlays): instantaneous events → line/dot; ongoing/duration events → shaded region; clustering markers when dense | MEDIUM | BPTimeline.tsx already uses Recharts `ReferenceArea` for the 6 AHA bands, rendered *before* the Lines for z-order — new event markers must be layered deliberately (on top of lines, not competing with the existing band z-order) |
+| **[TTS]** Dashboard speaks the same confirmation text already shown visually (not new/different content) | Closes the "hands-free loop" as scoped in PROJECT.md; Alexa/Google guidance is consistent — voice output should say what the system did, not new information | LOW | `composeConfirmation()` already exists and is the single source of confirmation text (`lib/agent.ts`) — TTS should consume this, not author new copy |
+| **[TTS]** Mute / quiet toggle, persisted across sessions | Alexa Haus patterns explicitly call for user control over audio output ("review, delete, or mute recordings" pattern generalizes to "control what plays back"); also a practical need — caregivers may be in a room with a sleeping/resting patient | LOW | `localStorage` flag; must be reachable by voice too ("dashboard, mute" style command) to stay consistent with voice-first principle |
+| **[TTS]** Only ever speak one utterance at a time; cancel/replace, never queue or overlap | Universal voice-assistant UX rule — overlapping TTS is disorienting and unintelligible, especially for a user who cannot physically silence a device by pulling out headphones or covering a speaker | LOW | `speechSynthesis.cancel()` before each `speak()` call |
+| **[Liveness]** A visibly different state for "assistant unavailable" than for "didn't understand you" | This is the literal ask in PROJECT.md; Alexa/Google conversation-design guides both treat "system/service error" and "no match" as distinct error classes with different copy and different recovery paths — conflating them is called out explicitly as an anti-pattern in Google's Conversation Design guide | LOW-MEDIUM | **Backend already has 90% of this**: `/health` returns `agent_configured: bool` (ungated, ready to poll), and `service.py` already uses a *different message* (`UNAVAILABLE_MESSAGE` vs `UNCLEAR_MESSAGE`) for the keyless case. The gap: `AgentReply.kind` is `Literal["applied","clarify","refuse","unclear"]` — there is **no distinct `kind` value** for "unavailable," so the frontend can only distinguish the two cases by string-matching message text (fragile). Also, `call_claude()`'s `except (APIError, ValidationError)` path (network/timeout/schema-drift) currently degrades to the generic `UNCLEAR_MESSAGE`, not `UNAVAILABLE_MESSAGE` — i.e., transient real outages are *currently* mislabeled as "didn't catch that," which is exactly the bug this feature is meant to fix |
+| **[Liveness]** Calm, non-alarming presentation (neutral color, plain word, no siren/red banner) | Alexa Haus guidance: avoid accusatory/alarming phrasing; general vulnerable-user UX literature: "signaling humility instead of perfection... trust grows when a system acknowledges its limits" calmly, not dramatically (MEDIUM confidence — single secondary source, but consistent with the project's own established "never color alone, calm error state" convention already used for `status: "error"` in CommandBar, which explicitly uses a "!" marker, "visually calm... not a red alarm") | LOW | Directly reuse the existing calm-error visual language already in `CommandBar.tsx` rather than inventing a new "offline" visual treatment |
+| **[Liveness]** Always pair the unavailable state with a working alternative ("the buttons below still work") | Universal graceful-degradation principle (Google Cloud Architecture Center, AWS Well-Architected Reliability Pillar, Alexa error patterns): every error needs an actionable next step, never a dead end | LOW | `UNAVAILABLE_MESSAGE` copy already does this verbatim — extend the pattern to voice path and to a proactive (pre-emptive) banner, not just a post-failure message |
 
 ### Differentiators (Competitive Advantage)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Natural-language voice query of the dashboard | No consumer BP app does this. "Show me my blood pressure for the last 30 days, mornings only" → chart + filters applied. The core value and the portfolio centerpiece | HIGH | Claude intent → validated JSON command. Keep the command vocabulary small (chart, date range, AM/PM, category) — constrained schemas are the VUI best practice for reliability. |
-| Continuous listening session (one caregiver tap, then hands-free) | Standard voice UIs require a tap per utterance; Chris can't tap. This is the accessibility feature that makes voice-first real | HIGH | Chrome `continuous=true`; Safari auto-stops on silence and needs auto-restart logic. Needs an unmissable "listening / not listening" indicator — silent failure here strands the primary user. |
-| Voice-driven filter composition ("just the stage 2 readings", "compare mornings and evenings") | Turns the dashboard from four static charts into an explorable dataset — beyond what the Tableau prototype could do | MEDIUM | Falls out of the JSON command schema if filters (date, AM/PM, category) are first-class on every chart. |
-| Agent answers summary questions in text ("what's my average this month?") | Users ask questions, not just navigation commands; answering from summary stats makes the agent feel intelligent, not menu-like | MEDIUM | Route "query" intents to the summary-stats endpoint; return short text. Keep answers descriptive, never advisory (see anti-features). |
-| Hypotension + bradycardia handling as first-class categories | Consumer apps are hypertension-centric; Chris's data is dominated by *low* BP and *low* pulse. A chart tuned to his actual physiology beats every off-the-shelf app | LOW | Hypotension category color (blue), bradycardia reference line, y-axis domains that gracefully span systolic 60–211. |
-| Category color bands behind timeline charts | HCI research on home-BP visualization (JAMIA studies) found colored guideline bands were the best-received design element — "like-with-like" reading of points against zones | MEDIUM | Recharts `ReferenceArea` bands on the BP timeline (systolic zones). Optional per-line toggling to avoid clutter since systolic/diastolic thresholds differ. Strong differentiator vs. plain Tableau lines. |
-| Upload result summary for caregivers | Caregiver platforms emphasize confidence loops — the wife should immediately see "132 readings total, latest June 13" after upload | LOW | Part of the upload flow; cheap and high-trust. |
+| **[Guide]** Voice-triggered contextual help ("dashboard, what does this chart mean?" / "dashboard, help") | Goes beyond a static tab — ties directly into the wake-word architecture (`WAKE_WORD = "dashboard"`) already built, so help becomes reachable without navigating away from whatever chart Chris is looking at | MEDIUM | Needs a small deterministic/local intent match (not the paid Claude agent, which is inert) — e.g. a fixed phrase-to-help-topic table, consistent with how `extractCommand`/`classifyError` already do local pattern matching in `lib/voice.ts` |
+| **[Guide]** Contextual/staged onboarding hints shown once per new feature area (dismissible, never auto-launching a full tour) | W3C cognitive-accessibility guidance favors "gradually introducing information in a controlled sequence" over one large upfront tour, for users with attention/memory differences — but must remain fully dismissible and never block the underlying UI (see anti-feature below) | MEDIUM | Lower priority than the static guide; only worth building if the static tab alone proves insufficient in caregiver feedback |
+| **[Overlay]** Click/select an overlay marker for full detail (incident notes, procedure outcome, lab value+range) in an accessible non-hover panel | Standard event-overlay pattern (Grafana/Wavefront: click a marker for full event detail) adapted to avoid hover-only interaction, which is explicitly disallowed by CLAUDE.md | MEDIUM | Reuses the existing `ChartTooltip.tsx` pattern but must trigger on click/keyboard-focus, not hover-only, to stay compliant with the no-hover-only constraint |
+| **[TTS]** Adjustable speech rate/voice via browser `SpeechSynthesisVoice` picker | Some voice-assistant guidance recommends letting users tune output speed for comprehension differences | LOW-MEDIUM | Nice-to-have; defer unless caregiver feedback asks for it — adds a settings surface for a single-user app |
+| **[Liveness]** Proactive banner shown at load (poll `/health` on mount) rather than only reactive (shown after a failed command) | More honest signal — Chris knows *before* trying to speak that the assistant won't respond, rather than discovering it mid-command | LOW-MEDIUM | `/health` is already ungated and cheap to poll; low risk, meaningfully different UX from "wait for a failure" |
+| **[Liveness]** Distinguish "not configured" (no API key — permanent until billing is fixed) from "temporarily failing" (network/rate-limit — may resolve on retry) | More precise messaging = more actionable next step, per Google's Conversation Design guidance ("possible next steps... transparent, honest, and helpful") | MEDIUM | Requires the backend `kind` enum change noted above (add a distinct `unavailable` kind, or split messaging with a reason code) — genuinely useful but adds a small schema migration on the Pydantic command model |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| Medical advice / interpretation ("your BP is dangerously high, call a doctor") | Feels helpful; LLM will happily generate it | Liability, and dangerous with this dataset (readings that would alarm a general-population model are Chris's baseline; autonomic dysreflexia in quadriplegia inverts normal alerting logic) | Descriptive stats and category labels only. System-prompt the agent to never diagnose or advise; confirmations state *what the dashboard shows*, nothing more. |
-| Real-time alerts / emergency notifications | Caregiver RPM platforms have them | Data arrives in batch uploads weeks after readings — "alerts" on stale data are noise or false alarm; genuine crisis response can't run through a dashboard | Category counts and the crisis-red color make outliers visible on review. Revisit only if live device sync ever exists. |
-| Multi-user accounts, roles, per-user auth | "Proper" apps have login systems | One patient, a couple of caregivers, zero benefit; weeks of auth work that delays the actual value | Shared password (already decided). |
-| Bluetooth / Apple Health / OMRON cloud sync | It's how commercial apps ingest data | OMRON's APIs are partner-gated; Web Bluetooth is flaky; huge effort replacing a working workflow (caregiver already exports Excel) | File upload of OMRON exports. |
-| Voice dictation data entry ("log 120 over 80") | Obvious voice feature; Alexa skills do it | Speech-to-number errors on medical data are silent corruptions (fifteen/fifty); needs confirm/undo flows the MVP doesn't have | Post-MVP with explicit read-back confirmation. Caregiver file upload for now (already scoped out). |
-| Spoken replies (SpeechSynthesis) | Completes the voice loop | Interacts badly with continuous recognition (assistant hears itself), adds Safari quirks; text confirmation is legible at distance per the design constraints | Large-text confirmations now; spoken replies post-MVP with mic-muting during playback (already scoped out). |
-| Free-form "AI insights" / trend narratives | Trendy; portfolio-flashy | Unverifiable generated claims about health data; overlaps medical-advice risk | Deterministic computed stats (averages, deltas, counts) rendered as text. |
-| Configurable dashboards (drag to rearrange, custom charts) | Power-user dashboard convention | Drag interactions are explicitly prohibited by the accessibility constraints; single user needs four known charts | Fixed chart set, voice-switchable. |
-| Analytics/tracking, third-party embeds | Default web practice | Health data leakage; explicitly banned in PROJECT.md | None. Server logs only. |
-| PDF report export | Every BP app has it (doctor sharing) | Not an anti-feature per se, but not MVP: Chris's doctor need is served by the CSV/data itself; PDF layout work is pure deferral candidate | v1.x: print stylesheet first (near-free), real PDF later if asked. |
+|---------|---------------|------------------|-------------|
+| **[Guide]** Auto-launching, non-dismissible onboarding tour on every load | Feels "helpful," common in SaaS onboarding | For a user with motor impairment and non-technical caregivers, an unskippable modal sequence is a barrier, not a feature — it blocks the very controls it's explaining, and forces multiple dismiss-taps for someone who may have only mouth-stick/limited input | Persistent reference tab (table stakes above) + optional one-time dismissible hint, never blocking |
+| **[Guide]** Full walkthrough that must be completed linearly before the dashboard is usable | Mirrors typical app "setup wizards" | Directly contradicts the project's core value (Chris must reach the dashboard/voice control immediately); also a caregiver may already know the site and shouldn't be forced through it again | Guide is a separate, always-optional tab; dashboard is fully usable without ever opening it |
+| **[TTS]** Reading full data tables / long lists of readings aloud | Seems like "more accessible" | Slow, overwhelming, and inconsistent with the existing rule that server-composed confirmation text is short by design (`composeConfirmation`); long TTS also can't be interrupted cleanly without barge-in support this project doesn't have | Speak only the short confirmation sentence already shown visually; point to the stats bar/chart for detail, exactly as `DATA_QUESTION_MESSAGE` already does today |
+| **[TTS]** TTS re-speaking on every store change (including filter changes from mouse/keyboard clicks, not just voice/agent commands) | Feels "consistent" | Talks over the user constantly, including during manual caregiver use where audio output isn't wanted or expected; violates "one thing announced at a time" already established for the `aria-live` region | Speak only on agent-applied/voice-confirmed commands, matching where the existing `aria-live="polite"` confirmation already fires — not on every local `zustand` state change |
+| **[TTS]** Speaking the same text simultaneously announced via `aria-live` for screen-reader users | Seems redundant-but-harmless | Documented double-announcement problem: NVDA/JAWS/VoiceOver behavior with concurrent `aria-live` regions and independent audio sources is inconsistent and has known repeat-announcement bugs (MDN, NVDA issue tracker) — a screen-reader user would hear the confirmation twice, from two unsynchronized sources | Treat TTS and `aria-live` as the same "spoken channel" conceptually: TTS is for users **without** a screen reader (Chris's primary path — voice control, not a screen reader); the mute toggle should be framed/default in a way that doesn't assume both are always wanted together. Flag as an open design question for the roadmap/spec phase — JS cannot reliably detect "is a screen reader running," so this needs an explicit product decision, not just an implementation detail |
+| **[Overlay]** Cross-dataset statistical correlation (auto-detect "BP spikes near incidents") | Looks like a natural next step once multiple datasets are visible together | Explicitly out of scope per PROJECT.md ("beyond visual overlay... post-MVP"); also clinically risky to imply causal/statistical correlation to a non-clinical user without care-team review | Visual co-location only (same timeline, same x-axis) — the user/caregiver draws their own conclusions, same posture as the existing medical-refusal pattern ("that's a question for your care team") |
+| **[Overlay]** One combined store field that conflates "which chart is active" with "which datasets are overlaid" | Seems like less state to manage | The current `activeChart: ChartId` is a **single, exclusive** selection (bar charts XOR timeline charts); overlay is a **multi-select, additive** layer concept that only makes sense on the two time-series charts (BP Timeline, Pulse Trend) — BP Categories and AM/PM Comparison have no time axis, so events cannot overlay on them. Merging these concepts creates an inconsistent, hard-to-reason-about state shape | Keep `activeChart` (which chart) and a new independent `visibleDatasets`/overlay-layers field (which data types are shown) as separate store concerns; the overlay toggles should visibly disable or explain themselves when a non-timeline chart is active |
+| **[Liveness]** Alarming red "OFFLINE" banner, siren icon, or modal interrupt for agent unavailability | Feels appropriately "serious" for a health app | This app's user is explicitly a vulnerable population (C4 quadriplegic, dependent on the assistant for autonomy); an alarming banner about the *assistant* (not his health data) risks distress disproportionate to the actual event (a $0-credit API key, not a health emergency) — red is also already reserved in this app's palette for clinical BP severity categories, so reusing it for a software-availability message would blur that meaning | Calm, neutral-toned inline message (reuse the existing "!" marker / calm-error visual language already in `CommandBar.tsx`), paired with "the buttons still work" |
 
 ## Feature Dependencies
 
 ```
-Voice command execution (agent → JSON → UI)
-    └──requires──> Filter/chart state model (date range, AM/PM, category, active chart)
-                       └──requires──> Readings API with filter params
-                                          └──requires──> ETL + seeded DB (132 readings)
+[Overlay: dataset toggle chips]
+    └──requires──> [Backend: labs/incidents/procedures models + CRUD routes]
+                       └──requires──> (migrations already exist — empty tables, per PROJECT.md)
+    └──requires──> [Backend: manual-entry forms' POST endpoints]
+    └──requires──> [Frontend: filters store — new independent multi-select
+                     "visible datasets" concept, separate from activeChart]
+    └──requires──> [Frontend: chart layering — ReferenceLine/Dot/Area overlays
+                     on BPTimeline + PulseTrend only (no time axis on the two
+                     bar charts)]
+    └──enhances──> [Guide: overlay controls need documenting once built]
 
-Continuous listening session ──requires──> Voice command execution
-Text-input fallback ──shares──> same agent endpoint as voice (build together)
+[TTS: spoken replies]
+    └──requires──> [Existing composeConfirmation() as sole content source —
+                     reuse, do not author new copy]
+    └──conflicts (open question)──> [Existing aria-live="polite" confirmation
+                     region — risk of double-announcement for screen-reader
+                     users; needs an explicit product decision, not silently
+                     resolved by "just add TTS"]
+    └──enhances──> [Liveness: unavailable-state message can also be spoken]
 
-Agent summary answers ──requires──> Summary-stats endpoint
-Summary statistics strip ──requires──> Summary-stats endpoint (same endpoint, two consumers)
+[Guide: site guide tab]
+    └──requires (content-completeness, not code)──> [Overlay, TTS, Liveness
+                     final control sets — the guide describes them, so its
+                     CONTENT should be finished last even if its scaffold
+                     (tab/route/nav) is built early]
+    └──enhances──> [Guide: voice-triggered contextual help variant, if built]
 
-Category color coding ──requires──> BP_Category derived field (ETL) — single source of truth
-Category bands on timeline ──enhances──> BP timeline (additive, can ship later)
-
-Upload result summary ──requires──> File upload ──requires──> idempotent ETL (duplicate detection)
-
-Voice reply (post-MVP) ──conflicts──> continuous listening (feedback loop; needs mic muting)
+[Liveness: agent availability]
+    └──requires──> [Existing /health endpoint (`agent_configured: bool`) —
+                     already ungated and ready to poll]
+    └──requires──> [Backend: new distinct AgentReply.kind value (e.g.
+                     "unavailable") OR a reason code, since APIError/
+                     ValidationError paths in call_claude() currently
+                     collapse into the SAME generic "unclear" kind as a
+                     true no-match — this is the actual bug PROJECT.md
+                     is asking to fix, not just a new UI state]
+    └──enhances──> [TTS: can announce "assistant unavailable" once distinct]
 ```
 
 ### Dependency Notes
 
-- **Voice requires the state model, not vice versa:** the four charts + filters must work via clicks/keyboard first; the agent is then a second driver of the *same* state. Building voice against an ad-hoc UI means rebuilding both.
-- **Every filter must be voice-expressible:** if a filter exists in the UI but not in the JSON command schema, the primary user can't use it — schema and UI filters must stay in lockstep (single source of truth for the command vocabulary).
-- **Derived categories live in ETL** (already decided): charts and agent answers both read `bp_category`/`pulse_category` from the DB, so category logic is tested once.
+- **Overlay requires the filters store to grow a genuinely new interaction shape**, not just new fields. `store/filters.ts` currently models `activeChart` as a single exclusive selection (mirrors a future single voice command like "show pulse"). Overlay is additive/multi-select ("show pulse *and* hospital stays *and* pulse *and* labs together"). Building it as a bolt-on to `activeChart` will produce an inconsistent model; it should be a parallel, independently-toggleable set.
+- **Overlay is only meaningful on the two time-series charts** (BP Timeline, Pulse Trend). BP Categories (horizontal bar) and AM/PM Comparison (grouped bar) have no time axis to plot event markers against. The roadmap should scope overlay UI to explicitly acknowledge this (e.g., overlay toggles present but visually indicate "switch to a timeline chart to see this" rather than silently doing nothing) — this is a real UX gap if unaddressed, given the accessibility requirement that state changes must never be silent/invisible (D-07 "never color alone" implies never *no signal at all* either).
+- **TTS's only real open design risk is the aria-live/SpeechSynthesis interaction**, not the SpeechSynthesis API itself (which is simple: `speechSynthesis.speak(new SpeechSynthesisUtterance(text))`, cancel-before-speak). The existing `aria-live="polite"` region in `CommandBar.tsx` already delivers the confirmation to assistive technology. Layering audible TTS on top is *for Chris specifically* (a voice-control user, not necessarily a screen-reader user) but the two systems have no coordination and JS cannot detect screen-reader presence reliably — this should be called out for the roadmap/spec phase as a product decision (e.g., "TTS is opt-in / default-on but the mute toggle is prominent and independently voice-reachable"), not resolved silently in implementation.
+- **Liveness has substantially more backend groundwork already in place than the milestone description implies.** `/health`'s `agent_configured` flag and the already-distinct `UNAVAILABLE_MESSAGE` copy string mean this is not a from-scratch feature — it's closing a specific, identifiable gap: `AgentReply.kind` conflates "assistant unavailable" and "genuinely didn't understand you" into the same `"unclear"` literal, and the exception path in `call_claude()` (network/timeout/schema-parse failures) currently mislabels real outages as generic unclear replies rather than routing to the unavailable copy. This lowers the complexity estimate for this feature relative to Guide/Overlay.
+- **Guide content should be written last** (though its route/tab scaffold can be built anytime) because it needs to document the final shape of the overlay controls, the mute toggle, and the liveness messaging — writing it first risks documenting a UI that changes underneath it.
+- **None of the four features depend on the Claude Agent / paid API.** All four are explicitly scoped to work with $0 credits (per PROJECT.md), which matters for sequencing: they can be built and fully validated without the billing blocker that stalled v1.0's NL agent. The one caveat: voice-triggered contextual help (a differentiator, not table stakes) and any future voice command for new overlay toggles need a **local/deterministic** command matcher (extending the existing `lib/voice.ts` pattern-matching, not the inert Claude agent) if they are to work by voice in this milestone.
 
 ## MVP Definition
 
-### Launch With (v1)
+### Launch With (v1.1 — this milestone, per PROJECT.md scope)
 
-- [ ] Four charts (BP timeline dual-line, pulse trend + 60 bpm line, BP categories horizontal bar with AHA colors + hypotension, AM vs PM grouped bars) — replicates and retires the Tableau prototype
-- [ ] Filters: date-range presets + AM/PM + BP category, applied via UI controls *and* voice
-- [ ] Summary statistics strip (avg/min/max, counts, % per category) reactive to filters — cheap, high-value, and the substrate for agent answers
-- [ ] Voice agent: mic → transcript → Claude → validated JSON → chart/filter change, with live transcript + text confirmation
-- [ ] Continuous listening with unmissable listening-state indicator (Chrome + Safari behaviors)
-- [ ] Text-input command fallback
-- [ ] Readings table view — trust anchor and upload verification
-- [ ] OMRON file upload with duplicate-safe ingest and result summary
-- [ ] Shared-password gate
-- [ ] Accessibility baseline: ≥48px targets, ≥18px text, high contrast, keyboard nav, no hover-only/drag/precision interactions
+- [ ] **[Liveness]** Distinct `kind: "unavailable"` (or reason code) in `AgentReply`, routed from both the keyless case and the `call_claude()` exception path — this is the actual bug fix; everything else in this feature is UI dressing on top of it
+- [ ] **[Liveness]** Calm, non-alarming visual state reusing existing error-copy conventions, paired with "manual controls still work"
+- [ ] **[TTS]** Speak `composeConfirmation()` output on applied voice/agent commands only, with a persisted, voice-reachable mute toggle
+- [ ] **[Overlay]** Multi-select toggle chips for BP/pulse/labs/incidents/procedures, `aria-pressed`, non-color-only encoding, scoped to the two timeline charts
+- [ ] **[Overlay]** Accessible manual-entry forms for labs/incidents/procedures (required — tables are otherwise unreachable)
+- [ ] **[Guide]** Static, always-available, keyboard+voice-navigable reference tab covering every control, filter, chart, and upload flow, including a "what can I say" command list
 
 ### Add After Validation (v1.x)
 
-- [ ] Agent summary Q&A ("what's my average this week?") — trigger: navigation commands working reliably
-- [ ] Category color bands behind BP timeline — trigger: Chris/caregiver feedback that zones aid reading
-- [ ] Print stylesheet / doctor-visit view — trigger: an actual appointment where data is shared
-- [ ] Voice command help ("what can I say?") overlay — trigger: observed failed-command patterns
+- [ ] Voice-triggered contextual help ("dashboard, help") — trigger: once the static guide's content is stable and a local intent-matching pattern is proven for other new voice affordances (mute, overlay toggles)
+- [ ] Click-to-detail panels on overlay markers (full incident/lab/procedure record) — trigger: once basic overlay presence/absence is validated with Chris and caregivers
+- [ ] Proactive `/health` poll at load (vs. reactive-only liveness) — trigger: cheap to add once the `kind: "unavailable"` distinction exists; low risk, can follow shortly after
 
 ### Future Consideration (v2+)
 
-- [ ] Spoken replies (SpeechSynthesis with mic muting) — defer: conflicts with continuous listening; text suffices per requirements
-- [ ] Voice data entry with read-back confirmation — defer: silent numeric transcription errors need a confirm/undo pattern
-- [ ] Labs / incidents / procedures views + correlation charts — defer: tables exist but empty; no data yet
-- [ ] Scheduled summary emails — defer: explicit post-MVP in PROJECT.md
+- [ ] Adjustable TTS voice/rate settings — defer until/unless caregiver feedback specifically asks for it
+- [ ] Distinguishing "not configured" vs. "temporarily failing" unavailable states — defer until the paid API is actually activated and transient failures become observable in practice (right now, every failure mode is effectively "not configured")
+- [ ] Staged/contextual onboarding hints beyond the static guide — defer until the static guide alone proves insufficient
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Four charts w/ AHA colors + thresholds | HIGH | LOW-MEDIUM | P1 |
-| Filter state model (date/AM-PM/category) | HIGH | LOW | P1 |
-| Voice agent → JSON commands | HIGH | HIGH | P1 |
-| Continuous listening session | HIGH | HIGH | P1 |
-| Voice feedback (transcript + confirmation) | HIGH | MEDIUM | P1 |
-| Summary stats strip | HIGH | LOW | P1 |
-| Text-input fallback | HIGH | LOW | P1 |
-| OMRON upload (idempotent + result summary) | HIGH | MEDIUM | P1 |
-| Readings table | MEDIUM | LOW | P1 |
-| Password gate | HIGH | LOW | P1 |
-| Agent summary Q&A | MEDIUM | MEDIUM | P2 |
-| Timeline category bands | MEDIUM | MEDIUM | P2 |
-| Voice help overlay | MEDIUM | LOW | P2 |
-| Print/PDF report | LOW | MEDIUM | P3 |
-| Spoken replies | MEDIUM | HIGH | P3 |
-| Voice data entry | MEDIUM | HIGH | P3 |
+| Liveness: distinct unavailable kind + calm UI | HIGH (fixes a real silent-failure bug) | LOW-MEDIUM (backend groundwork mostly exists) | P1 |
+| TTS: spoken confirmation + mute toggle | HIGH (closes the hands-free loop, core ask) | LOW-MEDIUM (content already exists; API is simple) | P1 |
+| Overlay: toggle chips + timeline layering | HIGH (core ask; makes labs/incidents/procedures reachable) | MEDIUM-HIGH (new backend CRUD + new store shape + chart layering) | P1 |
+| Overlay: manual-entry forms | HIGH (overlay is inert without data) | MEDIUM (3 forms × accessibility constraints) | P1 |
+| Guide: static reference tab | HIGH (explicit ask; caregiver-critical) | LOW-MEDIUM (mostly content work) | P1 |
+| Voice-triggered contextual help | MEDIUM (nice hands-free enhancement) | MEDIUM (needs local intent matching) | P2 |
+| Click-to-detail overlay markers | MEDIUM | MEDIUM | P2 |
+| Proactive `/health` polling | MEDIUM (better honesty, not core ask) | LOW | P2 |
+| Adjustable TTS voice/rate | LOW (single user, unproven need) | LOW-MEDIUM | P3 |
+| Staged onboarding hints | LOW (static guide likely sufficient for one user + a few caregivers) | MEDIUM | P3 |
 
-## Competitor Feature Analysis
+## Reference Pattern Analysis
 
-| Feature | OMRON Connect | SmartBP | Our Approach |
-|---------|---------------|---------|--------------|
-| Trends/charts | Daily/weekly/monthly averages, color-coded dashboard | Graphs + stats incl. mean and variability | Four fixed charts tuned to Chris's data (bradycardia line, hypotension category) |
-| AM/PM analysis | Time-of-day views | 7/14/30-day summaries grouped by AM/PM averages | Dedicated AM vs PM chart + AM/PM filter on all charts |
-| Category coding | AHA color coding | AHA/ESH/JSH selectable guidelines | AHA colors + hypotension extension (blue) |
-| Data entry | Bluetooth device sync | Manual + Apple Health sync | Caregiver file upload of OMRON exports (idempotent) |
-| Sharing | PDF/CSV export | PDF reports, cloud sync | Deferred (print stylesheet v1.x) |
-| Voice | None | None | Full voice-first navigation and filtering — the differentiator |
-| Accounts | Vendor account required | Freemium account | Shared password, zero accounts |
+No direct competitor exists (single-user personal health dashboard); patterns are synthesized from adjacent domains:
+
+| Feature area | BI/dashboard tools (Metabase, Grafana, amCharts) | Voice assistants (Alexa, Google Assistant) | W3C/WCAG cognitive accessibility | Our approach |
+|---------|--------------|--------------|-----------------------------------|--------------|
+| Multi-series toggle | Legend-as-filter, click-to-hide series, checkbox semantics | N/A | N/A | Toggle chips reusing existing `aria-pressed` visual language, multi-select (new interaction shape) |
+| Event overlay on timeline | Reference lines/dots/shaded ranges per event type, clustering when dense | N/A | N/A | Recharts `ReferenceLine`/`ReferenceDot`/`ReferenceArea`, extending the existing AHA-band pattern already in `BPTimeline.tsx` |
+| Help/guidance | N/A | "What can I say" list, contextual voice help | Persistent findable help, staged disclosure, never auto-changing content unexpectedly | Static always-available tab + reused example-command list, voice-trigger as a later enhancement |
+| Spoken output | N/A | Speak what happened, not new info; single utterance; mute control | N/A | TTS mirrors `composeConfirmation()`, cancel-before-speak, persisted+voice-reachable mute |
+| Service-unavailable messaging | Graceful degradation (soft dependency) | Distinct error classes (no-match vs. system error), calm tone, always pair with next step, escalate only after repeated failures | N/A | Distinct `kind`, reuse existing calm-error visual language, always paired with "buttons still work" |
 
 ## Sources
 
-- [AHA: Understanding Blood Pressure Readings](https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings) — category definitions (HIGH confidence)
-- [AHA rainbow chart PDF](https://www.heart.org/-/media/files/health-topics/high-blood-pressure/hbp-rainbow-chart-english.pdf) — canonical color coding (HIGH)
-- [2017 ACC/AHA Hypertension Guideline](https://www.ahajournals.org/doi/10.1161/hyp.0000000000000065) and [2025 guideline commentary](https://pmc.ncbi.nlm.nih.gov/articles/PMC12356496/) — categories, home-monitoring averaging protocol (HIGH)
-- [JAMIA: Home BP data visualization using human factors principles](https://pmc.ncbi.nlm.nih.gov/articles/PMC8340525/) and [companion study on patient/physician information needs](https://pmc.ncbi.nlm.nih.gov/articles/PMC7432548/) — goal-range bands best received; dual-line conventions (HIGH)
-- [OMRON Connect app](https://omronhealthcare.com/omron-connect-app) / [OMRON Connect EMEA](https://www.omron-healthcare.com/omronconnect) — competitor features (MEDIUM)
-- [SmartBP app + FAQ](https://www.smartbp.app/faq) — AM/PM summaries, stats, reports (MEDIUM)
-- [Vanderbilt VEVA EHR voice assistant](https://pmc.ncbi.nlm.nih.gov/articles/PMC10937093/) — health voice-query patterns (MEDIUM)
-- VUI best-practice guides ([Designlab](https://designlab.com/blog/voice-user-interface-design-best-practices), [Eleken](https://www.eleken.co/blog-posts/voice-ui-design)) — feedback/confirmation, constrained vocabularies (MEDIUM)
-- [WCAG 2.2](https://www.w3.org/TR/WCAG21/), [Siteimprove: motor impairments and touch targets](https://www.siteimprove.com/blog/motor-impairments-and-mobile-ui-the-touch-target-problem/), [BarrierBreak: speech recognition users](https://www.barrierbreak.com/web-accessibility-for-speech-recognition-users-a-pragmatic-approach/) — target sizes, speech-input accessibility (HIGH for WCAG, MEDIUM otherwise)
-- Caregiver platforms ([Connected Caregiver](https://myconnectedcaregiver.com/), [Paid.care vitals tracking](https://paid.care/guides/best-apps-for-caregivers-to-track-hours-and-vitals)) — caregiver confidence-loop patterns (MEDIUM)
+- W3C WAI — "Provide Help with Directions" (Cognitive Accessibility Design Pattern): https://www.w3.org/WAI/WCAG2/supplemental/patterns/o7p06-supported-wayfinding/ — HIGH confidence, official W3C guidance
+- Amazon Alexa Haus — "Handling errors gracefully": https://developer.amazon.com/en-US/alexa/alexa-haus/patterns-and-components/patterns-errors — HIGH confidence, official Amazon design guidance
+- Google — Conversation Design: Errors: https://developers.google.com/assistant/conversation-design/errors — HIGH confidence, official Google guidance
+- MDN — ARIA Screen Reader Implementors Guide (live-region double-announcement behavior): https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Screen_Reader_Implementors_Guide — HIGH confidence, official MDN
+- NVDA issue tracker — aria-live repeated-announcement bug: https://github.com/nvaccess/nvda/issues/7996 — MEDIUM confidence, real-world bug report corroborating the double-speak risk
+- WebAbility.io / WCAG mobile accessibility guides — motor-impairment touch-target and voice-control patterns — MEDIUM confidence, secondary sources aggregating WCAG requirements
+- amCharts / Metabase / Grafana docs on legend-toggle and annotation/event-overlay patterns (via WebSearch aggregation) — MEDIUM confidence, consistent across multiple independent charting tools
+- MDN aria-pressed reference and general toggle-button accessibility guides — HIGH confidence for the ARIA mechanics, MEDIUM for the "menu-button vs. toggle-button" nuance (single secondary source)
+- Codebase inspection (this repo): `frontend/src/store/filters.ts`, `frontend/src/components/CommandBar.tsx`, `frontend/src/components/FilterBar.tsx`, `frontend/src/components/charts/BPTimeline.tsx`, `frontend/src/lib/voice.ts`, `backend/app/main.py`, `backend/app/agent/service.py`, `backend/app/agent/copy.py`, `backend/app/agent/schemas.py` — HIGH confidence, primary source (ground truth for dependency/complexity claims)
+- General voice-UX and chatbot-UX secondary sources (Bentley UX Center, Aufait UX, Eleken, FuseLab Creative, OrangeLoops "Designing Trustworthy AI Assistants") — LOW-MEDIUM confidence, blog-level sources used only to corroborate patterns already found in higher-confidence sources, not as standalone claims
 
 ---
-*Feature research for: voice-first single-patient BP/pulse dashboard*
-*Researched: 2026-07-07*
+*Feature research for: voice-first accessible personal health dashboard — v1.1 (Polish & Records) milestone*
+*Researched: 2026-08-19*

@@ -1,369 +1,318 @@
-# Architecture Research
+# Architecture Research — v1.1 (Polish & Records)
 
-**Domain:** Voice-controlled personal health data dashboard (Python ETL → PostgreSQL → FastAPI → React, Claude agent, Web Speech API)
-**Researched:** 2026-07-07
-**Confidence:** HIGH (core web/API patterns), MEDIUM (Safari/iOS voice specifics — community-sourced, needs device validation)
+**Domain:** Integration architecture for 4 features into an existing FastAPI + React (Zustand/TanStack Query) health dashboard
+**Researched:** 2026-08-19
+**Confidence:** HIGH (grounded directly in the existing codebase — every recommendation below cites the actual file/pattern it extends) / MEDIUM on iOS Safari SpeechSynthesis specifics (verified via current sources, but needs real-device testing like the project's existing Speech Recognition risk)
 
-## Standard Architecture
+## Summary / Verdict
 
-### System Overview
+All four features are additive to the existing architecture — none require restructuring the FastAPI/Zustand/TanStack Query split. The two features with real design decisions are **multi-dataset overlay** (needs a new store, new endpoints, and a schema extension) and **agent-liveness** (needs a backend circuit-breaker, not a naive health-ping). Spoken replies and the site guide are small, mostly-frontend, low-risk additions once those two land.
 
-Voice-agent-driven dashboards follow a consistent shape across the industry (Datadog's dashboard agents, Tinybird's NL filters, and similar systems): the LLM never renders anything and never touches data directly. It is a **translator** that converts free-form text into a closed vocabulary of declarative commands, which deterministic frontend code applies to state. This is the single most important boundary in the system.
+**Recommended build order (dependency-driven, detailed in "Build Order" below):**
+1. Agent-liveness detection (backend circuit breaker + `/health` extension + frontend banner)
+2. Multi-dataset backend (Pydantic schemas + GET/POST routers for labs/incidents/procedures)
+3. Multi-dataset frontend — manual-entry forms (parallel with 4)
+4. Multi-dataset frontend — overlay store + fetch hooks + chart rendering (parallel with 3)
+5. Multi-dataset voice/schema extension (backend `schemas.py`/`prompt.py`/`service.py` + frontend `AppliedFilters`/parity test)
+6. Spoken replies (mostly independent, but reuses copy from 1 and 5)
+7. Full site guide (independent, but best documents the finished UI last)
 
-```
-┌───────────────────────────── BROWSER ─────────────────────────────┐
-│  ┌──────────────┐   ┌──────────────┐                              │
-│  │ Voice Capture │   │  Text Input  │  ← same downstream pipeline │
-│  │ (Web Speech,  │   │  (fallback)  │                              │
-│  │  vendor shim) │   └──────┬───────┘                              │
-│  └──────┬───────┘          │                                      │
-│         └──── transcript ───┘                                      │
-│                    │                                               │
-│                    ▼                                               │
-│  ┌──────────────────────────────────────────────┐                 │
-│  │      Dashboard State (single reducer)        │                 │
-│  │  { chart, dateRange, amPm, ... }             │◄── command      │
-│  └──────┬───────────────────────────────────────┘    dispatch     │
-│         │ state drives                                    ▲        │
-│         ▼                                                 │        │
-│  ┌──────────────┐   ┌──────────────┐             ┌───────┴──────┐ │
-│  │   Recharts   │   │ Confirmation │             │  API Client  │ │
-│  │  chart views │   │  text banner │             │ (fetch layer)│ │
-│  └──────────────┘   └──────────────┘             └───────┬──────┘ │
-└──────────────────────────────────────────────────────────┼────────┘
-                                                            │ HTTPS + CORS
-┌───────────────────────────── BACKEND ─────────────────────┼────────┐
-│  ┌─────────────────────────── FastAPI ──────────────────── ▼─────┐ │
-│  │  /readings   /stats   /upload   /agent      auth dependency  │ │
-│  │      │          │        │         │        (shared password)│ │
-│  └──────┼──────────┼────────┼─────────┼───────────────────────── ┘ │
-│         │          │        │         ▼                            │
-│         │          │        │   ┌────────────────┐    ┌──────────┐│
-│         │          │        │   │  Agent Service │───►│ Claude   ││
-│         │          │        │   │  (prompt + tool│◄───│ API      ││
-│         │          │        │   │  schema +      │    │ (server- ││
-│         │          │        │   │  Pydantic      │    │  side    ││
-│         │          │        │   │  validation)   │    │  only)   ││
-│         │          │        │   └────────────────┘    └──────────┘│
-│         │          │        ▼                                      │
-│         │          │  ┌────────────────┐                           │
-│         │          │  │  ETL Pipeline  │  (also runs as CLI for    │
-│         │          │  │  parse→derive→ │   initial seed)           │
-│         │          │  │  upsert)       │                           │
-│         │          │  └───────┬────────┘                           │
-│         ▼          ▼          ▼                                    │
-│  ┌──────────────────────────────────────┐                          │
-│  │  PostgreSQL (readings + empty future │                          │
-│  │  tables; Alembic migrations)         │                          │
-│  └──────────────────────────────────────┘                          │
-└─────────────────────────────────────────────────────────────────── ┘
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| Voice capture layer | Speech → transcript only. Owns browser quirks (vendor prefix, restart loops, permission state). Knows nothing about commands or charts. | React hook (`useSpeechRecognition`) wrapping a singleton `SpeechRecognition \|\| webkitSpeechRecognition` instance |
-| Text input fallback | Alternate transcript source; feeds the **identical** pipeline as voice | Plain `<input>` + submit; calls the same `sendToAgent(transcript)` function |
-| Dashboard state | Single source of truth for what's displayed: active chart + all filters. The **only** thing charts read; the **only** thing commands mutate. | `useReducer` (or Zustand) with one state object |
-| Command applier | Validated command → state transition. Deterministic, no LLM involvement. Resolves relative dates (`last_n_days`) against the client clock. | Reducer case per `action` value |
-| Chart views | Pure render of (state, data). No fetching, no filter logic of their own. | 4 Recharts components keyed off `state.chart` |
-| API client | HTTP calls, attaches password header, maps errors to user-visible messages | Small fetch wrapper; React Query optional at this scale |
-| FastAPI routers | HTTP boundary: request validation, auth dependency, response shaping | `routers/readings.py`, `stats.py`, `upload.py`, `agent.py` |
-| Agent service | Transcript → Claude call (tool-use / structured output) → Pydantic validation → `{command, confirmation}` or `{error}`. Never returns raw model text as a command. | `services/agent.py` with the Pydantic command models as the schema source |
-| ETL pipeline | OMRON Excel/CSV → parse → derive (BP category, MAP, AM/PM, pulse pressure, pulse category) → idempotent upsert. Pure transform functions separated from I/O so derivations are unit-testable. | `etl/parse.py`, `etl/derive.py`, `etl/load.py`; callable from both CLI and `/upload` |
-| PostgreSQL | Persistent readings + empty future tables; unique natural key on reading datetime | Alembic migrations; SQLAlchemy models |
-| Auth gate | Shared password check on every API route; login screen on frontend | FastAPI dependency comparing a header/cookie to an env var; frontend stores it in `sessionStorage` |
-
-## Recommended Project Structure
+## System Overview — What's New
 
 ```
-Health-Visualizer/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI app, CORS, router registration
-│   │   ├── config.py            # env-based settings (DATABASE_URL, ANTHROPIC_API_KEY, SITE_PASSWORD, ALLOWED_ORIGINS)
-│   │   ├── auth.py              # shared-password dependency
-│   │   ├── models/              # SQLAlchemy table models
-│   │   ├── schemas/
-│   │   │   ├── readings.py      # response models
-│   │   │   └── commands.py      # ★ agent command Pydantic models (the contract)
-│   │   ├── routers/             # readings, stats, upload, agent
-│   │   ├── services/
-│   │   │   └── agent.py         # Claude call + validation + confirmation text
-│   │   └── etl/
-│   │       ├── parse.py         # OMRON file → raw DataFrame
-│   │       ├── derive.py        # pure functions: bp_category(), map(), am_pm()...
-│   │       ├── load.py          # upsert into Postgres
-│   │       └── run.py           # CLI entry: python -m app.etl.run <file>
-│   ├── alembic/                 # migrations (readings + empty future tables)
-│   └── tests/
-│       ├── test_derive.py       # ★ required: category boundaries, MAP, AM/PM
-│       ├── test_load_idempotent.py
-│       └── test_agent_schema.py
-├── frontend/
-│   ├── src/
-│   │   ├── api/                 # fetch wrapper, endpoint functions
-│   │   ├── state/
-│   │   │   ├── dashboardState.ts  # ★ state shape mirrors command schema
-│   │   │   └── reducer.ts         # command applier
-│   │   ├── hooks/
-│   │   │   └── useSpeechRecognition.ts  # vendor shim + restart logic
-│   │   ├── components/
-│   │   │   ├── charts/          # BPTimeline, PulseTrend, BPCategories, AmPmComparison
-│   │   │   ├── VoiceControl.tsx # big mic button, listening indicator
-│   │   │   ├── CommandInput.tsx # text fallback
-│   │   │   ├── FilterBar.tsx    # manual filter controls (mouse/keyboard fallback)
-│   │   │   └── PasswordGate.tsx
-│   │   └── App.tsx
-│   └── .env                     # VITE_API_URL only — never API keys
-└── data/                        # OMRON exports + bp_data_cleaned.csv (seed input)
+┌───────────────────────────────────────────────────────────────────────────┐
+│ FastAPI (Bearer-gated except /health, /auth)                              │
+│                                                                             │
+│  /readings /stats/summary        /agent (circuit-breaker NEW)             │
+│  /upload                         /health (EXTENDED: agent_reachable NEW)  │
+│                                                                             │
+│  NEW: /labs      GET (date range) + POST (create)                         │
+│  NEW: /incidents GET (date range) + POST (create)                         │
+│  NEW: /procedures GET (date range) + POST (create)                        │
+│                                                                             │
+│  agent/service.py: NEW module-level circuit breaker (_last_outcome,       │
+│  cooldown) shared by /agent's real-time reply AND /health's cached read   │
+│                                                                             │
+│  agent/schemas.py: NEW DatasetToken Literal + DashboardCommand.overlays   │
+│  agent/prompt.py:  NEW vocabulary for "hospital stays" / "labs" / etc.    │
+└───────────────────────────────────────────────────────────────────────────┘
+                                    │
+┌───────────────────────────────────────────────────────────────────────────┐
+│ React                                                                      │
+│                                                                             │
+│  store/filters.ts   UNCHANGED — stays the pure 4-chart command schema     │
+│  store/view.ts       EXTENDED — View: "dashboard"|"upload"|"records"|"guide"│
+│  NEW store/overlay.ts    — {labs, incidents, procedures} visibility set   │
+│  NEW store/speech.ts     — mute toggle, localStorage-persisted (theme.ts  │
+│                             pattern)                                      │
+│  NEW store/agentStatus.ts — transient "down" flag from the last live      │
+│                             /agent reply (reactive, faster than polling)  │
+│                                                                             │
+│  NEW hooks/useLabs.ts / useIncidents.ts / useProcedures.ts (useReadings   │
+│      pattern) + useCreateLab/Incident/Procedure.ts (useAgent pattern)     │
+│  NEW hooks/useHealth.ts — polls GET /health for agentConfigured/Reachable │
+│                                                                             │
+│  lib/agent.ts   EXTENDED — applyAgentFilters() reads f.overlays,          │
+│                  composeConfirmation() grows an overlay clause            │
+│  NEW lib/speech.ts — speak()/cancel(), mirrors lib/voice.ts's pure-       │
+│      helper, feature-detection, fixed-copy conventions                   │
+│  NEW lib/guideCommands.ts — client-side "help"/"guide" keyword shortcut, │
+│      bypasses /agent entirely (works even when the agent is down)        │
+│                                                                             │
+│  NEW components/GuidePage.tsx, RecordEntryForm.tsx (or 3 forms)           │
+│  NEW components/AgentStatusBanner.tsx                                     │
+│  charts/BPTimeline.tsx, PulseTrend.tsx — EXTENDED with an overlayEvents   │
+│      prop rendered as ReferenceDot/ReferenceLine event markers           │
+└───────────────────────────────────────────────────────────────────────────┘
+```
+
+### Component Responsibilities (new/changed only)
+
+| Component | Responsibility | Notes |
+|-----------|-----------------|-------|
+| `backend/app/routers/labs.py`, `incidents.py`, `procedures.py` (NEW) | GET (date-range filtered) + POST (validated create) for each future table | Mirror `readings.py`'s thin-router-over-shared-dependency pattern; Bearer-gated at router-include level in `main.py`, same as every other router |
+| `backend/app/agent/service.py` circuit breaker (NEW module state) | Tracks last real `/agent` call outcome; skips the network call during a cooldown window; feeds both `/agent`'s reply kind and `/health`'s cached field | Zero added Claude cost — reuses outcomes from real traffic, never self-pings Claude |
+| `frontend/src/store/overlay.ts` (NEW) | Which of labs/incidents/procedures render as markers on the active time-series chart | Sibling to `store/filters.ts`, not a merge into it — keeps the VOICE-05/ACC-03 parity-tested surface separable |
+| `frontend/src/store/agentStatus.ts` (NEW) | Reactive "assistant unavailable" flag set the instant a live reply comes back `kind: "down"` | Faster than waiting for the next `/health` poll; `/health` poll is the fallback for the "never issued a command yet" case |
+| `frontend/src/lib/speech.ts` (NEW) | `speak(text)` / `cancelSpeech()` pure helpers | Mirrors `lib/voice.ts`: feature detection, no new confirmation text, fixed friendly copy only |
+| `frontend/src/lib/guideCommands.ts` (NEW) | Client-side "help"/"guide" phrase match, short-circuits before `/agent` | Keeps the guide voice-reachable even when the (currently inert, $0-credit) agent is down |
+| `charts/BPTimeline.tsx`, `PulseTrend.tsx` (EXTENDED) | Render incident/procedure/lab event markers as `ReferenceDot`/`ReferenceLine` on the existing numeric time x-axis | Only the two time-series charts; `bp_categories`/`am_pm_comparison` are not overlay targets (not time-series) |
+
+## Recommended Project Structure (delta only)
+
+```
+backend/app/
+├── routers/
+│   ├── labs.py            # NEW — GET /labs, POST /labs
+│   ├── incidents.py       # NEW — GET /incidents, POST /incidents
+│   └── procedures.py      # NEW — GET /procedures, POST /procedures
+├── schemas.py              # EXTENDED — LabResultOut/In, IncidentOut/In, ProcedureOut/In
+├── deps.py                 # EXTENDED — small DateRangeFilters shared by the 3 new routers
+├── agent/
+│   ├── schemas.py           # EXTENDED — DatasetToken Literal, DashboardCommand.overlays,
+│   │                        #   AppliedFilters.overlays (OverlayDelta), AgentReply.kind + "down"
+│   ├── prompt.py             # EXTENDED — teach "labs"/"hospital stays"/"procedures" vocabulary
+│   ├── service.py            # EXTENDED — circuit breaker (_last_outcome/_record_outcome/
+│   │                        #   agent_reachable()), _apply_command maps cmd.overlays
+│   └── copy.py                # EXTENDED — no new strings needed; UNAVAILABLE_MESSAGE now
+│                              #   reachable via kind="down" instead of being mislabeled unclear
+└── main.py                   # EXTENDED — /health returns agent_reachable; 3 new routers included
+                              #   with the same dependencies=[Depends(verify_token)] pattern
+
+frontend/src/
+├── store/
+│   ├── overlay.ts           # NEW
+│   ├── speech.ts             # NEW (theme.ts pattern: localStorage + try/catch guards)
+│   └── agentStatus.ts        # NEW
+├── hooks/
+│   ├── useLabs.ts / useIncidents.ts / useProcedures.ts   # NEW (useReadings.ts pattern)
+│   ├── useCreateLab.ts / useCreateIncident.ts / useCreateProcedure.ts  # NEW (useAgent.ts pattern)
+│   └── useHealth.ts          # NEW
+├── lib/
+│   ├── speech.ts             # NEW
+│   ├── guideCommands.ts       # NEW
+│   └── agent.ts               # EXTENDED — applyAgentFilters reads f.overlays;
+│                              #   composeConfirmation() grows an overlay-summary clause
+├── api/
+│   └── types.ts               # EXTENDED — Lab/Incident/Procedure types, AppliedFilters.overlays,
+│                              #   AgentReply.kind adds "down", HealthStatus type
+└── components/
+    ├── GuidePage.tsx           # NEW
+    ├── RecordEntryForm.tsx (or LabEntryForm/IncidentEntryForm/ProcedureEntryForm)  # NEW
+    └── AgentStatusBanner.tsx    # NEW
 ```
 
 ### Structure Rationale
 
-- **`schemas/commands.py` is the contract:** the Pydantic models used to validate Claude's output define the entire voice vocabulary. Frontend state shape and reducer cases are written to mirror it exactly (mirror as a TypeScript type by hand — the schema is small; codegen is overkill).
-- **`etl/derive.py` is pure functions:** takes values, returns values, no I/O — this is what makes the required medical-categorization tests trivial to write.
-- **`hooks/useSpeechRecognition.ts` quarantines browser chaos:** all Chrome/Safari divergence lives in one file; nothing else in the app knows which browser it's on.
-- **Two deployable units (frontend/, backend/):** matches Vercel + Railway/Render split deployment; each has its own env config.
+- **One router file per resource, not one `records.py`.** The codebase already splits `readings.py`/`stats.py`/`upload.py`/`agent.py` one-per-file with matching one-per-file tests (`test_api_readings.py`, `test_api_stats.py`). Three small resources (`labs`, `incidents`, `procedures`) with different column shapes (`Date` vs `DateTime`) are clearer as three thin files than one router juggling three schemas.
+- **`store/overlay.ts` as a sibling store, not a merge into `store/filters.ts`.** `store/filters.ts`'s docstring calls it "THE Phase 3 agent command schema," and `agent-parity.test.ts` asserts the store's *entire* mutating-action surface equals a fixed list (`STORE_ACTIONS`). Adding overlay toggles as new `useFilters` actions would force-edit that guardrail test for a conceptually different kind of state (dataset visibility, not chart/date/category selection). A sibling store — exactly how `store/view.ts` already sits next to `store/filters.ts` — keeps the diff additive and the parity test's existing assertions untouched; it gets its *own* new parity assertions instead.
+- **`lib/speech.ts` and `lib/guideCommands.ts` as pure, DOM-light helpers.** Mirrors `lib/voice.ts`'s explicit design note: "pure, backend-free primitives; hooks/components consume them unchanged." Keeping these as testable pure functions (not buried in a component) matches the codebase's existing unit-test-first convention for every non-trivial browser-API interaction (`voice.test.ts`, `agent.test.ts`, `dates.test.ts`).
 
 ## Architectural Patterns
 
-### Pattern 1: Command Schema = Declarative State Patch (the core agent pattern)
+### Pattern 1: Circuit breaker for agent liveness (NOT a live health-ping)
 
-**What:** The agent's output is not "instructions" — it is a partial description of the desired dashboard state. The frontend merges it into current state. Every field is a closed enum or bounded value; nothing free-form except an optional echo of the user's request.
+**What:** Track the outcome of *real* `/agent` calls in a module-level cache (`app/agent/service.py`), and skip the actual Claude network call for a cooldown window after a failure. `/health` reads this cache; it never calls Claude itself.
 
-**When to use:** Any LLM→UI control system. This is what makes model output safe and deterministic to apply.
+**When to use:** Any time "is the third-party dependency up?" needs to be cheap to check from the frontend. A naive approach — have `/health` make its own test call to Claude — would (a) cost tokens/latency on every poll, (b) need its own rate limiting, and (c) still be wrong the instant *between* polls. The circuit breaker is populated for free by traffic that was going to happen anyway.
 
-**Trade-offs:** Adding a new capability requires touching schema + prompt + reducer (three places), but that friction is exactly what keeps the system verifiable.
+**Trade-offs:** The breaker can be briefly stale (up to the cooldown window) after Claude recovers — acceptable for a personal single-user dashboard where "recovers instantly after being down" isn't a hard requirement, and the next real command re-probes automatically once the cooldown elapses.
 
-**Example:**
-
+**Example (extends `agent/service.py`):**
 ```python
-# backend/app/schemas/commands.py
-from enum import Enum
-from pydantic import BaseModel, Field
+_last_outcome: bool | None = None          # None = untested this boot
+_last_outcome_at: datetime | None = None
+_BREAKER_COOLDOWN = timedelta(seconds=60)
 
-class ChartId(str, Enum):
-    bp_timeline = "bp_timeline"
-    pulse_trend = "pulse_trend"
-    bp_categories = "bp_categories"
-    am_pm_comparison = "am_pm_comparison"
+def _record_outcome(ok: bool) -> None:
+    global _last_outcome, _last_outcome_at
+    _last_outcome, _last_outcome_at = ok, datetime.now()
 
-class AmPm(str, Enum):
-    AM = "AM"; PM = "PM"; ALL = "ALL"
+def agent_reachable() -> bool | None:
+    """Cached, cost-free — read by /health and by interpret()'s kind selection."""
+    return _last_outcome
 
-class DateRange(BaseModel):
-    # Relative OR absolute — model picks relative when user says "last 30 days";
-    # the FRONTEND resolves relative → absolute against the client clock.
-    last_n_days: int | None = Field(None, ge=1, le=3650)
-    start: str | None = None   # ISO date, only when user names explicit dates
-    end: str | None = None
-
-class Action(str, Enum):
-    show_chart = "show_chart"
-    set_filters = "set_filters"
-    reset = "reset"
-    clarify = "clarify"        # model couldn't map the request — ask, don't guess
-
-class DashboardCommand(BaseModel):
-    action: Action
-    chart: ChartId | None = None
-    date_range: DateRange | None = None
-    am_pm: AmPm | None = None
-    confirmation: str          # short text shown to Chris ("Showing BP for the last 30 days, mornings")
+def _breaker_open() -> bool:
+    return (
+        _last_outcome is False
+        and _last_outcome_at is not None
+        and datetime.now() - _last_outcome_at < _BREAKER_COOLDOWN
+    )
 ```
+`call_claude()` checks `_breaker_open()` before `client.messages.parse(...)` and records `True`/`False` in its existing `try`/`except (APIError, ValidationError)` branches. `interpret()` distinguishes `kind="down"` (breaker open, or this call's exception branch just set `agent_reachable() is False`) from `kind="unclear"` (refusal/max_tokens/genuine `Unintelligible` — the model *did* respond).
 
-Key design rules verified against production NL-dashboard systems (Datadog, Tinybird):
-1. **Closed vocabulary** — every controllable dimension is an enum the reducer already handles. Unknown values are impossible after validation.
-2. **Model never computes dates** — "last 30 days" stays as `last_n_days: 30`; resolving to timestamps is the client's job (LLMs get timezone/clock arithmetic wrong; the frontend clock is Chris's clock).
-3. **`clarify` action instead of guessing** — when the transcript doesn't map, the agent returns a question, never a best-guess mutation.
-4. **`confirmation` rides along in the same payload** — one round trip yields both the state change and the accessibility-critical text feedback.
+### Pattern 2: Reuse the confirmation string for speech — don't author new copy
 
-### Pattern 2: Tool Use as the JSON Extraction Mechanism
+**What:** `lib/agent.ts::composeConfirmation()` already produces the exact sentence rendered in the CommandBar's `aria-live` region ("Showing blood pressure, last 30 days, mornings"). Spoken replies call `speechSynthesis.speak(new SpeechSynthesisUtterance(msg))` on that *same* string, at the *same* call sites (`CommandBar.onApplied`, `useVoiceCommand.handleSuccess`) — not a second, independently-maintained "spoken" template.
 
-**What:** On the backend, call Claude with a single tool (`update_dashboard`) whose `input_schema` is generated from the Pydantic model (`DashboardCommand.model_json_schema()`), and `tool_choice={"type": "tool", "name": "update_dashboard"}` to force a tool call. Then re-validate the returned `input` with `DashboardCommand.model_validate()`.
+**When to use:** Any accessibility feature that adds an audio channel alongside an existing visual one. Two independently-authored strings for the same event *will* drift.
 
-**When to use:** This is the standard, GA-supported way to get schema-shaped JSON from Claude on all current models. Anthropic also ships **Structured Outputs** (beta header `structured-outputs-2025-11-13`, Sonnet 4.5/Opus 4.1 as of late 2025) which grammar-constrains generation for guaranteed compliance — use it if available for your chosen model, but **keep the Pydantic validation step regardless**. The project constraint ("never execute raw model output") means validation is defense-in-depth, not redundancy.
-
-**Trade-offs:** Forced tool choice means the model can't reply conversationally — which is exactly right here; the `clarify` action covers the "I don't understand" case inside the schema.
+**Trade-offs:** `composeConfirmation()` must grow one clause for overlays before overlay commands sound complete — a soft dependency, not a blocker (ship speech first covering existing filters; extend both the visual and spoken text together when overlays land, since it's one function).
 
 **Example:**
-
-```python
-# backend/app/services/agent.py
-tool = {
-    "name": "update_dashboard",
-    "description": "Apply a chart/filter change to Chris's health dashboard",
-    "input_schema": DashboardCommand.model_json_schema(),
+```ts
+// lib/agent.ts — single new export, reused by both text and voice call sites
+export function speakConfirmation(msg: string): void {
+  if (!useSpeech.getState().enabled) return;
+  speak(msg); // lib/speech.ts — cancels any in-flight utterance first
 }
-resp = client.messages.create(
-    model=MODEL, max_tokens=500,
-    system=SYSTEM_PROMPT,          # lists charts, filters, today's date, examples
-    tools=[tool],
-    tool_choice={"type": "tool", "name": "update_dashboard"},
-    messages=[{"role": "user", "content": transcript}],
-)
-raw = next(b.input for b in resp.content if b.type == "tool_use")
-command = DashboardCommand.model_validate(raw)   # ValidationError → 422 with friendly message
-return command
 ```
 
-### Pattern 3: Transcript-Source Convergence (voice and text are the same pipeline)
+### Pattern 3: Client-side keyword shortcut for guide navigation — bypass `/agent` entirely
 
-**What:** Voice capture and the text input box both terminate in one function: `sendToAgent(transcript: string)`. Everything downstream — POST `/agent`, dispatch, confirmation display — is shared.
+**What:** "Help" / "show me the guide" / "how do I..." are matched with a small regex in `lib/guideCommands.ts`, checked in `useVoiceCommand.handleResult` and `CommandBar.onSubmit` *before* the text is POSTed to `/agent`. On a match, call `useView.getState().go("guide")` directly — no network round-trip.
 
-**When to use:** Always, for this project. It makes the text box a true equal-fidelity fallback (Firefox, noisy rooms, Speech API failures) and, critically, lets you **build and test the entire agent pipeline before any voice code exists**.
+**When to use:** Navigation intents that must work *even when the paid-API-gated agent is down* (v1.1 explicitly ships without activating billing) and that don't need Claude's disambiguation (a fixed, short phrase list is unambiguous).
 
-**Trade-offs:** None meaningful.
+**Trade-offs:** Duplicates the wake-word-adjacent parsing style already established by `extractCommand()` in `lib/voice.ts`, rather than adding a sixth `AgentOutput.result` variant that would round-trip through a currently-inert ($0-credit) model. This is the one place in the milestone where *not* extending the Claude schema is the right call — extending it would make guide navigation depend on a service the milestone explicitly keeps unfunded.
 
-### Pattern 4: Quarantined Cross-Browser Voice Hook
+### Pattern 4: Overlay markers, not a merged multi-axis chart
 
-**What:** One hook owns all Web Speech API behavior and exposes only `{ isListening, start, stop, error }` plus a transcript callback. Inside it:
+**What:** Labs/incidents/procedures render as point-in-time `ReferenceDot`/`ReferenceLine` markers on top of whichever time-series chart (`bp_timeline` or `pulse_trend`) is currently the hero — never as their own plotted y-values on the BP/pulse axis, and BP and pulse are never merged onto one chart.
 
-- Feature-detect: `const SR = window.SpeechRecognition || window.webkitSpeechRecognition` (Chrome exposes prefixed too; Safari is prefixed-only).
-- **Singleton instance** — creating a new recognizer per utterance causes the iOS system chime and first-recognition failures.
-- **Do not rely on `continuous: true` on iOS.** Community-verified behavior: iOS Safari's continuous mode stops firing `onresult` without firing `onend`/`onerror` (silent death), and accumulates one ever-growing result string. The stable pattern is: detect iOS → `continuous = false` → in `onend`, if a `shouldBeListening` ref is true, restart after ~200–300ms delay. On Chrome, `continuous = true` works but still auto-stops after prolonged silence, so the same restart-on-`onend` loop is the universal implementation — Chrome just restarts less often.
-- The caregiver's initial tap satisfies the user-gesture requirement; the restart loop keeps the session alive hands-free afterward. Show a persistent, high-contrast "Listening" indicator so silent failures are visible.
+**When to use:** This is the architecture this milestone's own example confirms: "hospital-stay markers plotted directly on the BP/pulse timeline" — markers *on* the existing timeline, not a new fused chart. `activeChart` (single-select hero) is unchanged; a new *separate* multi-select (`store/overlay.ts`) controls marker visibility.
 
-**When to use:** This exact project constraint set (continuous hands-free sessions + Safari/iOS support).
+**Trade-offs:** Labs have heterogeneous units (A1C vs. cholesterol vs. whatever future test) — plotting `result` as a y-value alongside BP mmHg is meaningless. Rendering labs as marker events (with the value in the tooltip/label, not on the axis) sidesteps a dual-axis redesign entirely, and keeps `BPTimeline.tsx`'s existing `D-05 fixed clinical y-domain [40,220]` decision untouched. Merging BP+pulse onto one chart (dual y-axis) was considered and rejected: it contradicts the existing fixed-domain decision, and Recharts dual-axis is a known readability/accessibility anti-pattern the project doesn't need to take on for a "visual only" overlay (cross-metric correlation is explicitly out of scope).
 
-**Trade-offs:** The restart loop briefly drops audio between utterances (~200ms) — acceptable for discrete voice commands, unacceptable for dictation (not needed here). MEDIUM confidence: iOS behavior is community-documented, changes across iOS versions, and must be validated on real hardware early.
-
-### Pattern 5: Idempotent ETL via Natural-Key Upsert (parse → derive → upsert)
-
-**What:** Three-stage pipeline where re-running on the same or overlapping file leaves the DB unchanged.
-
-1. **Parse:** OMRON Excel/CSV → normalized DataFrame (column mapping, type coercion, drop empty rows).
-2. **Derive:** pure functions add `am_pm`, `bp_category`, `pulse_category`, `map`, `pulse_pressure` — computed here and only here (single source of truth; matches the existing cleaned CSV).
-3. **Upsert:** `INSERT ... ON CONFLICT (datetime) DO UPDATE` against a **unique constraint on the reading `datetime`** (the natural key of an OMRON export — one cuff reading per timestamp). `DO UPDATE` (not `DO NOTHING`) so corrected notes/values in a re-export win. Report `{inserted, updated}` counts back to the uploader.
-
-```sql
-ALTER TABLE readings ADD CONSTRAINT uq_readings_datetime UNIQUE (datetime);
+**Example (BPTimeline.tsx addition):**
+```tsx
+{overlayEvents?.filter(e => e.type === "incident").map(e => (
+  <ReferenceLine key={e.id} x={e.ts} stroke="var(--cat-stage2)" strokeDasharray="4 4"
+    label={{ value: "Hospital stay", position: "insideTopLeft", fontSize: 14 }} />
+))}
 ```
 
+### Pattern 5: Partial-update "delta" objects all the way down (extend the existing convention, don't invent a new one)
+
+**What:** `DashboardCommand`'s existing rule — "unmentioned fields stay `None` → carry over" — extends naturally to overlays as a nested optional-per-field object, not a pair of add/remove token lists:
 ```python
-# etl/load.py — SQLAlchemy dialect insert
-stmt = pg_insert(readings).values(rows)
-stmt = stmt.on_conflict_do_update(
-    index_elements=["datetime"],
-    set_={c: stmt.excluded[c] for c in DERIVED_AND_VALUE_COLS},
-)
+class OverlayDelta(BaseModel):
+    labs: bool | None = None
+    incidents: bool | None = None
+    procedures: bool | None = None
+
+# on DashboardCommand:
+overlays: OverlayDelta | None = None
 ```
-
-**When to use:** Any file-re-upload ingest. OMRON exports are cumulative (each export contains all history), so overlap on every upload is the normal case, not the edge case.
-
-**Trade-offs:** If two genuine readings ever share an exact timestamp (unlikely with a cuff), the second silently overwrites — acceptable here; note it in upload results. Use SQLite's `ON CONFLICT` (same syntax family) for local dev, or run Postgres locally via Docker to avoid dialect drift.
+**When to use:** Any time a new voice-mutable dimension is added to the command schema — match the existing per-field-optional convention rather than inventing show/hide list semantics that would be the only list-shaped field in the schema.
+**Trade-offs:** None significant — this is the smallest diff that stays structured-outputs-safe (no `min_length`, no numeric bounds, same lowercase-token normalization already applied recursively by `AgentOutput._lower_tokens`).
 
 ## Data Flow
 
-### Voice Command Flow (end to end)
+### Multi-dataset overlay (new)
 
 ```
-Caregiver taps mic (user gesture)
-    ↓
-useSpeechRecognition: SR.start(), continuous session via restart-on-onend loop
-    ↓  onresult (final transcript)
-sendToAgent(transcript)                       ← text input box enters here too
-    ↓  POST /agent  { transcript }            (+ password header)
-FastAPI /agent → services/agent.py
-    ↓  Claude API: system prompt (charts/filters/today's date/examples)
-    ↓             + forced tool_use on DashboardCommand schema
-    ↓  tool_use.input  →  DashboardCommand.model_validate()   ← reject ≠ apply
-    ↓  200 { action, chart, date_range, am_pm, confirmation }
-Frontend: dispatch(command)
-    ↓  reducer merges into dashboard state
-    ↓  (resolves last_n_days → concrete [start, end] using client clock)
-State change triggers:
-    ├── chart component swap / filter re-application → Recharts re-render
-    └── confirmation text displayed in large, high-contrast banner
+Dashboard mount
+  → useReadings(resolved) / useStats(resolved)          [unchanged]
+  → useLabs(resolved) / useIncidents(resolved) / useProcedures(resolved)  [NEW — same
+    date-range params only; am_pm/bp_category don't apply to these tables]
+  → all fetched EAGERLY alongside readings/stats (single wiring point in App.tsx,
+    "Data is wired ONCE here" — matches the existing docstring's own rule); row
+    counts are a single patient's manual entries, negligible fetch cost
+        ↓
+Chart region (ChartDeck → active hero, e.g. BPTimeline)
+  → reads useOverlay().visible.{labs,incidents,procedures}
+  → filters the fetched incidents/procedures/labs to markers, passes as
+    overlayEvents prop
+  → BPTimeline/PulseTrend render ReferenceDot/ReferenceLine, positioned on the
+    SAME numeric time x-axis already used for readings (toTimePoints helper)
 ```
 
-Failure paths (must be first-class): SpeechRecognition error → visible message + text-box prompt; Pydantic validation failure → 422 → "I didn't understand that, try…"; `action: clarify` → show the model's question; API/network error → banner, state untouched. **State never changes unless a fully validated command arrives.**
-
-### Reading Data Flow
+### Manual entry (new)
 
 ```
-GET /readings?start=&end=&am_pm=   →  SQL filter  →  JSON rows
+Caregiver opens Records view (store/view.ts "records")
+  → RecordEntryForm submits via useCreateLab/Incident/Procedure (useMutation,
+    postJson pattern from api/client.ts — Bearer header attached automatically)
+  → on success: queryClient.invalidateQueries(["labs"|"incidents"|"procedures"])
+    → useLabs/useIncidents/useProcedures refetch → overlay markers update
+      immediately without a page reload
 ```
 
-At 132 rows (growing slowly), **fetch the full dataset once on load and filter client-side in the reducer/selectors**. This makes voice commands apply instantly (no fetch round-trip per command) and simplifies state. Keep the server-side filter params on `/readings` anyway — they're cheap, correct API design, and the portfolio story — but the dashboard doesn't need to call them per command. Revisit only if data grows to tens of thousands of rows.
-
-### Ingest Flow
+### Voice/text overlay command (new)
 
 ```
-Caregiver: file picker → POST /upload (multipart)
-    → save temp file → etl.run(file) → parse → derive → upsert
-    → { inserted: 12, updated: 120 } → shown in UI
-Initial seed: python -m app.etl.run data/omron_export.xlsx  (same code path, CLI)
+"dashboard, show hospital stays on the chart"
+  → wake-word gate (lib/voice.ts, unchanged) strips to "show hospital stays..."
+  → NOT matched by guideCommands.ts (Pattern 3) → falls through to /agent as today
+  → Claude (when funded) parses → DashboardCommand{overlays: {incidents: true}}
+  → service.py _apply_command maps cmd.overlays → AppliedFilters.overlays
+  → frontend applyAgentFilters() reads f.overlays → useOverlay.getState().setVisible(...)
+  → composeConfirmation() appends an overlay clause → same string shown AND spoken
+    (Pattern 2)
 ```
 
-### State Management
+### Agent liveness (new)
 
-One reducer, one state object — the command schema and the state shape are two views of the same design:
-
-```typescript
-interface DashboardState {
-  chart: ChartId;                       // mirrors DashboardCommand.chart
-  dateRange: { start: Date; end: Date } | null;  // resolved, absolute
-  amPm: "AM" | "PM" | "ALL";
-  readings: Reading[];                  // full dataset, fetched once
-  lastConfirmation: string | null;
-  listening: boolean;
-}
 ```
+App mount → useHealth() polls GET /health (cheap, no DB/Claude call) → banner
+  shows "unavailable" if agentReachable === false
 
-Manual filter controls (FilterBar) dispatch the **same actions** as agent commands — voice, text-agent, and mouse are three input sources for one state machine.
+Any real /agent call fails → service.py circuit breaker records False AND this
+  reply's kind = "down" → CommandBar/useVoiceCommand's onSuccess sets
+  store/agentStatus.ts's flag immediately (no wait for the next /health poll)
+  → AgentStatusBanner reacts on the SAME tick the failure is known
+
+Next /agent call within the cooldown window → circuit breaker skips the network
+  call entirely (Pattern 1) → instant "down" reply, no 15s timeout wait, no
+  wasted Claude request
+```
 
 ## Scaling Considerations
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Current (1 patient, ~130 rows, handful of users) | Everything above is sufficient. Fetch-all + client filtering. Free/hobby tiers on Vercel + Railway/Render fine. |
-| 10k+ readings (years of data + future vitals) | Switch dashboard to server-side filtered fetches keyed on state; add index on `readings(datetime)` (already unique). |
-| Multi-patient (explicitly out of scope) | Would require real auth + patient_id foreign keys everywhere — this is the "don't build it now, don't preclude it" line the empty future tables already respect. |
+Single-user personal dashboard — scaling to "many users" is explicitly out of scope for this whole project. The only real constraint at any scale here is UX latency, not throughput:
 
-### Scaling Priorities
+| Concern | Now (single user, dozens of records/type) | If usage grows (hundreds of records/type) |
+|---------|---------------------------------------------|---------------------------------------------|
+| Eager-fetching labs/incidents/procedures on every dashboard mount | Fine — 3 cheap extra GETs, same pattern as readings/stats | Switch `useLabs`/etc. to `enabled: visible.labs` (TanStack Query lazy-fetch) so overlay data only loads once a type is toggled on |
+| Overlay marker rendering density on a long date range | Fine — a handful of incidents/procedures per year | If dozens of markers cluster in one view, consider Recharts marker clustering/grouping rather than one `ReferenceLine` per event |
+| `/health` polling frequency | 60s interval, negligible cost (in-memory dict read) | No change needed — this never touches the DB or Claude |
 
-1. **First real bottleneck:** Render/Railway free-tier cold starts (backend sleeps; first voice command of a session takes 20–50s). Mitigate with a paid hobby tier or a wake-up ping when the password gate is passed — matters a lot for a voice-first UX.
-2. **Second:** Claude API latency per command (~1–3s). Acceptable for v1; if it grates, add a client-side fast path that pattern-matches trivial commands ("show pulse") before falling through to the agent.
+## Anti-Patterns to Avoid
 
-## Anti-Patterns
+### Anti-Pattern 1: Live-pinging Claude from `/health`
 
-### Anti-Pattern 1: LLM Output Applied Directly (or LLM generates SQL/chart config)
+**What people do:** Make `/health` issue a real (even minimal) `messages.parse()` call to "verify" the agent is reachable.
+**Why it's wrong:** Costs tokens on every poll, adds latency to what should be a near-instant liveness check, and needs its own rate limiting to avoid becoming a second cost/DoS surface next to `/agent`'s existing 20/minute limiter.
+**Instead:** Pattern 1 — cache the outcome of real `/agent` traffic; `/health` only reads the cache.
 
-**What people do:** Have the model return arbitrary JSON/SQL/JSX and interpret or execute it.
-**Why it's wrong:** Model output is untrusted input (a hard project constraint); freeform output is unverifiable, injectable, and non-deterministic to apply.
-**Do this instead:** Closed enum command vocabulary, forced tool use, Pydantic validation, reducer application. The model chooses from options; it never authors behavior.
+### Anti-Pattern 2: Folding overlay toggles into `store/filters.ts`
 
-### Anti-Pattern 2: Frontend Calls Claude Directly
+**What people do:** Add `labsVisible`/`incidentsVisible`/`proceduresVisible` fields directly onto the existing filter store because "it's all filter-ish state."
+**Why it's wrong:** `store/filters.ts` is explicitly documented as *the* Phase 3 agent command schema, and `agent-parity.test.ts` asserts its entire action surface against a fixed list — every unrelated addition forces edits to a test whose entire purpose is catching *unintended* drift, defeating its value as a guardrail.
+**Instead:** A sibling store (Pattern in Project Structure), exactly how `store/view.ts` already coexists with `store/filters.ts`.
 
-**What people do:** Put the Anthropic key in the React app "to save a hop."
-**Why it's wrong:** Key exposure in a public bundle; also loses the server-side validation choke point.
-**Do this instead:** All Claude traffic through `/agent`; only `VITE_API_URL` in frontend env.
+### Anti-Pattern 3: Routing guide navigation through the (inert) Claude agent
 
-### Anti-Pattern 3: Command Schema Diverges from Dashboard State
+**What people do:** Add `open_guide` as a new `AgentOutput.result` variant so "help" is "handled the same way as everything else."
+**Why it's wrong:** The milestone explicitly does not activate the paid API — every command that requires a live model call is unverifiable in production right now (same caveat the codebase already carries for the whole `/agent` endpoint). Making the guide depend on it means the one feature most likely to be needed *during an agent outage* ("how do I use this without the assistant working?") is the one feature that breaks during that exact outage.
+**Instead:** Pattern 3 — a client-side keyword shortcut, unconditionally available.
 
-**What people do:** Design the agent's JSON independently of frontend state, then write a translation layer full of special cases.
-**Why it's wrong:** Every mismatch is a bug surface; commands become non-deterministic to apply.
-**Do this instead:** Build the dashboard with manual controls **first**; the state shape those controls mutate *is* the command schema. Agent capability = exactly what the UI can already do.
+### Anti-Pattern 4: Plotting lab `result` values on the BP/pulse y-axis
 
-### Anti-Pattern 4: LLM Resolves Dates and Derived Values
-
-**What people do:** Prompt the model to output absolute timestamps for "last 30 days," or to classify BP categories in the agent.
-**Why it's wrong:** Wrong clock/timezone, non-reproducible; and medical categorization must come from the tested ETL functions, nowhere else.
-**Do this instead:** Relative ranges in the schema, resolved by client code; derived medical fields computed once in `etl/derive.py` and stored.
-
-### Anti-Pattern 5: Trusting `continuous: true` Cross-Browser
-
-**What people do:** Set `continuous = true`, ship, works on desktop Chrome, silently dies on iOS.
-**Why it's wrong:** iOS Safari stops delivering results without any error/end event; Chrome auto-stops on prolonged silence.
-**Do this instead:** Universal restart-on-`onend` loop guarded by a `shouldBeListening` ref; singleton recognizer; visible listening indicator; test on a real iPhone in the same phase the hook is built.
-
-### Anti-Pattern 6: Append-Only or Truncate-and-Reload ETL
-
-**What people do:** `df.to_sql(if_exists="append")` (duplicates every re-upload, since OMRON exports are cumulative) or `if_exists="replace"` (drops constraints, races readers).
-**Do this instead:** Natural-key upsert (Pattern 5).
+**What people do:** Add a `Line` or `Scatter` series for lab results directly onto `BPTimeline`'s existing `[40, 220]` y-domain.
+**Why it's wrong:** Lab units are heterogeneous and unrelated to mmHg; a value of "6.2" (A1C) or "180" (cholesterol) plotted on a blood-pressure axis is either invisible (out of domain) or misleading (coincidentally in-domain but meaningless there).
+**Instead:** Pattern 4 — labs render as event markers (timestamp + label/value in the marker's tooltip), never as a plotted line sharing the reading axis.
 
 ## Integration Points
 
@@ -371,48 +320,33 @@ Manual filter controls (FilterBar) dispatch the **same actions** as agent comman
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| Claude API | Backend-only; forced tool use against Pydantic-generated JSON schema; optionally Structured Outputs beta (`structured-outputs-2025-11-13`, Sonnet 4.5) for grammar-guaranteed JSON | Always re-validate with Pydantic regardless; key in Railway/Render env var |
-| Web Speech API | Browser-native; vendor-prefix shim; audio goes to Google (Chrome) / Apple (Safari) servers — note this in privacy posture | Requires HTTPS + user gesture; unavailable in Firefox → text fallback |
-| Vercel (frontend) | Static Vite build; `VITE_API_URL` env per environment | No secrets in frontend env |
-| Railway/Render (backend + Postgres) | FastAPI + managed Postgres; `DATABASE_URL`, `ANTHROPIC_API_KEY`, `SITE_PASSWORD`, `ALLOWED_ORIGINS` env vars | CORS middleware must allow-list the exact Vercel origin (including preview URLs if used); cold starts on free tier hurt voice UX |
+| Web SpeechSynthesis API (browser-native, NEW) | `window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))`, feature-detected like `lib/voice.ts` already does for `SpeechRecognition` | **iOS Safari specifics (verified 2026-08):** `speak()` must be called from within a user-gesture-connected handler on iOS — WebKit silently drops the utterance otherwise ([weboutloud.io](https://weboutloud.io/bulletin/speech_synthesis_in_safari/), [talkrapp.com](https://talkrapp.com/speechSynthesis.html)). Since the confirmation is spoken from an *async* `/agent` response handler (a promise callback, not the raw tap), this needs real-device verification — flag exactly like the existing "#1 device-test risk" for Speech Recognition in `STACK.md`. `getVoices()` is unreliable on Safari (returns nothing/late) — do not build voice-selection UI, accept the system default and set `utterance.lang` explicitly. Hold the `SpeechSynthesisUtterance` in a ref/variable for the duration of speech — Safari can garbage-collect it early and silently drop `onend`/`onerror` callbacks. |
+| Claude API (existing, unchanged transport) | No new integration — only the *interpretation* of failures changes (Pattern 1) | No new endpoints, no new SDK calls beyond what `agent/service.py` already makes |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| Voice hook ↔ agent pipeline | Transcript string only | Hook knows nothing about commands |
-| Frontend ↔ backend | JSON over HTTPS; password header on every request | The `DashboardCommand` JSON shape is the shared contract — mirror it as a TS type |
-| Agent service ↔ Claude | Tool schema derived from `schemas/commands.py` | One source of truth for the vocabulary |
-| /upload router ↔ ETL | Direct function call (same process) | Also invokable as CLI for seeding; no queue needed at this scale |
-| ETL ↔ Postgres | Upsert on `UNIQUE (datetime)` | Idempotency lives in the DB constraint, not application logic |
-| Charts ↔ state | Read-only selectors | Charts never fetch or filter independently |
+| `store/overlay.ts` ↔ chart components | Direct zustand hook read (`useOverlay((s) => s.visible)`) | Same pattern as `store/filters.ts` ↔ `ChartDeck`/`FilterBar` today |
+| `store/agentStatus.ts` ↔ `useHealth()` poll | Two independent sources of the SAME logical fact ("is the agent reachable") — reactive (per-reply) and polled (per-mount/interval) | Reconcile by OR-ing them in `AgentStatusBanner` (`down = agentStatus.down || health.agentReachable === false`); do not try to make one authoritative over the other, they cover different timing gaps |
+| `agent/schemas.py` (backend) ↔ `api/types.ts` (frontend) | Compile-time-adjacent, enforced at test-time by `agent-parity.test.ts` reading `schemas.py` off disk | Any new Claude-facing token (`DatasetToken`) MUST be added to this test's enumerated unions in the SAME change — this is the existing VOICE-05/ACC-03 guardrail, not a new mechanism |
+| `lib/guideCommands.ts` ↔ `/agent` | Short-circuit BEFORE the network call, not a filter on the reply | Guide phrases never reach the backend at all — zero coupling to agent-liveness state |
 
-## Suggested Build Order (dependency-driven)
+## Build Order — Dependency Reasoning
 
-The dependencies force a specific sequence; the key non-obvious ordering is **dashboard before agent, agent before voice**:
-
-1. **Schema + ETL + seed** — Alembic migrations (readings unique-keyed + empty future tables), `parse/derive/load`, derivation tests (required constraint), seed the 132 readings via CLI. *Everything downstream needs real data; derivation tests are cheapest before anything depends on them.*
-2. **Read API** — `/readings` (filters) + `/stats`. *Trivially verifiable against known seed data.*
-3. **Dashboard with manual controls** — four Recharts views + FilterBar + the state reducer, accessibility baked in (targets, contrast, font sizes). *This step defines the state shape, which defines the command schema — building the agent first would mean designing the contract against an imaginary UI.*
-4. **Agent via text input** — `schemas/commands.py`, `/agent`, Claude tool-use call, text box wired to `sendToAgent`, reducer accepts commands. *Full agent pipeline exercised and debuggable with zero voice complexity; the text fallback requirement is satisfied as a side effect.*
-5. **Voice capture** — `useSpeechRecognition` hook, Chrome first, then iOS Safari restart-loop hardening on a real device. *Purely additive: it produces transcripts into an already-working pipeline, so voice bugs are isolated from agent bugs.*
-6. **Upload + password gate + deploy** — `/upload` endpoint (reuses ETL), auth dependency + PasswordGate, CORS/env config, Vercel + Railway/Render. *Gate must land before or with deployment (real health data); upload can trail because the seed CLI covers data needs until then.*
-
-Steps 1–2 and 3 can partially overlap (mock data for chart layout), but the state shape must be settled before step 4 starts.
+1. **Agent-liveness (backend circuit breaker + `/health` + frontend banner).** Zero dependency on the other three features; smallest fully-testable slice (extends the existing `test_health.py`/`test_agent_route.py` scaffolding directly). Ship first because spoken replies (step 6) want to *speak* the "unavailable" copy, and the guide (step 7) should document the banner once it exists.
+2. **Multi-dataset backend** (`labs.py`/`incidents.py`/`procedures.py` routers + schemas). Pure backend, no frontend dependency, mirrors `readings.py` exactly — lowest-risk slice of the biggest feature.
+3. **Multi-dataset frontend — manual-entry forms.** Depends only on (2)'s POST endpoints. Independent of overlay rendering (3 and 4 can run in parallel).
+4. **Multi-dataset frontend — overlay store + fetch hooks + chart markers.** Depends only on (2)'s GET endpoints; renders correctly against empty tables ("0 events") even before (3) exists.
+5. **Multi-dataset voice/schema extension.** Depends on (4)'s `store/overlay.ts` existing — the parity test needs real store actions to assert against, and `service.py`'s `_apply_command` needs `AppliedFilters.overlays` to have somewhere to write. Ship click/tap overlay toggles (step 4) as the functional MVP; treat live-model accuracy for overlay voice commands as unverifiable-in-production, same existing caveat the whole agent already carries.
+6. **Spoken replies.** Functionally independent of everything except reusing `composeConfirmation()` (already exists) — but sequence after (1) and (5) so the spoken copy covers "unavailable" and overlay confirmations without touching the same call sites twice.
+7. **Full site guide.** No hard technical dependency on anything above (static content + `store/view.ts` extension + Pattern 3's client-side shortcut) — sequenced last purely so its content can document the finished overlay toggles, mute button, and status banner rather than needing a follow-up content edit.
 
 ## Sources
 
-- [Anthropic — Structured outputs (official docs)](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) — beta header, model availability, tool-use vs JSON-output distinction (HIGH)
-- [Instructor — Anthropic structured outputs with Pydantic](https://python.useinstructor.com/integrations/anthropic/) — tool-use + Pydantic validation pattern (HIGH)
-- [Datadog — Building reliable dashboard agents](https://www.datadoghq.com/blog/llm-observability-at-datadog-dashboards/) — NL → validated widget/dashboard JSON in production (MEDIUM)
-- [Tinybird — Natural language dashboard filters](https://www.tinybird.co/blog/natural-language-dashboard-filters) — LLM emitting structured filter params for a dashboard API (MEDIUM)
-- [Towards Data Science — JSON mode vs function calling for structured output](https://towardsdatascience.com/structured-outputs-with-llms-json-mode-function-calling-and-when-to-use-each/) (MEDIUM)
-- [lilting.ch — Stabilizing the WebSpeech API on iOS](https://lilting.ch/en/articles/ios-webspeech-api-tips) — singleton instance, continuous=false + restart-on-onend with delay, mic warm-up (MEDIUM, community; validate on device)
-- [Andrea Giammarchi — Taming the Web Speech API](https://webreflection.medium.com/taming-the-web-speech-api-ef64f5a245e1) — continuous-mode behavior divergence Chrome vs iOS (MEDIUM)
-- [WebAudio/web-speech-api issue #96 — Safari SpeechRecognition problems](https://github.com/WebAudio/web-speech-api/issues/96) — silent onresult death on Safari (MEDIUM)
-- [PostgreSQL upsert patterns — ON CONFLICT idempotency](https://viprasol.com/blog/postgres-upsert-patterns/) and [QueryPlane — INSERT ON CONFLICT in practice](https://queryplane.com/docs/blog/postgres-upsert) — natural-key requirement for idempotent re-runs (MEDIUM, matches PostgreSQL official semantics)
-- [pangres — pandas upsert helper](https://pypi.org/project/pangres/) — DataFrame ON CONFLICT loading option (MEDIUM)
+- Direct codebase inspection (HIGH confidence — all file paths cited above were read in full): `backend/app/models.py`, `backend/app/agent/schemas.py`, `backend/app/agent/service.py`, `backend/app/agent/prompt.py`, `backend/app/agent/copy.py`, `backend/app/routers/agent.py`, `backend/app/routers/readings.py`, `backend/app/routers/stats.py`, `backend/app/deps.py`, `backend/app/schemas.py`, `backend/app/main.py`, `backend/tests/test_health.py`, `frontend/src/store/filters.ts`, `frontend/src/store/view.ts`, `frontend/src/store/theme.ts`, `frontend/src/lib/agent.ts`, `frontend/src/lib/voice.ts`, `frontend/src/hooks/useVoiceCommand.ts`, `frontend/src/hooks/useAgent.ts`, `frontend/src/hooks/useReadings.ts`, `frontend/src/api/client.ts`, `frontend/src/api/types.ts`, `frontend/src/components/CommandBar.tsx`, `frontend/src/components/FilterBar.tsx`, `frontend/src/components/ChartDeck.tsx`, `frontend/src/components/charts/BPTimeline.tsx`, `frontend/src/components/UploadPage.tsx`, `frontend/src/components/Header.tsx`, `frontend/src/App.tsx`, `frontend/src/lib/agent-parity.test.ts`, `.planning/PROJECT.md`.
+- Web SpeechSynthesis Safari/iOS behavior — [The State of Speech Synthesis in Safari (weboutloud.io)](https://weboutloud.io/bulletin/speech_synthesis_in_safari/), [Lessons Learned Using the javascript speechSynthesis API (talkrapp.com)](https://talkrapp.com/speechSynthesis.html), [MDN SpeechSynthesis.cancel()](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis/cancel) — MEDIUM confidence (community-sourced quirks, consistent across multiple independent sources, but not Apple's own documentation; flagged for real-device verification exactly like the project's existing Speech Recognition risk).
 
 ---
-*Architecture research for: voice-controlled personal health dashboard*
-*Researched: 2026-07-07*
+*Architecture research for: Health Visualizer v1.1 (Polish & Records) — spoken replies, multi-dataset overlay, site guide, agent-liveness*
+*Researched: 2026-08-19*
