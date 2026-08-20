@@ -26,7 +26,7 @@ from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
-from app.models import Reading
+from app.models import Incident, LabResult, Procedure, Reading
 
 # MUST match derivations.py verbatim — spaces are fine in query params.
 BPCategory = Literal[
@@ -73,4 +73,73 @@ class ReadingFilters:
             stmt = stmt.where(Reading.am_pm == self.am_pm)
         if self.bp_category:
             stmt = stmt.where(Reading.bp_category == self.bp_category)
+        return stmt
+
+
+class LabFilters:
+    """Date-range query-param filter set for /labs (D-04: date-range only)."""
+
+    def __init__(
+        self,
+        start_date: Annotated[date | None, Query()] = None,
+        end_date: Annotated[date | None, Query()] = None,
+    ) -> None:
+        self.start_date = start_date
+        self.end_date = end_date
+
+    def apply(self, stmt: Select) -> Select:
+        """Add where-clauses for every provided filter to ``stmt``."""
+        if self.start_date:
+            stmt = stmt.where(LabResult.date >= self.start_date)
+        if self.end_date:
+            stmt = stmt.where(LabResult.date <= self.end_date)
+        return stmt
+
+
+class ProcedureFilters:
+    """Date-range query-param filter set for /procedures (D-04: date-range only)."""
+
+    def __init__(
+        self,
+        start_date: Annotated[date | None, Query()] = None,
+        end_date: Annotated[date | None, Query()] = None,
+    ) -> None:
+        self.start_date = start_date
+        self.end_date = end_date
+
+    def apply(self, stmt: Select) -> Select:
+        """Add where-clauses for every provided filter to ``stmt``."""
+        if self.start_date:
+            stmt = stmt.where(Procedure.date >= self.start_date)
+        if self.end_date:
+            stmt = stmt.where(Procedure.date <= self.end_date)
+        return stmt
+
+
+class IncidentFilters:
+    """Date-range query-param filter set for /incidents (D-04: date-range only).
+
+    ``Incident.datetime_`` is a ``DateTime`` column (not ``Date``), same as
+    ``Reading.datetime_`` — mirrors ``ReadingFilters.apply``'s inclusive
+    end-of-day comparison verbatim (Pitfall 4).
+    """
+
+    def __init__(
+        self,
+        start_date: Annotated[date | None, Query()] = None,
+        end_date: Annotated[date | None, Query()] = None,
+    ) -> None:
+        self.start_date = start_date
+        self.end_date = end_date
+
+    def apply(self, stmt: Select) -> Select:
+        """Add where-clauses for every provided filter to ``stmt``."""
+        if self.start_date:
+            stmt = stmt.where(
+                Incident.datetime_ >= datetime.combine(self.start_date, datetime.min.time())
+            )
+        if self.end_date:  # inclusive end date — Pitfall 4, safe at date.max
+            stmt = stmt.where(
+                Incident.datetime_ <= datetime.combine(self.end_date, datetime.max.time())
+            )
         return stmt

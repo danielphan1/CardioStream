@@ -16,6 +16,7 @@ Pinned invariants:
 
 # Alias the type: the JSON field is literally named ``datetime``, which would
 # otherwise shadow the annotation inside the model class namespace.
+from datetime import date as DateType
 from datetime import datetime as DateTimeType
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
@@ -37,6 +38,79 @@ class ReadingOut(BaseModel):
     pulse_category: str
     map: float = Field(validation_alias=AliasChoices("map_value", "map"))
     pulse_pressure: int
+    notes: str | None = None
+
+
+class LabResultOut(BaseModel):
+    """One lab result as served by GET /labs (OVERLAY-01)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    date: DateType
+    test_name: str
+    result: float | None = None
+    unit: str | None = None
+    range_low: float | None = None
+    range_high: float | None = None
+    notes: str | None = None
+
+
+class LabResultCreate(BaseModel):
+    """POST /labs request body (D-03: date + test_name required)."""
+
+    date: DateType
+    test_name: str
+    result: float | None = None
+    unit: str | None = None
+    range_low: float | None = None
+    range_high: float | None = None
+    notes: str | None = None
+
+
+class IncidentOut(BaseModel):
+    """One incident as served by GET /incidents (OVERLAY-01)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    # attribute is datetime_; JSON key is datetime — same shadowing reason as
+    # ReadingOut.datetime (Pitfall 3).
+    datetime: DateTimeType = Field(validation_alias=AliasChoices("datetime_", "datetime"))
+    incident_type: str
+    duration: str | None = None
+    notes: str | None = None
+
+
+class IncidentCreate(BaseModel):
+    """POST /incidents request body (D-03: datetime + incident_type required)."""
+
+    datetime: DateTimeType
+    incident_type: str
+    duration: str | None = None
+    notes: str | None = None
+
+
+class ProcedureOut(BaseModel):
+    """One procedure as served by GET /procedures (OVERLAY-01)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    date: DateType
+    procedure_name: str
+    location: str | None = None
+    outcome: str | None = None
+    notes: str | None = None
+
+
+class ProcedureCreate(BaseModel):
+    """POST /procedures request body (D-03: date + procedure_name required)."""
+
+    date: DateType
+    procedure_name: str
+    location: str | None = None
+    outcome: str | None = None
     notes: str | None = None
 
 
