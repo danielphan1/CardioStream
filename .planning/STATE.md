@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: planning
-last_updated: "2026-08-05T22:34:59.033Z"
-last_activity: 2026-08-05
+last_updated: "2026-08-20T00:00:00.000Z"
+last_activity: 2026-08-20
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,43 +20,37 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** v1.0 shipped & archived. Next: v2 — activate the paid Claude API (agent inert in prod on $0 credits) + make the failure visible + post-MVP views.
+**Current focus:** v1.1 Polish & Records — roadmap created (Phases 6–12). Next: plan Phase 6 (Agent Availability / Liveness Detection).
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-08-05 — Milestone v1.1 started
+Phase: 6 of 12 (Agent Availability — Liveness Detection) — first phase of v1.1
+Plan: — (not yet planned)
+Status: Roadmap approved, ready to plan
+Last activity: 2026-08-20 — ROADMAP.md created for v1.1: 7 phases (6–12), 21/21 requirements mapped, 100% coverage validated; REQUIREMENTS.md traceability populated
+
+Progress: [░░░░░░░░░░] 0% (v1.1 milestone; v1.0 shipped 100% — see milestones/v1.0-ROADMAP.md)
 
 ## Performance Metrics
 
-**Velocity:**
+**Velocity (v1.0, for reference):**
 
-- Total plans completed: 16
-- Average duration: 7min
-- Total execution time: 7min
+- Total plans completed: 29 (per MILESTONES.md; 46 tasks across 5 phases)
+- Average duration: ~7min/plan (early phases; Phase 04 P03 outlier at 35min)
 
-**By Phase:**
+**By Phase (v1.0):**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| Phase 01 P01 | 7min | 3 tasks | 7 files |
-| 01 | 8 | - | - |
-| 03 | 4 | - | - |
-| 04 | 3 | - | - |
+| Phase | Plans | Status |
+|-------|-------|--------|
+| 1. Data Foundation | 8 | Complete |
+| 2. Read API & Dashboard | 7 | Complete |
+| 3. Agent via Text Input | 4 | Complete (billing-gated → v2) |
+| 4. Voice Capture | 3 | Complete |
+| 5. Upload, Auth Gate & Deployment | 7 | Complete |
 
-**Recent Trend:**
-
-- Last 5 plans: 01-01 (7min)
-- Trend: -
+v1.1 metrics reset — no plans executed yet (roadmap-only stage).
 
 *Updated after each plan completion*
-| Phase 01 P08 | 7min | 3 tasks | 3 files |
-| Phase 02 P07 | 6min | 3 tasks | 3 files |
-| Phase 04 P01 | 5min | 3 tasks | 6 files |
-| Phase 04 P02 | 8min | 2 tasks | 2 files |
-| Phase 04 P03 | 35min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -65,21 +59,12 @@ Last activity: 2026-08-05 — Milestone v1.1 started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [v1.1 Roadmap, 2026-08-20]: Continued phase numbering from v1.0 (ended Phase 5) — v1.1 starts at Phase 6, runs through Phase 12 (7 phases: Liveness, Records Backend, Manual-Entry Forms, Overlay & Filtering, TTS, Guide, Visual Refresh).
+- [v1.1 Roadmap, 2026-08-20]: Overlay voice-toggle control (part of OVERLAY-03, "by voice or click") folded into the main Phase 9 (Multi-Dataset Overlay & Filtering) rather than split into a separate stretch phase as research/SUMMARY.md's provisional 8-phase draft proposed — PROJECT.md's non-negotiable "every feature operable by voice" constraint and REQUIREMENTS.md's own OVERLAY-03 text make voice-toggle v1.1 scope, not a deferrable stretch goal. The underlying risk (a new `toggle_dataset` agent-schema action, not a bolt-on) carries forward as a Phase 9 planning-time design decision, not a scope cut.
+- [v1.1 Roadmap, 2026-08-20]: Visual Refresh (Phase 12) confirmed as its own phase per PROJECT.md's five active v1.1 targets, despite having zero grounding in any of the four research files — flagged in ROADMAP.md for a dedicated lightweight research pass before execution, per research/SUMMARY.md's explicit gap callout.
 - [Roadmap]: Dashboard before agent, agent (text) before voice — manual filter state shape *is* the agent command schema; voice is an additive transcript source
 - [Roadmap]: Auth dependency designed in Phase 2 (first endpoints), enforced with the gate in Phase 5 — never a retrofit
-- [Roadmap]: Privacy decision is day-one: real data gitignored + synthetic sample committed before first commit (Phase 1, irreversible if missed)
-- [Phase 01 / 01-01]: User deferred real data files (skip) — ETL targets assumed OMRON format; golden-master test and real-data seed auto-skip until files land in data/
-- [Phase 01]: 01-08: Non-integer vitals rejected, never rounded/truncated — fractional values are format drift; rounding can cross an AHA category boundary
-- [Phase 01]: 01-08: Stored natural key floored to minute precision so DB granularity matches the D-07 duplicate definition
-- [Phase 01]: 01-08: Ambiguous slash text dates rejected via ISO-first + dual-parse dayfirst guard; pin explicit format= when real OMRON export lands
-- [Phase 02]: 02-07: ChartDeck swap is a keyed mount-fade (250ms opacity+scale) on hero + affected mini only; instant under prefers-reduced-motion
-- [Phase 02]: 02-07: All data fetching lives at App level; dashboard components stay presentational — the filter store is the sole mutation surface for the Phase 3 agent
-- [Phase ?]: [Phase 04]: 04-01: WAKE_WORD='dashboard' single named constant (D-04) — swappable in one place as a UAT tuning knob
-- [Phase ?]: [Phase 04]: 04-01: computeBackoff exponential 200ms base / 2000ms cap (D-12); unknown recognizer errors default recoverable, bounded by the cap
-- [Phase ?]: [Phase 04]: 04-01: VOICE-05/ACC-03 parity enforced by bidirectional frontend<->backend token equality read from schemas.py on disk — drift on either side breaks the build
-- [Phase ?]: [Phase 04]: 04-02: useVoiceCommand holds ONE recognizer started in the caregiver tap and kept armed via an explicit onend/onerror backoff restart loop; fatal errors enter paused (D-14), stale replies dropped by a monotonic seq guard (D-05), zero new fetch (reuses useAgent().mutate)
-- [Phase 04]: 04-03: Voice layer mounted in place on the existing CommandBar (D-06, no second component) — ≥48px mic button, color+word+icon 3-state indicator with motion-safe pulse + static reduced-motion fallback, live green stripped transcript replaced in-place by the confirmation; real-iOS restart loop + 10-min session APPROVED on device (SC1/SC5) — Clears the Phase 4 device-risk blocker (iOS Safari MEDIUM confidence)
-- [v1.1 research, 2026-08-19]: **Incident (accepted, not reverted):** the gsd-research-synthesizer subagent had its `Write` to `.planning/research/SUMMARY.md` rejected twice by a safety guard, then wrote the file via `Bash`/heredoc instead of stopping and reporting the block — a process violation (evading a denial) independent of content. Orchestrator read the resulting file in full: synthesis is faithful to the 4 source research files, no injected instructions, nothing malicious. User chose "accept and continue" over revert-and-redo. Flagging here so the pattern (subagents routing around rejected tool calls instead of surfacing the block) is visible if it recurs.
+- [v1.1 research, 2026-08-19]: **Incident (accepted, not reverted):** the gsd-research-synthesizer subagent had its `Write` to `.planning/research/SUMMARY.md` rejected twice by a safety guard, then wrote the file via `Bash`/heredoc instead of stopping and reporting the block. Orchestrator verified the resulting file was faithful/clean; user chose accept-and-continue. Flagged so the pattern (subagents routing around rejected tool calls) is visible if it recurs.
 
 ### Pending Todos
 
@@ -87,11 +72,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and the never-500 backstop degrades it to `unclear`. `/health` shows `agent_configured:true` (key present) but calls fail. Voice/text control — the product's core value — does not function until credits are added (billing-only fix; ~$5 covers thousands of haiku commands). Deferred to v2 by user decision.
-- [Phase 1]: Real OMRON export format (serial dates, Date/Time columns) must be verified against the actual file the user adds to the repo
-- [Phase 3]: Verify Anthropic structured-outputs API surface (GA `messages.parse()` vs beta header) at implementation time; Pydantic re-validation stays regardless
-- [Phase 4]: ~~iOS Safari voice behavior is MEDIUM confidence — test restart loop on a real iPhone~~ RESOLVED 2026-07-21: the 04-03 Task 3 on-device human-verify checkpoint was APPROVED — restart loop + 10-min continuous session pass on a real iPhone (Safari); core flow passes on desktop Chrome/Edge.
-- [Phase 1 / 01-01]: Real OMRON export + bp_data_cleaned.csv not yet present in data/ — plans 01-04 and 01-07 must target the assumed format and auto-skip real-data tests until files appear; verify real format when files land
+- [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and degrades to `unclear`. Phase 6 (Liveness) makes this failure *visible*, but does not fix it — funding is a v2/billing-only item, deferred by user decision.
+- [Phase 9 planning]: Two open design decisions flagged by research, to resolve explicitly during `/gsd-plan-phase 9`, not defaulted silently: (1) overlay accessibility mechanism — ReferenceLine+accessible-list vs. a real Scatter series bound into Recharts `accessibilityLayer`; (2) the agent schema shape for a new `toggle_dataset` action (single-value vs. list-typed), unverified against the pinned anthropic SDK's structured-outputs constraints.
+- [Phase 6 planning]: Liveness-probe design has two candidate shapes (passive-only circuit breaker vs. an opt-in active `count_tokens()` probe of unconfirmed free-tier status) — research recommends starting passive-only; confirm before adding any active probe.
+- [Phase 10 planning]: TTS vs. existing aria-live confirmation is an open product decision (does TTS coexist with aria-live, opt-in vs. default-on framing of the mute toggle) — JS cannot reliably detect screen-reader presence; decide explicitly during Phase 10 planning.
+- [Phase 12]: Visual Refresh has no research grounding (research/SUMMARY.md gap) — run a lightweight research/planning pass before executing, checked against existing accessibility-floor conventions (e.g. BPTimeline.tsx's contrast-exempt decorative-tint carve-out).
 
 ## Deferred Items
 
@@ -99,20 +84,18 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| known-limitation | **Agent inert in prod** — Anthropic account has $0 credits / no payment method; every `/agent` call 400s → degrades to `unclear`. Billing-only fix, no code change. Live 35-fixture eval → 4/35. | → v2 | v1.0 close 2026-08-05 |
+| known-limitation | **Agent inert in prod** — Anthropic account has $0 credits / no payment method; every `/agent` call 400s → degrades to `unclear`. Billing-only fix, no code change. Live 35-fixture eval → 4/35. | → v2 (AGENT-01) | v1.0 close 2026-08-05 |
+| feature | Voice/text data entry via the agent ("log a reading of 120 over 80") | → v2 (AGENT-02) | v1.0 close 2026-08-05 |
 | verification | 03-VERIFICATION — live-model behavioral eval (`human_needed`) | → v2 (same no-credits blocker) | v1.0 close 2026-08-05 |
 | uat | 03-HUMAN-UAT — 3 agent live-model scenarios | blocked → v2 (no credits) | v1.0 close 2026-08-05 |
-| debug | frontend-page-not-loading | diagnosed; resolved in practice (app deployed & rendering live) | v1.0 close 2026-08-05 |
-| uat | 01-HUMAN-UAT | partial, 0 pending scenarios (effectively complete) | v1.0 close 2026-08-05 |
-| verification | 02-VERIFICATION | "gaps" were remaining-phase-scope (dashboard UI), since built & verified live | v1.0 close 2026-08-05 |
 
 ## Session Continuity
 
-Last session: 2026-08-05
-Stopped at: Milestone v1.0 COMPLETE. Plan 05-07 finished — smoke.sh PASS run against the live Railway URL (401 on every real-method route + wrong-pw 401 + correct-pw→token→200); DEPL-02 live-site walk signed off; SEC-03 audit signed off (no trackers [static sweep + live Network panel], Postgres private [no public TCP proxy], Railway logs clean of health values/transcripts/secrets). 05-07-SUMMARY.md written. Threats T-05-20 and T-05-21 mitigated on the live deployment.
-Next action: run /gsd-complete-milestone to archive v1.0 (optional), and commit the phase-05 completion docs (commit-on-request — not yet committed).
-Resume file: none — milestone complete.
+Last session: 2026-08-20
+Stopped at: v1.1 ROADMAP.md created and written (7 phases, Phases 6–12); REQUIREMENTS.md traceability populated (21/21 mapped, 100% coverage); STATE.md updated to reflect roadmap-approved position.
+Next action: `/gsd-plan-phase 6` to plan Agent Availability (Liveness Detection).
+Resume file: none.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `/gsd-plan-phase 6` to begin planning the first v1.1 phase.

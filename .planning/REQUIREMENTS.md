@@ -79,16 +79,35 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
+| LIVE-01 | Phase 6: Agent Availability (Liveness Detection) | Pending |
+| LIVE-02 | Phase 6: Agent Availability (Liveness Detection) | Pending |
+| LIVE-03 | Phase 6: Agent Availability (Liveness Detection) | Pending |
+| LIVE-04 | Phase 6: Agent Availability (Liveness Detection) | Pending |
+| OVERLAY-01 | Phase 7: Records Backend | Pending |
+| OVERLAY-02 | Phase 8: Manual-Entry Forms | Pending |
+| OVERLAY-03 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
+| OVERLAY-04 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
+| OVERLAY-05 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
+| OVERLAY-06 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
+| TTS-01 | Phase 10: Spoken Replies (TTS) | Pending |
+| TTS-02 | Phase 10: Spoken Replies (TTS) | Pending |
+| TTS-03 | Phase 10: Spoken Replies (TTS) | Pending |
+| TTS-04 | Phase 10: Spoken Replies (TTS) | Pending |
+| TTS-05 | Phase 10: Spoken Replies (TTS) | Pending |
+| GUIDE-01 | Phase 11: Full Site Guide / Instructions Tab | Pending |
+| GUIDE-02 | Phase 11: Full Site Guide / Instructions Tab | Pending |
+| GUIDE-03 | Phase 11: Full Site Guide / Instructions Tab | Pending |
+| GUIDE-04 | Phase 11: Full Site Guide / Instructions Tab | Pending |
+| VISUAL-01 | Phase 12: Visual Refresh | Pending |
+| VISUAL-02 | Phase 12: Visual Refresh | Pending |
 
 **Coverage:**
 - v1.1 requirements: 21 total
-- Mapped to phases: 0
-- Unmapped: 21 ⚠️ (pending roadmap)
+- Mapped to phases: 21
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-08-19*
-*Last updated: 2026-08-19 after initial v1.1 definition*
+*Last updated: 2026-08-20 — traceability populated by roadmap creation (Phases 6–12, 100% coverage)*
