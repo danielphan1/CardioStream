@@ -28,6 +28,7 @@ import { useAgent } from "../hooks/useAgent";
 import { useVoiceCommand } from "../hooks/useVoiceCommand";
 import { applyAgentFilters, composeConfirmation } from "../lib/agent";
 import { WAKE_WORD } from "../lib/voice";
+import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
 
 type CommandBarProps = {
@@ -118,6 +119,10 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   }
 
   function onSuccess(reply: AgentReply) {
+    // D-07: report every real /agent reply to the shared liveness store —
+    // instant-clear for any reachable kind, instant-set for "unavailable" —
+    // before the per-kind branching below (store's own comparison decides).
+    useAgentStatus.getState().reportOutcome(reply.kind);
     switch (reply.kind) {
       case "applied":
         onApplied(reply);
@@ -140,6 +145,14 @@ export function CommandBar({ latestReading }: CommandBarProps) {
       case "unclear":
         // D-11: friendly "didn't catch that" — keep the text so the user can
         // edit and retry. Visually calm (marker "!", not a red alarm).
+        setMessage(reply.message);
+        setStatus("error");
+        setClarifyContext(null);
+        break;
+      case "unavailable":
+        // LIVE-01: the agent/breaker is unreachable — same text-preservation
+        // treatment as "unclear" (not "refuse"'s clearing), so the caregiver
+        // never loses their typed command while the assistant is down.
         setMessage(reply.message);
         setStatus("error");
         setClarifyContext(null);
