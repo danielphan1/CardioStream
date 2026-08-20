@@ -17,7 +17,7 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-07-07)
+See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
 **Current focus:** v1.0 shipped & archived. Next: v2 — activate the paid Claude API (agent inert in prod on $0 credits) + make the failure visible + post-MVP views.

@@ -12,15 +12,16 @@ Chris can see and explore his own health data entirely by voice — voice intera
 
 ## Current Milestone: v1.1 — Polish & Records
 
-**Goal:** Make the shipped MVP more complete and more usable **without needing the paid API** — close the voice loop with spoken replies, surface the health records the schema already anticipates, refresh the visuals, and turn the silent agent outage into an honest "unavailable" state.
+**Goal:** Make the shipped MVP more complete and more usable **without needing the paid API** — close the voice loop with spoken replies, let Chris and caregivers mix and match which data they're looking at, surface the health records the schema already anticipates, teach the whole site through a built-in guide, refresh the visuals, and turn the silent agent outage into an honest "unavailable" state.
 
 **Target features:**
 - **Spoken replies** — the dashboard reads its confirmation aloud via Web SpeechSynthesis, closing the hands-free loop for Chris.
-- **Labs / incidents / procedures views** — read views + accessible manual entry for the three future tables (migrated-but-empty since v1.0).
+- **Multi-dataset filtering & overlay** — toggle any combination of data types (BP, pulse, labs, incidents/hospital stays, procedures) on or off, by voice or click; selected types overlay together on one dashboard view (e.g. hospital-stay markers plotted directly on the BP/pulse timeline) rather than living in separate silos. Includes the manual-entry forms needed to populate labs/incidents/procedures.
+- **Full site guide / instructions tab** — an accessible, voice-navigable help tab explaining every part of the site: what each button/control does, how filtering works, what each chart shows, how upload works, and what Chris can say by voice — for both Chris and his caregivers.
 - **Agent failure made visible** — real agent-availability detection; the UI shows "assistant temporarily unavailable" instead of silently answering "didn't catch that."
 - **Overall visual refresh** — modernize theme, typography, spacing, and color across all screens, with accessibility preserved.
 
-**Explicitly NOT in v1.1:** activating the paid Claude API, and voice/text data-entry via the agent — both stay deferred (the NL agent is billing-gated from v1.0).
+**Explicitly NOT in v1.1:** activating the paid Claude API, and voice/text data-entry via the agent (manual entry forms are in scope; agent-parsed entry like "log a reading of 120 over 80" is not) — both stay deferred (the NL agent is billing-gated from v1.0).
 
 ## Requirements
 
@@ -40,7 +41,8 @@ Chris can see and explore his own health data entirely by voice — voice intera
 ### Active (v1.1 — Polish & Records)
 
 - [ ] Spoken replies — dashboard reads its confirmation aloud (Web SpeechSynthesis), with a mute/quiet toggle; privacy-safe (confirmation copy only)
-- [ ] Labs / incidents / procedures — read views + accessible manual entry for the three migrated-but-empty future tables
+- [ ] Multi-dataset filtering & overlay — toggle any combination of BP / pulse / labs / incidents / procedures on or off (voice or click); selected types overlay together on one dashboard view; includes accessible manual-entry forms for the three migrated-but-empty future tables (labs, incidents, procedures)
+- [ ] Full site guide / instructions tab — accessible, voice-navigable walkthrough of every control, filter, chart, and upload flow for Chris and caregivers
 - [ ] Agent availability made visible — real liveness detection; "assistant temporarily unavailable" state instead of silently degrading every command to `unclear`
 - [ ] Overall visual refresh — modernized theme / typography / spacing / color across all screens, accessibility preserved (≥48px, ≥18px, high contrast, keyboard)
 
@@ -51,9 +53,8 @@ Chris can see and explore his own health data entirely by voice — voice intera
 
 ### Out of Scope
 
-- Voice replies via SpeechSynthesis — post-MVP; text confirmation is enough for v1
-- Data entry by voice ("log a reading of 120 over 80") — post-MVP; caregivers can upload files for now
-- Lab results / incidents / procedures views and correlation charts — post-MVP; migrations created but tables stay empty
+- Data entry by voice/text via the agent ("log a reading of 120 over 80") — needs the paid API; deferred with agent activation. Manual entry forms are in scope for v1.1.
+- Cross-metric correlation analysis (e.g. statistical correlation between BP and incidents, beyond visual overlay) — post-MVP; v1.1 overlay is visual only
 - Full auth (accounts, magic links) — single shared password is sufficient for a personal site
 - Scheduled email/summary reports — post-MVP
 - Analytics trackers or any third-party data sharing — health data is sensitive; never add these
@@ -175,4 +176,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-05 — v1.1 (Polish & Records) started. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 focuses on no-API polish: spoken replies, records views, agent-availability visibility, and an overall visual refresh.*
+*Last updated: 2026-08-19 — v1.1 (Polish & Records) scope expanded per client feedback: multi-dataset filtering/overlay (BP, pulse, labs, incidents/hospital stays, procedures combinable in one view) and a full site guide/instructions tab replace the narrower "labs/incidents/procedures read views" item. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 focuses on no-API polish: spoken replies, multi-dataset filtering/overlay, a full site guide, agent-availability visibility, and an overall visual refresh.*
