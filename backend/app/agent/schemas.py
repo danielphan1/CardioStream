@@ -201,7 +201,7 @@ class AppliedFilters(BaseModel):
 class AgentReply(BaseModel):
     """The server-composed response to POST /agent — never raw Claude text (API-04)."""
 
-    kind: Literal["applied", "clarify", "refuse", "unclear"]
+    kind: Literal["applied", "clarify", "refuse", "unclear", "unavailable"]
     filters: AppliedFilters | None = None
     message: str = ""
     context: ClarifyContext | None = None

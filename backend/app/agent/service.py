@@ -3,12 +3,15 @@
 This is the API-04/VOICE-07 core. Two invariants are load-bearing and enforced
 by the structure below:
 
-  1. GUARD ORDER (RESEARCH Pitfall 5): no key -> None; then catch
-     ``(APIError, ValidationError)`` around ``messages.parse``; then reject
-     ``stop_reason in ("refusal", "max_tokens")``; only THEN touch
-     ``parsed_output`` (which may still be None). Every one of these branches
-     collapses to a friendly 200 reply — the service NEVER raises for any
-     model-side outcome, and the route never returns a raw error or 500.
+  1. GUARD ORDER (RESEARCH Pitfall 5): no key -> unavailable; then breaker-open
+     -> unavailable (no network call); then catch ``APIError`` (-> unavailable,
+     records a breaker failure) and ``ValidationError`` (-> unclear, breaker
+     untouched) separately around ``messages.parse``; then reject
+     ``stop_reason in ("refusal", "max_tokens")`` (-> unclear, records a breaker
+     success); only THEN touch ``parsed_output`` (which may still be None).
+     Every one of these branches collapses to a friendly 200 reply — the
+     service NEVER raises for any model-side outcome, and the route never
+     returns a raw error or 500.
 
   2. MODEL TEXT NEVER PASSES THROUGH (API-04): the only Claude-authored string
      that reaches the frontend is ``Clarification.question`` — a short,
@@ -26,7 +29,7 @@ Settings only and is never logged or placed in any response field).
 
 import logging
 from collections.abc import Callable
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from anthropic import Anthropic, APIError
 from pydantic import ValidationError
@@ -66,6 +69,42 @@ _MAX_TOKENS = 1024
 # Lazy module-level singleton — see module docstring (Pitfall 9).
 _client: Anthropic | None = None
 
+# Passive circuit breaker state (D-01..D-04) — fed ONLY by real call_claude()
+# outcomes, never by an active probe. `None` = untested this boot (no signal
+# yet); `True`/`False` = the outcome of the most recent real call. Deliberately
+# unlocked, no mutex of any kind (RESEARCH Pitfall 2 anti-pattern) — this
+# project already accepts the identical unlocked-race tradeoff on the
+# `_client` singleton above.
+_last_outcome: bool | None = None
+_last_outcome_at: datetime | None = None
+_BREAKER_COOLDOWN = timedelta(seconds=60)
+
+
+def _record_outcome(ok: bool) -> None:
+    """Record the outcome of a real call_claude() attempt (D-01)."""
+    global _last_outcome, _last_outcome_at
+    _last_outcome, _last_outcome_at = ok, datetime.now()
+
+
+def agent_reachable() -> bool | None:
+    """Return the raw last-observed call outcome — no cooldown logic, no side effects.
+
+    ``/health`` imports and calls this directly. Tri-state: ``None`` (untested
+    this boot), ``True`` (last real call succeeded), ``False`` (last real call
+    failed).
+    """
+    return _last_outcome
+
+
+def _breaker_open() -> bool:
+    """Return ``True`` while the breaker is open (D-02/D-03): last outcome was a
+    failure, within the cooldown window."""
+    return (
+        _last_outcome is False
+        and _last_outcome_at is not None
+        and datetime.now() - _last_outcome_at < _BREAKER_COOLDOWN
+    )
+
 
 def _get_client() -> Anthropic | None:
     """Return a cached ``Anthropic`` client, or ``None`` when no key is set.
@@ -91,17 +130,21 @@ def get_settings_key() -> str:
     return get_settings().anthropic_api_key
 
 
-def call_claude(text: str, context: ClarifyContext | None) -> AgentOutput | None:
+def call_claude(text: str, context: ClarifyContext | None) -> tuple[AgentOutput | None, bool]:
     """Parse the utterance into an ``AgentOutput``, or ``None`` for any non-schema outcome.
 
-    Returns ``None`` (never raises) for: no key, ``APIError``/timeout,
-    ``ValidationError`` from the SDK parse, a ``refusal``/``max_tokens``
-    stop_reason, or a missing ``parsed_output``. Guard order per RESEARCH
-    Pitfall 5.
+    Returns ``(output, reachable)``. ``output`` is ``None`` (never raises) for:
+    no key, ``APIError``/timeout, breaker-open, ``ValidationError`` from the SDK
+    parse, a ``refusal``/``max_tokens`` stop_reason, or a missing
+    ``parsed_output``. ``reachable`` reflects ONLY this call's outcome, never a
+    stale prior-call read (D-01..D-04). Guard order per RESEARCH Pitfall 5.
     """
     client = _get_client()
     if client is None:
-        return None
+        return None, True  # defensive fallback only — interpret()'s own earlier
+        # guard already returns before call_claude() is reached in this case.
+    if _breaker_open():
+        return None, False  # D-02 — skip the network call while breaker is open
     try:
         msg = client.messages.parse(
             model=_MODEL,
@@ -111,15 +154,22 @@ def call_claude(text: str, context: ClarifyContext | None) -> AgentOutput | None
             messages=build_messages(text, context),
             output_format=AgentOutput,
         )
-    except (APIError, ValidationError):
-        # Network/timeout/API problem OR a response that failed schema
-        # validation (e.g. enum-capitalization drift). Do not log the payload
-        # or the key — a warning with no sensitive content only.
-        logger.warning("Claude call failed for /agent; degrading to unclear reply")
-        return None
+    except APIError:
+        # Network/timeout/API problem — the real signal the breaker tracks.
+        # Do not log the payload or the key — a fixed warning only.
+        _record_outcome(False)
+        logger.warning("Claude call failed for /agent; degrading to unavailable reply")
+        return None, False
+    except ValidationError:
+        # Response failed schema validation (e.g. enum-capitalization drift).
+        # The network round-trip succeeded — do NOT touch the breaker.
+        logger.warning("Claude response failed schema validation; degrading to unclear reply")
+        return None, True
     if msg.stop_reason in ("refusal", "max_tokens"):  # Pitfall 5
-        return None
-    return msg.parsed_output
+        _record_outcome(True)  # network round-trip succeeded
+        return None, True
+    _record_outcome(True)
+    return msg.parsed_output, True
 
 
 def _resolved_to_filters(resolved: ResolvedDates | None, filters: AppliedFilters) -> None:
@@ -170,9 +220,11 @@ def interpret(
         if _get_client() is None:
             # Keyless / agent unreachable -> point at the still-working manual
             # controls (Pitfall 9). No network call happened.
-            return AgentReply(kind="unclear", message=UNAVAILABLE_MESSAGE)
+            return AgentReply(kind="unavailable", message=UNAVAILABLE_MESSAGE)
 
-        output = call_claude(text, context)
+        output, reachable = call_claude(text, context)
+        if not reachable:
+            return AgentReply(kind="unavailable", message=UNAVAILABLE_MESSAGE)
         if output is None:
             return AgentReply(kind="unclear", message=UNCLEAR_MESSAGE)
 
