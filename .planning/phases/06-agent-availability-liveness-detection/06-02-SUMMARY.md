@@ -128,3 +128,7 @@ Task 2's `<human-check>` (visual/calm-judgment verification — icon, weight, si
 ---
 *Phase: 06-agent-availability-liveness-detection*
 *Completed: 2026-08-20*
+
+## Self-Check: PASSED
+
+All 8 created files verified present on disk; all 5 commits (08c74b0, aaf03cc, dfd8057, 4c9994b, 6aa86b7) verified present in `git log --oneline --all`.
