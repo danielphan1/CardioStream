@@ -16,6 +16,7 @@ import { ApiError } from "../api/client";
 import { postAgent } from "../api/client";
 import type { AgentReply } from "../api/types";
 import { useAgentPulse } from "../lib/agent";
+import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
 import {
   FakeRecognition,
@@ -72,6 +73,7 @@ beforeEach(() => {
     bpCategory: "all",
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
+  useAgentStatus.setState({ unavailable: false });
 });
 
 afterEach(() => {
@@ -192,6 +194,43 @@ describe("CommandBar", () => {
       name: "Type a dashboard command",
     }) as HTMLInputElement;
     expect(input.value).toBe("asdfghjkl"); // NOT cleared — user can edit & retry
+  });
+
+  it("renders an unavailable reply and reports it to agentStatus, keeping the text for retry (D-07/LIVE-01)", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({
+        kind: "unavailable",
+        message:
+          "The assistant isn't connected right now. The buttons below still work — use them to change the view.",
+      }),
+    );
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    expect(
+      await screen.findByText(
+        "The assistant isn't connected right now. The buttons below still work — use them to change the view.",
+      ),
+    ).toBeInTheDocument();
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input.value).toBe("show my pulse"); // NOT cleared — user can retry
+    expect(useAgentStatus.getState().unavailable).toBe(true);
+  });
+
+  it("clears agentStatus.unavailable the instant any other reply kind succeeds (D-07)", async () => {
+    useAgentStatus.setState({ unavailable: true });
+    mockPostAgent.mockResolvedValue(reply({ kind: "applied", filters: null }));
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    await waitFor(() => expect(mockPostAgent).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(useAgentStatus.getState().unavailable).toBe(false),
+    );
   });
 
   it("maps a 429 to fixed friendly copy, never the raw error (VOICE-07)", async () => {
