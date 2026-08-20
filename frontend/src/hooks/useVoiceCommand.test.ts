@@ -12,6 +12,7 @@ import type { Mock } from "vitest";
 import { postAgent } from "../api/client";
 import type { AgentReply } from "../api/types";
 import { useAgentPulse } from "../lib/agent";
+import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
 import {
   FakeRecognition,
@@ -53,6 +54,7 @@ beforeEach(() => {
     bpCategory: "all",
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
+  useAgentStatus.setState({ unavailable: false });
 });
 
 afterEach(() => {
@@ -133,6 +135,29 @@ describe("useVoiceCommand final submit (D-03)", () => {
     expect(result.current.message).toMatch(/^Showing pulse/);
     expect(result.current.state).toBe("listening"); // D-13 back to listening
   });
+
+  it("surfaces an unavailable reply and reports it to agentStatus, returning to listening (D-07/LIVE-01)", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({
+        kind: "unavailable",
+        message:
+          "The assistant isn't connected right now. The buttons below still work — use them to change the view.",
+      }),
+    );
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    await act(async () => {
+      rec.emitResult("dashboard show pulse", true);
+    });
+
+    expect(result.current.message).toBe(
+      "The assistant isn't connected right now. The buttons below still work — use them to change the view.",
+    );
+    expect(result.current.state).toBe("listening"); // voice does not multi-turn recover here
+    expect(useAgentStatus.getState().unavailable).toBe(true);
+  });
 });
 
 describe("useVoiceCommand newest wins (D-05)", () => {
@@ -165,6 +190,42 @@ describe("useVoiceCommand newest wins (D-05)", () => {
       resolveFirst(reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }));
     });
     expect(useFilters.getState().activeChart).toBe("bp_categories");
+  });
+
+  it("drops a stale reply's store write too — a late 'unavailable' reply does not flip agentStatus back (D-05/D-07/T-06-07)", async () => {
+    // Start "unavailable" (simulating a prior outage) so the newest reply's
+    // clear is an observable, non-trivial assertion — not just "stayed false".
+    useAgentStatus.setState({ unavailable: true });
+    let resolveFirst!: (r: AgentReply) => void;
+    mockPostAgent
+      .mockReturnValueOnce(
+        new Promise<AgentReply>((res) => {
+          resolveFirst = res;
+        }),
+      )
+      .mockResolvedValueOnce(
+        reply({ kind: "applied", filters: { activeChart: "bp_categories" } }),
+      );
+
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    // First command in-flight (never resolves yet).
+    act(() => rec.emitResult("dashboard show blood pressure categories", true));
+    // Second (newest) command resolves immediately — a real reachable reply
+    // must instantly clear the flag (D-07).
+    await act(async () => {
+      rec.emitResult("dashboard show pulse trend", true);
+    });
+    expect(useAgentStatus.getState().unavailable).toBe(false);
+
+    // The stale first reply lands LATE with kind "unavailable" — the seq guard
+    // must drop it BEFORE any store touch, so it must NOT flip the flag back on.
+    await act(async () => {
+      resolveFirst(reply({ kind: "unavailable", message: "down" }));
+    });
+    expect(useAgentStatus.getState().unavailable).toBe(false);
   });
 });
 
