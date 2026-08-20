@@ -26,6 +26,7 @@ import {
   isSpeechSupported,
   supportsContinuous,
 } from "../lib/voice";
+import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
 import { useAgent } from "./useAgent";
 
@@ -124,6 +125,10 @@ export function useVoiceCommand({
   // D-05 newest-wins: a superseded command's late reply must NOT touch the store.
   function handleSuccess(reply: AgentReply, capturedSeq: number) {
     if (capturedSeq !== seqRef.current) return; // stale drop BEFORE any store touch
+    // D-07: report every non-stale reply to the shared liveness store — instant
+    // clear for any reachable kind, instant set for "unavailable" (store's own
+    // comparison decides). Placed AFTER the stale-drop guard above (T-06-07).
+    useAgentStatus.getState().reportOutcome(reply.kind);
     switch (reply.kind) {
       case "applied": {
         applyAgentFilters(reply.filters ?? {});
@@ -141,6 +146,7 @@ export function useVoiceCommand({
         break;
       case "clarify":
       case "unclear":
+      case "unavailable":
         // Voice does not do multi-turn clarify — surface the copy, return to listen.
         setMessage(reply.message);
         break;
