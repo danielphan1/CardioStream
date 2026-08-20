@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from app.agent.service import agent_reachable
 from app.auth import verify_token
 from app.config import get_settings
 from app.routers import agent, auth, readings, stats, upload
@@ -39,18 +40,30 @@ app.add_middleware(
 )
 
 @app.get("/health")
-def health() -> dict[str, str | bool]:
-    """Ungated liveness + agent-config probe (deploy diagnostic).
+def health() -> dict[str, str | bool | None]:
+    """Ungated liveness + agent-config/reachability probe (deploy diagnostic).
 
     ``agent_configured`` mirrors the agent's own key gate
     (``service._get_client`` returns ``None`` when the key is empty): it is
     ``True`` iff the RUNNING container read a non-empty ``ANTHROPIC_API_KEY`` at
     boot. config.py caches settings at import, so this reflects exactly what the
     live process sees — letting a deploy be checked for the keyless "assistant
-    isn't connected" degradation without shell access. Returns a BOOLEAN only,
-    never the key or any part of it (SEC-02).
+    isn't connected" degradation without shell access.
+
+    ``agent_reachable`` is the passive circuit breaker's raw tri-state read
+    (LIVE-01/LIVE-04): ``None`` (untested this boot), ``True``/``False`` (the
+    outcome of the most recent real ``/agent`` call). Fed only by real traffic —
+    no active probe, no token cost, and this route carries no ``@limiter.limit``
+    decorator so it never shares ``/agent``'s 20/minute budget.
+
+    Both fields are BOOLEAN-OR-NULL only, never a reason string or enum — an
+    unauthenticated caller can learn "up/down", never "why" (SEC-02, T-06-01).
     """
-    return {"status": "ok", "agent_configured": bool(get_settings().anthropic_api_key)}
+    return {
+        "status": "ok",
+        "agent_configured": bool(get_settings().anthropic_api_key),
+        "agent_reachable": agent_reachable(),
+    }
 
 
 # /auth is the ONE ungated route — it issues the token every gated router

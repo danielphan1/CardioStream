@@ -142,6 +142,21 @@ def test_unclear_reply_contains_example_command(client) -> None:
     assert "show my pulse" in body["message"]  # embedded example teaches vocabulary
 
 
+def test_unavailable_reply_round_trips(client) -> None:
+    """LIVE-01: kind="unavailable" round-trips unchanged (no key / breaker-open / APIError)."""
+    from app.agent.copy import UNAVAILABLE_MESSAGE
+
+    def fake(text, context, earliest, latest):
+        return AgentReply(kind="unavailable", message=UNAVAILABLE_MESSAGE)
+
+    _override(fake)
+    res = client.post("/agent", json={"text": "show my pulse"})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["kind"] == "unavailable"
+    assert body["message"] == UNAVAILABLE_MESSAGE
+
+
 def test_interpreter_raising_returns_200_unclear(client) -> None:
     """VOICE-07: any interpreter failure collapses to a friendly 200, never 500."""
 
