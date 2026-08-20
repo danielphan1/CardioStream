@@ -105,6 +105,13 @@ None - no external service configuration required.
 - Plans 02/03 (frontend) can now build against a stable, tested backend signal — no further backend changes anticipated for the "assistant unreachable" UI state.
 - No blockers.
 
+## Self-Check: PASSED
+
+All 6 modified/created source files verified present on disk (`backend/app/agent/schemas.py`,
+`backend/app/agent/service.py`, `backend/app/main.py`, `backend/tests/test_agent_service.py`,
+`backend/tests/test_health.py`, `backend/tests/test_agent_route.py`), plus this SUMMARY.md.
+All 4 commits (`475f350`, `b0dc7bf`, `420e70a`, `6800880`) verified present in `git log`.
+
 ---
 *Phase: 06-agent-availability-liveness-detection*
 *Completed: 2026-08-20*
