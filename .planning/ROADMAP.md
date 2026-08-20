@@ -32,7 +32,7 @@ Full phase goals, dependencies, and plan lists archived in
 **Milestone Goal:** Make the shipped MVP more complete and more usable without the paid API — close the voice loop with spoken replies, let Chris and caregivers mix and match datasets on one overlaid view, surface the records the schema already anticipates, teach the whole site through a built-in guide, refresh the visuals, and make agent unavailability honest instead of silently mislabeled.
 
 - [x] **Phase 6: Agent Availability (Liveness Detection)** - Real "assistant unavailable" detection replaces silent mislabeling as "didn't catch that" (completed 2026-08-20)
-- [ ] **Phase 7: Records Backend** - CRUD API for labs, incidents, and procedures, mirroring the existing readings API
+- [x] **Phase 7: Records Backend** - CRUD API for labs, incidents, and procedures, mirroring the existing readings API (completed 2026-08-20)
 - [ ] **Phase 8: Manual-Entry Forms** - Accessible forms so caregivers can populate labs/incidents/procedures
 - [ ] **Phase 9: Multi-Dataset Overlay & Filtering** - Toggle and overlay any combination of BP/pulse/labs/incidents/procedures, by voice or click
 - [ ] **Phase 10: Spoken Replies (TTS)** - Dashboard speaks its confirmations aloud, closing the hands-free loop
@@ -85,7 +85,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 07-02-PLAN.md — Test coverage: GET date-range filters, POST create, serialization, and 401 gating for all 3 resources (OVERLAY-01)
+- [x] 07-02-PLAN.md — Test coverage: GET date-range filters, POST create, serialization, and 401 gating for all 3 resources (OVERLAY-01)
 
 ### Phase 8: Manual-Entry Forms
 
@@ -191,7 +191,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 4. Voice Capture | v1.0 | 3/3 | Complete | 2026-07-21 |
 | 5. Upload, Auth Gate & Deployment | v1.0 | 7/7 | Complete | 2026-08-05 |
 | 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete    | 2026-08-20 |
-| 7. Records Backend | v1.1 | 1/2 | In Progress|  |
+| 7. Records Backend | v1.1 | 2/2 | Complete   | 2026-08-20 |
 | 8. Manual-Entry Forms | v1.1 | 0/TBD | Not started | - |
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 0/TBD | Not started | - |
 | 10. Spoken Replies (TTS) | v1.1 | 0/TBD | Not started | - |
