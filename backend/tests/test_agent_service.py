@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 
 import httpx
 import pytest
-from pydantic import ValidationError
 
 import app.agent.service as service
 from app.agent.copy import UNAVAILABLE_MESSAGE, UNCLEAR_MESSAGE
@@ -105,7 +104,9 @@ def test_breaker_open_skips_network_call_and_returns_unavailable(monkeypatch) ->
 def test_breaker_open_returns_false_after_cooldown_expires(monkeypatch) -> None:
     monkeypatch.setattr(service, "_last_outcome", False)
     monkeypatch.setattr(
-        service, "_last_outcome_at", datetime.now() - service._BREAKER_COOLDOWN - timedelta(seconds=1)
+        service,
+        "_last_outcome_at",
+        datetime.now() - service._BREAKER_COOLDOWN - timedelta(seconds=1),
     )
 
     assert service._breaker_open() is False
