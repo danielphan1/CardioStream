@@ -10,6 +10,7 @@
 // (ApiError details stay in the console at most).
 import type { ReactNode } from "react";
 
+import { AgentStatusBanner } from "./components/AgentStatusBanner";
 import { ChartDeck } from "./components/ChartDeck";
 import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
@@ -116,6 +117,7 @@ function Dashboard() {
       <section className="bg-[var(--color-sky)]">
         <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
           <CommandBar latestReading={latestReading} />
+          <AgentStatusBanner />
         </div>
       </section>
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); 32px vertical

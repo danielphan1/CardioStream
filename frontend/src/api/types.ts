@@ -104,10 +104,24 @@ export type AppliedFilters = {
   reset?: boolean;
 };
 
-// Agent reply envelope (API-04) — four-kind discriminated union.
+// Agent reply envelope (API-04) — five-kind discriminated union. "unavailable"
+// (Phase 6, LIVE-01) is the byte-for-byte mirror of backend Plan 06-01's
+// AgentReply.kind extension — the agent/breaker is unreachable, distinct from
+// "unclear" (the agent responded but the command wasn't understood).
 export type AgentReply = {
-  kind: "applied" | "clarify" | "refuse" | "unclear";
+  kind: "applied" | "clarify" | "refuse" | "unclear" | "unavailable";
   filters: AppliedFilters | null;
   message: string;
   context: ClarifyContext | null;
+};
+
+// GET /health response (Phase 6, LIVE-03/LIVE-04) — byte-for-byte mirror of
+// backend Plan 06-01's extended `/health` handler in main.py. agent_reachable
+// is a plain tri-state: `null` = untested this boot (passive-only breaker has
+// no active probe), `true`/`false` = the real outcome of the most recent
+// `/agent` call. Never a reason string (Pitfall 3 — /health is unauthenticated).
+export type HealthStatus = {
+  status: string;
+  agent_configured: boolean;
+  agent_reachable: boolean | null;
 };

@@ -5,6 +5,7 @@ import { useAuth } from "../store/auth";
 import type {
   AgentReply,
   AgentRequest,
+  HealthStatus,
   Reading,
   ResolvedFilters,
   StatsSummary,
@@ -149,4 +150,10 @@ export function getStatsSummary(
   filters: ResolvedFilters,
 ): Promise<StatsSummary> {
   return getJson<StatsSummary>("/stats/summary", filters);
+}
+
+// Liveness poll (Phase 6, LIVE-03) — ungated route; getJson's Authorization
+// header attach is harmless here since /health ignores it either way.
+export function getHealth(): Promise<HealthStatus> {
+  return getJson<HealthStatus>("/health");
 }

@@ -10,8 +10,8 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 ### Agent Liveness (LIVE)
 
 - [x] **LIVE-01**: Backend distinguishes "assistant unavailable" from "didn't understand you" — `AgentReply` gets a distinct kind routed from both the no-API-key case and the `call_claude()` exception path (network/timeout/schema-parse failures), replacing today's mislabeling of real outages as generic "unclear"
-- [ ] **LIVE-02**: Frontend shows a calm, non-alarming "assistant temporarily unavailable" state distinct from the "didn't catch that" state, always paired with "manual controls still work"
-- [ ] **LIVE-03**: Dashboard checks liveness proactively when the page loads, not only reactively after a failed command, so Chris knows before speaking whether the assistant will respond
+- [x] **LIVE-02**: Frontend shows a calm, non-alarming "assistant temporarily unavailable" state distinct from the "didn't catch that" state, always paired with "manual controls still work"
+- [x] **LIVE-03**: Dashboard checks liveness proactively when the page loads, not only reactively after a failed command, so Chris knows before speaking whether the assistant will respond
 - [x] **LIVE-04**: Liveness checks never share `/agent`'s rate limiter and never spend API tokens on their own (passive circuit breaker fed by real traffic, not a self-pinging health check)
 
 ### Spoken Replies (TTS)
@@ -82,8 +82,8 @@ Explicitly excluded. Documented to prevent scope creep.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LIVE-01 | Phase 6: Agent Availability (Liveness Detection) | Complete |
-| LIVE-02 | Phase 6: Agent Availability (Liveness Detection) | Pending |
-| LIVE-03 | Phase 6: Agent Availability (Liveness Detection) | Pending |
+| LIVE-02 | Phase 6: Agent Availability (Liveness Detection) | Complete |
+| LIVE-03 | Phase 6: Agent Availability (Liveness Detection) | Complete |
 | LIVE-04 | Phase 6: Agent Availability (Liveness Detection) | Complete |
 | OVERLAY-01 | Phase 7: Records Backend | Pending |
 | OVERLAY-02 | Phase 8: Manual-Entry Forms | Pending |
