@@ -268,3 +268,48 @@ def test_upload_without_token_401(real_gate_client, omron_xlsx) -> None:
     path = omron_xlsx(_VALID_ROWS)
     resp = _upload(real_gate_client, path, token=None)
     assert resp.status_code == 401
+
+
+# --- Plan 07-02: 401 gating for /labs, /incidents, /procedures (T-07-01) -------
+# Each new resource gets a GET and a POST gating test using the same
+# un-overridden real_gate_client fixture as the /readings and /upload gates
+# above. POST bodies are deliberately `json={}` — this proves verify_token is
+# evaluated BEFORE Pydantic body validation: a missing token 401s even though
+# `{}` would otherwise fail body validation with a 422. If any of these
+# observe 422 instead of 401, that is a gate-ordering regression.
+
+
+def test_labs_get_without_token_401(real_gate_client) -> None:
+    """GET /labs with no Bearer token → 401."""
+    resp = real_gate_client.get("/labs")
+    assert resp.status_code == 401
+
+
+def test_labs_post_without_token_401(real_gate_client) -> None:
+    """POST /labs with no Bearer token → 401, not 422 (gate runs before body validation)."""
+    resp = real_gate_client.post("/labs", json={})
+    assert resp.status_code == 401
+
+
+def test_incidents_get_without_token_401(real_gate_client) -> None:
+    """GET /incidents with no Bearer token → 401."""
+    resp = real_gate_client.get("/incidents")
+    assert resp.status_code == 401
+
+
+def test_incidents_post_without_token_401(real_gate_client) -> None:
+    """POST /incidents with no Bearer token → 401, not 422 (gate runs before body validation)."""
+    resp = real_gate_client.post("/incidents", json={})
+    assert resp.status_code == 401
+
+
+def test_procedures_get_without_token_401(real_gate_client) -> None:
+    """GET /procedures with no Bearer token → 401."""
+    resp = real_gate_client.get("/procedures")
+    assert resp.status_code == 401
+
+
+def test_procedures_post_without_token_401(real_gate_client) -> None:
+    """POST /procedures with no Bearer token → 401, not 422 (gate runs before body validation)."""
+    resp = real_gate_client.post("/procedures", json={})
+    assert resp.status_code == 401
