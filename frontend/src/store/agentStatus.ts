@@ -23,9 +23,17 @@ interface AgentStatusState {
   syncFromHealth: (reachable: boolean | null, configured: boolean) => void;
 }
 
-// RED stub — intentionally not implemented yet (TDD RED phase).
 export const useAgentStatus = create<AgentStatusState>((set) => ({
+  // No false-positive banner flash before the first /health response or the
+  // first command reply arrives.
   unavailable: false,
-  reportOutcome: () => set({ unavailable: false }),
-  syncFromHealth: () => set({ unavailable: false }),
+  // ANY non-"unavailable" kind means the backend was reached and produced a
+  // real reply — clears the flag instantly (D-07).
+  reportOutcome: (kind) => set({ unavailable: kind === "unavailable" }),
+  // No key at all (`!configured`) is a known, immediate "unavailable" fact
+  // regardless of the untested `reachable` value. `reachable === null`
+  // (untested this boot) is the optimistic cold-boot default — it does NOT
+  // trigger the banner (RESEARCH Pitfall 4's recommendation).
+  syncFromHealth: (reachable, configured) =>
+    set({ unavailable: !configured || reachable === false }),
 }));
