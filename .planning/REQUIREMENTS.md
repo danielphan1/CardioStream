@@ -24,7 +24,7 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 
 ### Multi-Dataset Filtering & Overlay (OVERLAY)
 
-- [ ] **OVERLAY-01**: Backend CRUD (GET filtered + POST create) for labs, incidents, and procedures, mirroring the existing readings API, Bearer-gated like every other route
+- [x] **OVERLAY-01**: Backend CRUD (GET filtered + POST create) for labs, incidents, and procedures, mirroring the existing readings API, Bearer-gated like every other route
 - [ ] **OVERLAY-02**: Accessible manual-entry forms for labs, incidents, and procedures (≥48px targets, no drag/precision input) — the tables are otherwise unreachable
 - [ ] **OVERLAY-03**: Multi-select toggle controls let Chris and caregivers show any combination of BP, pulse, labs, incidents/hospital stays, and procedures at once, by voice or click — independent of which single chart is active
 - [ ] **OVERLAY-04**: Selected dataset types overlay together on the BP Timeline and Pulse Trend charts (e.g. hospital-stay markers plotted directly on the timeline) rather than living in separate silos; toggle state uses non-color-only encoding (word/icon + `aria-pressed`)
@@ -85,7 +85,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | LIVE-02 | Phase 6: Agent Availability (Liveness Detection) | Complete |
 | LIVE-03 | Phase 6: Agent Availability (Liveness Detection) | Complete |
 | LIVE-04 | Phase 6: Agent Availability (Liveness Detection) | Complete |
-| OVERLAY-01 | Phase 7: Records Backend | Pending |
+| OVERLAY-01 | Phase 7: Records Backend | Complete |
 | OVERLAY-02 | Phase 8: Manual-Entry Forms | Pending |
 | OVERLAY-03 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
 | OVERLAY-04 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
