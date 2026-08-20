@@ -42,7 +42,7 @@ Chris can see and explore his own health data entirely by voice — voice intera
 ### Active (v1.1 — Polish & Records)
 
 - [ ] Spoken replies — dashboard reads its confirmation aloud (Web SpeechSynthesis), with a mute/quiet toggle; privacy-safe (confirmation copy only)
-- [ ] Multi-dataset filtering & overlay — toggle any combination of BP / pulse / labs / incidents / procedures on or off (voice or click); selected types overlay together on one dashboard view; includes accessible manual-entry forms for the three migrated-but-empty future tables (labs, incidents, procedures)
+- [ ] Multi-dataset filtering & overlay — toggle any combination of BP / pulse / labs / incidents / procedures on or off (voice or click); selected types overlay together on one dashboard view; includes accessible manual-entry forms for the three migrated-but-empty future tables (labs, incidents, procedures). **Backend CRUD API complete** — Phase 7: Records Backend (Labs / Incidents / Procedures CRUD) (OVERLAY-01; Bearer-gated GET filtered + POST create for all three resources, 249 backend tests). Manual-entry forms (Phase 8) and the overlay UI itself remain.
 - [ ] Full site guide / instructions tab — accessible, voice-navigable walkthrough of every control, filter, chart, and upload flow for Chris and caregivers
 - [ ] Overall visual refresh — modernized theme / typography / spacing / color across all screens, accessibility preserved (≥48px, ≥18px, high contrast, keyboard)
 
@@ -156,7 +156,7 @@ Derived fields are computed in the ETL pipeline, not by hand.
 | Caregiver-initiated continuous listening sessions | Chris can't tap the mic himself; one tap per session, then hands-free | — Pending |
 | Support both Chrome and Safari/iOS voice from the start | Primary device undecided; retrofitting Safari quirks later is costlier | — Pending |
 | Derived fields computed in ETL, stored in DB | Single source of truth for categories; testable; matches existing cleaned CSV | — Pending |
-| Future tables (labs/incidents/procedures) migrated but empty | Don't block MVP, don't repaint schema later | — Pending |
+| Future tables (labs/incidents/procedures) migrated but empty | Don't block MVP, don't repaint schema later | Reachable via CRUD API as of Phase 7 (still empty until Phase 8 forms) |
 
 ## Evolution
 
@@ -176,4 +176,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-20 — Phase 6: Agent Availability (Liveness Detection) complete. Backend passive circuit breaker + `/health.agent_reachable`, frontend `AgentStatusBanner` (proactive on page load, reactive on every `/agent` reply) replace the old silent "unclear" mislabeling of real outages. LIVE-01..04 validated; one subjective visual check ("calm, non-alarming" appearance) pending human confirmation. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 remaining: spoken replies, multi-dataset filtering/overlay, a full site guide, and an overall visual refresh.*
+*Last updated: 2026-08-20 — Phase 7: Records Backend (Labs / Incidents / Procedures CRUD) complete. Bearer-gated GET (date-range filtered) + POST (create) routers added for `LabResult`, `Incident`, and `Procedure`, mirroring the existing `/readings` pattern exactly; 249 backend + 195 frontend tests passing, no regressions. OVERLAY-01 validated at the API level — the three migrated-but-empty tables are now reachable, unblocking Phase 8 (Manual-Entry Forms) and the later overlay UI. v1.0 MVP shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred). v1.1 remaining: spoken replies, multi-dataset filtering/overlay (forms + overlay UI), a full site guide, and an overall visual refresh.*
