@@ -57,8 +57,8 @@ Full phase goals, dependencies, and plan lists archived in
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — Backend circuit breaker + AgentReply.kind/health wire contract (LIVE-01, LIVE-04)
-- [ ] 06-02-PLAN.md — Frontend liveness surface: agentStatus store, useHealth poll, AgentStatusBanner (LIVE-02, LIVE-03)
+- [x] 06-01-PLAN.md — Backend circuit breaker + AgentReply.kind/health wire contract (LIVE-01, LIVE-04)
+- [x] 06-02-PLAN.md — Frontend liveness surface: agentStatus store, useHealth poll, AgentStatusBanner (LIVE-02, LIVE-03)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -182,7 +182,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 3. Agent via Text Input | v1.0 | 4/4 | Complete (agent billing-gated → v2) | 2026-07-20 |
 | 4. Voice Capture | v1.0 | 3/3 | Complete | 2026-07-21 |
 | 5. Upload, Auth Gate & Deployment | v1.0 | 7/7 | Complete | 2026-08-05 |
-| 6. Agent Availability (Liveness) | v1.1 | 0/3 | Not started | - |
+| 6. Agent Availability (Liveness) | v1.1 | 2/3 | In Progress|  |
 | 7. Records Backend | v1.1 | 0/TBD | Not started | - |
 | 8. Manual-Entry Forms | v1.1 | 0/TBD | Not started | - |
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 0/TBD | Not started | - |
