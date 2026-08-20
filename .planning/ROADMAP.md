@@ -31,7 +31,7 @@ Full phase goals, dependencies, and plan lists archived in
 
 **Milestone Goal:** Make the shipped MVP more complete and more usable without the paid API — close the voice loop with spoken replies, let Chris and caregivers mix and match datasets on one overlaid view, surface the records the schema already anticipates, teach the whole site through a built-in guide, refresh the visuals, and make agent unavailability honest instead of silently mislabeled.
 
-- [ ] **Phase 6: Agent Availability (Liveness Detection)** - Real "assistant unavailable" detection replaces silent mislabeling as "didn't catch that"
+- [x] **Phase 6: Agent Availability (Liveness Detection)** - Real "assistant unavailable" detection replaces silent mislabeling as "didn't catch that" (completed 2026-08-20)
 - [ ] **Phase 7: Records Backend** - CRUD API for labs, incidents, and procedures, mirroring the existing readings API
 - [ ] **Phase 8: Manual-Entry Forms** - Accessible forms so caregivers can populate labs/incidents/procedures
 - [ ] **Phase 9: Multi-Dataset Overlay & Filtering** - Toggle and overlay any combination of BP/pulse/labs/incidents/procedures, by voice or click
@@ -62,7 +62,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 06-03-PLAN.md — CommandBar/useVoiceCommand reactive wiring, closes switch-exhaustiveness gap (LIVE-01, D-07)
+- [x] 06-03-PLAN.md — CommandBar/useVoiceCommand reactive wiring, closes switch-exhaustiveness gap (LIVE-01, D-07)
 
 **UI hint**: yes
 
@@ -182,7 +182,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 3. Agent via Text Input | v1.0 | 4/4 | Complete (agent billing-gated → v2) | 2026-07-20 |
 | 4. Voice Capture | v1.0 | 3/3 | Complete | 2026-07-21 |
 | 5. Upload, Auth Gate & Deployment | v1.0 | 7/7 | Complete | 2026-08-05 |
-| 6. Agent Availability (Liveness) | v1.1 | 2/3 | In Progress|  |
+| 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete   | 2026-08-20 |
 | 7. Records Backend | v1.1 | 0/TBD | Not started | - |
 | 8. Manual-Entry Forms | v1.1 | 0/TBD | Not started | - |
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 0/TBD | Not started | - |
