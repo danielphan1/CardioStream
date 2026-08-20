@@ -510,19 +510,22 @@ it("syncs agentStatus from a successful /health poll", async () => {
 
 **If this table is empty:** N/A — see entries above. All four are implementation-shape recommendations synthesized from reading the existing codebase, explicitly flagged as Claude's discretion per `06-CONTEXT.md`'s own "Claude's Discretion" section (schema/naming decisions, breaker module location) rather than claims about external facts needing verification.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `ValidationError` inside `call_claude()` ever flip the breaker?**
    - What we know: The existing code treats `APIError` and `ValidationError` identically today (one combined except clause); `06-CONTEXT.md`'s D-01/D-04 discuss the breaker only in terms of "real /agent traffic outcomes" without specifying whether a schema-parse failure counts as a traffic outcome.
    - What's unclear: Whether the planner/user considers a schema-drift event a legitimate "the model/service isn't behaving reliably" signal worth surfacing as "unavailable," or purely a code-quality bug that should never affect the user-facing liveness state.
    - Recommendation: Treat it as NOT a breaker signal (Pattern 1's recommendation) — but confirm this explicitly during planning since it's a real behavioral fork, not a naming detail.
+   - **RESOLVED:** Plan 06-01 Task 1 implements this — `ValidationError` does not touch `_last_outcome`, matching the recommendation.
 
 2. **Cold-boot `null` default (optimistic vs. pessimistic) — see Assumptions A2.**
    - Recommendation: optimistic default, confirm explicitly during planning.
+   - **RESOLVED:** Plan 06-02 Task 1's `syncFromHealth(null, true)` → `unavailable: false` implements the optimistic default.
 
 3. **Does the plan need an exhaustiveness-check helper (`assertNever`) as defense-in-depth for the two frontend switches, or is a targeted regression test (Pitfall 1) sufficient?**
    - What we know: neither switch currently has one; adding one is a small, contained change that would also protect against any *future* 6th kind.
    - Recommendation: at minimum, add the regression test described in Pitfall 1; the `assertNever` helper is a nice-to-have, not required for this phase's success criteria.
+   - **RESOLVED:** Plan 06-03 adds the regression tests for both switches without an `assertNever` helper, matching the recommendation (helper explicitly deemed not required).
 
 ## Environment Availability
 
