@@ -734,9 +734,10 @@ ecosystem drift to account for.
 assumption here touches the API contract (which was read verbatim from source, not assumed) or
 any compliance/security-sensitive claim.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact confirmation sentence richness (minimal count-only vs. echoing back submitted values)**
+   (RESOLVED — Plan 08-03)
    - What we know: D-04 gives one literal example, "Added 1 incident." — a minimal, count-only
      style matching `UploadPage`'s value-free confirmation discipline.
    - What's unclear: Whether echoing back the caregiver's own just-typed values (e.g. "Added 1
@@ -747,9 +748,12 @@ any compliance/security-sensitive claim.
    - Recommendation: Default to the literal minimal form from D-04 ("Added 1 {type}.") as the safe
      baseline; a richer version is a reasonable enhancement the planner/UI-SPEC pass can choose to
      add, since it's not a health-value disclosure concern (the caregiver just typed it themselves).
+   - **Resolution:** Plan 08-03's `AddRecordPage.tsx` adopted the minimal count-only form verbatim
+     — a fixed `"Added 1 {noun}."` sentence built from a local `NOUN` map keyed on `recordType`,
+     with no echo of any caregiver-typed field value.
 
 2. **Whether the Submit button and its aria-disabled styling should live once in `AddRecordPage`
-   or be duplicated per field-set**
+   or be duplicated per field-set** (RESOLVED — Plan 08-03)
    - What we know: D-06 locks the `aria-disabled`/dashed-border pattern; the validity computation
      differs per type (different required fields).
    - What's unclear: Exact prop contract for bubbling "is this field-set currently valid" up to
@@ -759,6 +763,11 @@ any compliance/security-sensitive claim.
    - Recommendation: Either shape works; the callback-prop shape (Pattern 3) keeps each field-set
      fully self-contained (including its own local validity logic), which pairs naturally with the
      key-remount reset mechanism (Pattern 3) since the field-set already owns its own state.
+   - **Resolution:** Plan 08-03 adopted a single shared Submit button living once in
+     `AddRecordPage.tsx`, gated on an `onDraftChange: (body: XCreate | null) => void` callback
+     each field-set reports up (Plan 08-02) — not duplicated per field-set, and not a separate
+     `onValidityChange` prop (the draft body itself doubles as the validity signal: non-null means
+     valid).
 
 ## Environment Availability
 
