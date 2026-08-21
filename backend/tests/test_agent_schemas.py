@@ -29,6 +29,7 @@ from app.agent.schemas import (
     DashboardCommand,
     DataQuestion,
     MedicalRefusal,
+    ToggleDataset,
     Unintelligible,
 )
 from app.deps import BPCategory
@@ -76,6 +77,15 @@ def test_unclear_variant_parses():
     assert isinstance(out.result, Unintelligible)
 
 
+def test_toggle_dataset_variant_parses():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "toggle_dataset", "dataset": "labs", "state": "on"}}
+    )
+    assert isinstance(out.result, ToggleDataset)
+    assert out.result.dataset == "labs"
+    assert out.result.state == "on"
+
+
 def test_command_with_nested_date_ranges_parse():
     for dr in (
         {"kind": "preset", "preset": "30d"},
@@ -110,6 +120,15 @@ def test_am_pm_case_drift_normalizes():
     out = AgentOutput.model_validate({"result": {"action": "Command", "am_pm": "AM"}})
     assert isinstance(out.result, DashboardCommand)
     assert out.result.am_pm == "am"
+
+
+def test_toggle_dataset_case_drift_normalizes():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "Toggle_Dataset", "dataset": "INCIDENTS", "state": "OFF"}}
+    )
+    assert isinstance(out.result, ToggleDataset)
+    assert out.result.dataset == "incidents"
+    assert out.result.state == "off"
 
 
 def test_nested_date_range_case_drift_normalizes():
@@ -228,6 +247,11 @@ def test_system_prompt_is_non_empty_str_constant():
 
 def test_system_prompt_enumerates_all_four_chart_tokens():
     for token in ("bp_timeline", "pulse_trend", "bp_categories", "am_pm_comparison"):
+        assert token in SYSTEM_PROMPT
+
+
+def test_system_prompt_enumerates_overlay_dataset_tokens():
+    for token in ("labs", "incidents", "procedures", "toggle_dataset"):
         assert token in SYSTEM_PROMPT
 
 
