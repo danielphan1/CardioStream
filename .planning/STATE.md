@@ -59,6 +59,7 @@ v1.1 metrics reset — no plans executed yet (roadmap-only stage).
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 9 context, 2026-08-21]: Both research-flagged Phase 9 design decisions resolved via `/gsd-discuss-phase 9`: (1) overlay accessibility mechanism — full-height `ReferenceLine` per event + separate accessible list, not a Scatter series bound into `accessibilityLayer`; (2) `toggle_dataset` agent schema is single-valued (one dataset token + explicit on/off per voice command), not list-typed. Also reinterpreted OVERLAY-03's "BP, pulse, labs, incidents, procedures" toggle set as event-types-only (labs/incidents/procedures) — BP Timeline and Pulse Trend stay today's two separate hero charts, no new combined-metric chart. Full detail in `09-CONTEXT.md`.
 - [Phase 8, 2026-08-21]: Manual-entry forms (Lab/Incident/Procedure) shipped, code-reviewed, and had all 4 critical/warning findings fixed same-session (async submit race causing silent data loss on mid-submit type-switch; duplicate-submit guard; whitespace-to-`0` coercion in Lab's numeric fields; missing effect dependency) — see 08-REVIEW.md / 08-REVIEW-FIX.md. CR-01's fix is concurrency-sensitive and flagged for a manual spot-check (see Blockers).
 - [Phase 6, 2026-08-20]: Liveness detection built as a passive-only circuit breaker fed by real `/agent` traffic outcomes (no active `count_tokens()` probe) — matches research's recommendation, zero added token cost.
 - [v1.1 Roadmap, 2026-08-20]: Continued phase numbering from v1.0 (ended Phase 5) — v1.1 starts at Phase 6, runs through Phase 12 (7 phases: Liveness, Records Backend, Manual-Entry Forms, Overlay & Filtering, TTS, Guide, Visual Refresh).
@@ -75,7 +76,6 @@ None yet.
 ### Blockers/Concerns
 
 - [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and degrades to `unclear`. Phase 6 (Liveness) makes this failure *visible*, but does not fix it — funding is a v2/billing-only item, deferred by user decision.
-- [Phase 9 planning]: Two open design decisions flagged by research, to resolve explicitly during `/gsd-plan-phase 9`, not defaulted silently: (1) overlay accessibility mechanism — ReferenceLine+accessible-list vs. a real Scatter series bound into Recharts `accessibilityLayer`; (2) the agent schema shape for a new `toggle_dataset` action (single-value vs. list-typed), unverified against the pinned anthropic SDK's structured-outputs constraints.
 - [Phase 10 planning]: TTS vs. existing aria-live confirmation is an open product decision (does TTS coexist with aria-live, opt-in vs. default-on framing of the mute toggle) — JS cannot reliably detect screen-reader presence; decide explicitly during Phase 10 planning.
 - [Phase 8 follow-up]: CR-01's fix (guard against a stale mutation race clobbering `AddRecordPage` state on mid-submit type-switch) is a concurrency fix that automated tests can't fully exercise (existing suite is synchronous-mock only) — spot-check manually: fill Lab form → submit → switch to Incident before the response resolves → confirm nothing is clobbered.
 - [Phase 12]: Visual Refresh has no research grounding (research/SUMMARY.md gap) — run a lightweight research/planning pass before executing, checked against existing accessibility-floor conventions (e.g. BPTimeline.tsx's contrast-exempt decorative-tint carve-out).
@@ -95,10 +95,10 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 Last session: 2026-08-21T21:25:18.240Z
 Stopped at: Phase 9 context gathered
-Next action: `/gsd-discuss-phase 9` to gather context (two open design decisions flagged above), then `/gsd-plan-phase 9`.
+Next action: `/gsd-plan-phase 9` — context is captured, both open design decisions resolved.
 Resume file: .planning/phases/09-multi-dataset-overlay-filtering/09-CONTEXT.md
 
 ## Operator Next Steps
 
-- Run `/gsd-discuss-phase 9` to resolve the overlay-accessibility and `toggle_dataset` schema-shape decisions before planning Phase 9 (Multi-Dataset Overlay & Filtering).
+- Run `/gsd-plan-phase 9` to plan Phase 9 (Multi-Dataset Overlay & Filtering) — research → planning → verification.
 - Manually spot-check CR-01's fix in AddRecordPage (mid-submit type-switch race) — see Blockers/Concerns.
