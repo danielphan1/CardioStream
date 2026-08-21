@@ -137,7 +137,7 @@ export function AddRecordPage() {
     }
   }
 
-  const canSubmit = draftBody !== null;
+  const canSubmit = draftBody !== null && !isSubmitting;
 
   return (
     <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-foam)] px-4 py-8 md:px-8 xl:px-16">
@@ -183,13 +183,14 @@ export function AddRecordPage() {
         type="button"
         onClick={handleSubmit}
         aria-disabled={!canSubmit}
+        aria-busy={isSubmitting}
         className={
           canSubmit
             ? "min-h-12 self-start rounded-lg bg-[var(--color-accent)] px-6 text-[20px] font-bold text-[var(--color-accent-text)]"
             : "min-h-12 cursor-not-allowed self-start rounded-lg border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-[20px] font-bold text-[var(--color-ink)]"
         }
       >
-        {SUBMIT_LABEL[recordType]}
+        {isSubmitting ? "Saving…" : SUBMIT_LABEL[recordType]}
       </button>
 
       {submitState.status === "success" && (
