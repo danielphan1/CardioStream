@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
-status: executing
-last_updated: "2026-08-21T09:15:23.265Z"
+status: ready_to_plan
+last_updated: 2026-08-21T21:08:58.975Z
 last_activity: 2026-08-21 -- Phase 08 execution started
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 5
-  percent: 29
+  completed_plans: 8
+  percent: 43
+stopped_at: Phase 8 complete (3/3), code review fixed — ready to discuss Phase 9
 ---
 
 # Project State
@@ -20,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Phase 08 — manual-entry-forms
+**Current focus:** Phase 9 — multi dataset overlay & filtering
 
 ## Current Position
 
-Phase: 08 (manual-entry-forms) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 08
-Last activity: 2026-08-21 -- Phase 08 execution started
+Phase: 9
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-21
 
-Progress: [░░░░░░░░░░] 0% (v1.1 milestone; v1.0 shipped 100% — see milestones/v1.0-ROADMAP.md)
+Progress: [█████████░░░░░░░░░░░] 43% (3/7 v1.1 phases; v1.0 shipped 100% — see milestones/v1.0-ROADMAP.md)
 
 ## Performance Metrics
 
 **Velocity (v1.0, for reference):**
 
-- Total plans completed: 34 (per MILESTONES.md; 46 tasks across 5 phases)
+- Total plans completed: 37 (per MILESTONES.md; 46 tasks across 5 phases)
 - Average duration: ~7min/plan (early phases; Phase 04 P03 outlier at 35min)
 
 **By Phase (v1.0):**
@@ -59,6 +60,8 @@ v1.1 metrics reset — no plans executed yet (roadmap-only stage).
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 8, 2026-08-21]: Manual-entry forms (Lab/Incident/Procedure) shipped, code-reviewed, and had all 4 critical/warning findings fixed same-session (async submit race causing silent data loss on mid-submit type-switch; duplicate-submit guard; whitespace-to-`0` coercion in Lab's numeric fields; missing effect dependency) — see 08-REVIEW.md / 08-REVIEW-FIX.md. CR-01's fix is concurrency-sensitive and flagged for a manual spot-check (see Blockers).
+- [Phase 6, 2026-08-20]: Liveness detection built as a passive-only circuit breaker fed by real `/agent` traffic outcomes (no active `count_tokens()` probe) — matches research's recommendation, zero added token cost.
 - [v1.1 Roadmap, 2026-08-20]: Continued phase numbering from v1.0 (ended Phase 5) — v1.1 starts at Phase 6, runs through Phase 12 (7 phases: Liveness, Records Backend, Manual-Entry Forms, Overlay & Filtering, TTS, Guide, Visual Refresh).
 - [v1.1 Roadmap, 2026-08-20]: Overlay voice-toggle control (part of OVERLAY-03, "by voice or click") folded into the main Phase 9 (Multi-Dataset Overlay & Filtering) rather than split into a separate stretch phase as research/SUMMARY.md's provisional 8-phase draft proposed — PROJECT.md's non-negotiable "every feature operable by voice" constraint and REQUIREMENTS.md's own OVERLAY-03 text make voice-toggle v1.1 scope, not a deferrable stretch goal. The underlying risk (a new `toggle_dataset` agent-schema action, not a bolt-on) carries forward as a Phase 9 planning-time design decision, not a scope cut.
 - [v1.1 Roadmap, 2026-08-20]: Visual Refresh (Phase 12) confirmed as its own phase per PROJECT.md's five active v1.1 targets, despite having zero grounding in any of the four research files — flagged in ROADMAP.md for a dedicated lightweight research pass before execution, per research/SUMMARY.md's explicit gap callout.
@@ -74,8 +77,8 @@ None yet.
 
 - [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and degrades to `unclear`. Phase 6 (Liveness) makes this failure *visible*, but does not fix it — funding is a v2/billing-only item, deferred by user decision.
 - [Phase 9 planning]: Two open design decisions flagged by research, to resolve explicitly during `/gsd-plan-phase 9`, not defaulted silently: (1) overlay accessibility mechanism — ReferenceLine+accessible-list vs. a real Scatter series bound into Recharts `accessibilityLayer`; (2) the agent schema shape for a new `toggle_dataset` action (single-value vs. list-typed), unverified against the pinned anthropic SDK's structured-outputs constraints.
-- [Phase 6 planning]: Liveness-probe design has two candidate shapes (passive-only circuit breaker vs. an opt-in active `count_tokens()` probe of unconfirmed free-tier status) — research recommends starting passive-only; confirm before adding any active probe.
 - [Phase 10 planning]: TTS vs. existing aria-live confirmation is an open product decision (does TTS coexist with aria-live, opt-in vs. default-on framing of the mute toggle) — JS cannot reliably detect screen-reader presence; decide explicitly during Phase 10 planning.
+- [Phase 8 follow-up]: CR-01's fix (guard against a stale mutation race clobbering `AddRecordPage` state on mid-submit type-switch) is a concurrency fix that automated tests can't fully exercise (existing suite is synchronous-mock only) — spot-check manually: fill Lab form → submit → switch to Incident before the response resolves → confirm nothing is clobbered.
 - [Phase 12]: Visual Refresh has no research grounding (research/SUMMARY.md gap) — run a lightweight research/planning pass before executing, checked against existing accessibility-floor conventions (e.g. BPTimeline.tsx's contrast-exempt decorative-tint carve-out).
 
 ## Deferred Items
@@ -91,11 +94,12 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 ## Session Continuity
 
-Last session: 2026-08-21T08:36:17.577Z
-Stopped at: Phase 8 UI-SPEC approved
-Next action: `/gsd-plan-phase 6` to plan Agent Availability (Liveness Detection).
-Resume file: .planning/phases/08-manual-entry-forms/08-UI-SPEC.md
+Last session: 2026-08-21T21:08:58.975Z
+Stopped at: Phase 8 complete (3/3 plans), code review findings fixed (4/4) and committed. Ready to discuss/plan Phase 9.
+Next action: `/gsd-discuss-phase 9` to gather context (two open design decisions flagged above), then `/gsd-plan-phase 9`.
+Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 6` to begin planning the first v1.1 phase.
+- Run `/gsd-discuss-phase 9` to resolve the overlay-accessibility and `toggle_dataset` schema-shape decisions before planning Phase 9 (Multi-Dataset Overlay & Filtering).
+- Manually spot-check CR-01's fix in AddRecordPage (mid-submit type-switch race) — see Blockers/Concerns.
