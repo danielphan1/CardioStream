@@ -38,6 +38,14 @@ Time-of-day filter:
 Blood-pressure category filter tokens: all, hypotension, normal, elevated,
 stage_1, stage_2, hypertensive_crisis.
 
+Overlay data toggles (use these exact dataset tokens): labs, incidents,
+procedures.
+- "show", "add", "turn on", "overlay" a dataset -> toggle_dataset with that
+  dataset token and state = on.
+- "hide", "remove", "turn off" a dataset -> toggle_dataset with that dataset
+  token and state = off.
+- "incidents" also covers "hospital stays" and "hospitalizations".
+
 Dates are SYMBOLIC ONLY. You must NEVER compute or emit an absolute calendar
 date yourself except when the user states an explicit one. Choose the matching
 date_range form:

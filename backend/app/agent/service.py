@@ -54,6 +54,7 @@ from app.agent.schemas import (
     DashboardCommand,
     DataQuestion,
     MedicalRefusal,
+    ToggleDataset,
     Unintelligible,
 )
 
@@ -205,6 +206,14 @@ def _apply_command(
     return AgentReply(kind="applied", filters=filters, message="", context=None)
 
 
+def _apply_toggle_dataset(cmd: ToggleDataset) -> AgentReply:
+    """Map a ``ToggleDataset`` result to an ``applied`` reply (D-03/D-04)."""
+    filters = AppliedFilters(overlayDataset=cmd.dataset, overlayState=cmd.state)
+    # message="" — same convention as _apply_command: the frontend composes the
+    # confirmation, the server never authors it.
+    return AgentReply(kind="applied", filters=filters, message="", context=None)
+
+
 def interpret(
     text: str,
     context: ClarifyContext | None,
@@ -232,6 +241,9 @@ def interpret(
 
         if isinstance(result, DashboardCommand):
             return _apply_command(result, earliest, latest)
+
+        if isinstance(result, ToggleDataset):
+            return _apply_toggle_dataset(result)
 
         if isinstance(result, DataQuestion):
             filters = AppliedFilters(activeChart=result.chart) if result.chart else AppliedFilters()
