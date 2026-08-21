@@ -70,7 +70,16 @@ export function AddRecordPage() {
 
   const fieldsKey = `${recordType}-${resetSeq}`;
 
+  // Guards against CR-01's async race: a mutation resolving after the user
+  // has switched record type (or the user double-submitting) must not
+  // clobber whatever is now mounted. isSubmitting blocks type switches while
+  // a request is in flight, and each onSuccess/onError below re-checks the
+  // snapshotted submittedType before touching shared state.
+  const isSubmitting =
+    createLab.isPending || createIncident.isPending || createProcedure.isPending;
+
   function handleTypeChange(next: RecordType) {
+    if (isSubmitting) return; // don't allow switching mid-flight
     setRecordType(next);
     setDraftBody(null);
     setSubmitState({ status: "idle" });
@@ -80,34 +89,50 @@ export function AddRecordPage() {
     // aria-disabled does not prevent a click handler from firing (mirrors
     // DateRangePicker.tsx's handleApply discipline) — the guard must live
     // here, not just in the disabled className/attribute.
-    if (draftBody === null) return;
+    if (draftBody === null || isSubmitting) return;
     const noun = NOUN[recordType];
+    // Snapshot the type being submitted so the async callbacks below can
+    // detect staleness if the user has since moved to a different record
+    // type (e.g. by a future relaxation of the isSubmitting guard).
+    const submittedType = recordType;
     if (recordType === "lab") {
       createLab.mutate(draftBody as LabResultCreate, {
         onSuccess: () => {
+          if (submittedType !== recordType) return;
           setSubmitState({ status: "success", noun });
           setDraftBody(null);
           setResetSeq((n) => n + 1);
         },
-        onError: () => setSubmitState({ status: "error", noun }),
+        onError: () => {
+          if (submittedType !== recordType) return;
+          setSubmitState({ status: "error", noun });
+        },
       });
     } else if (recordType === "incident") {
       createIncident.mutate(draftBody as IncidentCreate, {
         onSuccess: () => {
+          if (submittedType !== recordType) return;
           setSubmitState({ status: "success", noun });
           setDraftBody(null);
           setResetSeq((n) => n + 1);
         },
-        onError: () => setSubmitState({ status: "error", noun }),
+        onError: () => {
+          if (submittedType !== recordType) return;
+          setSubmitState({ status: "error", noun });
+        },
       });
     } else {
       createProcedure.mutate(draftBody as ProcedureCreate, {
         onSuccess: () => {
+          if (submittedType !== recordType) return;
           setSubmitState({ status: "success", noun });
           setDraftBody(null);
           setResetSeq((n) => n + 1);
         },
-        onError: () => setSubmitState({ status: "error", noun }),
+        onError: () => {
+          if (submittedType !== recordType) return;
+          setSubmitState({ status: "error", noun });
+        },
       });
     }
   }
@@ -132,8 +157,12 @@ export function AddRecordPage() {
             key={key}
             type="button"
             aria-pressed={recordType === key}
+            aria-disabled={isSubmitting}
             onClick={() => handleTypeChange(key)}
-            className={recordType === key ? activeClass : inactiveClass}
+            className={
+              (recordType === key ? activeClass : inactiveClass) +
+              (isSubmitting ? " cursor-not-allowed opacity-60" : "")
+            }
           >
             {label}
           </button>
