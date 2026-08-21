@@ -128,7 +128,7 @@ describe("AddRecordPage (Plan 08-03)", () => {
     fillLabRequired();
     fireEvent.click(screen.getByRole("button", { name: "Add Lab Result" }));
 
-    const region = await screen.findByRole("status");
+    const region = await screen.findByRole("status", { name: "Add record result" });
     expect(region).toHaveTextContent("Added 1 lab result.");
     expect(mockPostLab).toHaveBeenCalledTimes(1);
     expect(screen.getByLabelText("Test name")).toHaveValue("");
@@ -151,7 +151,7 @@ describe("AddRecordPage (Plan 08-03)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Add Incident" }));
 
-    const region = await screen.findByRole("status");
+    const region = await screen.findByRole("status", { name: "Add record result" });
     expect(region).toHaveTextContent("Added 1 incident.");
     expect(mockPostIncident).toHaveBeenCalledTimes(1);
   });
@@ -170,7 +170,7 @@ describe("AddRecordPage (Plan 08-03)", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Add Procedure" }));
 
-    const region = await screen.findByRole("status");
+    const region = await screen.findByRole("status", { name: "Add record result" });
     expect(region).toHaveTextContent("Added 1 procedure.");
     expect(mockPostProcedure).toHaveBeenCalledTimes(1);
   });
@@ -182,7 +182,7 @@ describe("AddRecordPage (Plan 08-03)", () => {
     fillLabRequired();
     fireEvent.click(screen.getByRole("button", { name: "Add Lab Result" }));
 
-    const region = await screen.findByRole("alert");
+    const region = await screen.findByRole("alert", { name: "Add record notice" });
     expect(region).toHaveTextContent(
       "Something went wrong saving that lab result. Nothing was added — please try again.",
     );

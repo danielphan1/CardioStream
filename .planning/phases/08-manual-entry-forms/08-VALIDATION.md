@@ -2,8 +2,8 @@
 phase: 8
 slug: manual-entry-forms
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-21
 ---
 
@@ -45,11 +45,11 @@ regression check only.
 
 | Requirement | Behavior | Test Type | Automated Command | File Exists | Status |
 |-------------|----------|-----------|--------------------|-------------|--------|
-| OVERLAY-02 | Caregiver submits a Lab via the form; ≥48px targets, no drag/precision input; confirmation appears; form clears | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "Lab"` | ❌ W0 | ⬜ pending |
-| OVERLAY-02 | Caregiver submits an Incident via the form (date + native time input combine correctly into naive-local ISO) | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "Incident"` | ❌ W0 | ⬜ pending |
-| OVERLAY-02 | Caregiver submits a Procedure via the form | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "Procedure"` | ❌ W0 | ⬜ pending |
-| OVERLAY-02 | Submit stays disabled (`aria-disabled`) until required fields are valid, mirroring `DateRangePicker`'s `canApply` contract | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "disabled"` | ❌ W0 | ⬜ pending |
-| OVERLAY-02 | Record shows up "immediately, without a page reload" — the POST response drives the confirmation directly, no forced refetch | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "immediately"` | ❌ W0 | ⬜ pending |
+| OVERLAY-02 | Caregiver submits a Lab via the form; ≥48px targets, no drag/precision input; confirmation appears; form clears | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "Lab"` | ✅ | ✅ green |
+| OVERLAY-02 | Caregiver submits an Incident via the form (date + native time input combine correctly into naive-local ISO) | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "Incident"` | ✅ | ✅ green |
+| OVERLAY-02 | Caregiver submits a Procedure via the form | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "Procedure"` | ✅ | ✅ green |
+| OVERLAY-02 | Submit stays disabled (`aria-disabled`) until required fields are valid, mirroring `DateRangePicker`'s `canApply` contract | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "disabled"` | ✅ | ✅ green |
+| OVERLAY-02 | Record shows up "immediately, without a page reload" — the POST response drives the confirmation directly, no forced refetch | component | `npx vitest run src/components/AddRecordPage.test.tsx -t "immediately"` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -57,9 +57,9 @@ regression check only.
 
 ## Wave 0 Requirements
 
-- [ ] `frontend/src/components/AddRecordPage.test.tsx` — new file. Mock only `postLab` / `postIncident` / `postProcedure` at the `api/client` module boundary (mirrors `CommandBar.test.tsx`'s "the ONLY mock" convention — real `useMutation`, real `QueryClientProvider`, real `ApiError` class so the error-branch tests exercise the true type). Cover: type-switch discard, disabled-until-valid per type, successful submit → confirmation + form clear (via the `key` remount), and the generic-error branch on a rejected mutation.
-- [ ] `frontend/src/lib/dates.test.ts` — extend (existing file) with cases for the newly-exported `isValidDateText` (if promoted per RESEARCH.md Pattern 2) and any new `combineLocalDateTime` helper (date + time → naive-local ISO string, seconds always `:00`).
-- [ ] No framework install needed — Vitest + Testing Library are already fully configured and exercising this exact component/hook shape (`CommandBar.test.tsx`, `UploadPage.test.tsx`).
+- [x] `frontend/src/components/AddRecordPage.test.tsx` — new file. Mock only `postLab` / `postIncident` / `postProcedure` at the `api/client` module boundary (mirrors `CommandBar.test.tsx`'s "the ONLY mock" convention — real `useMutation`, real `QueryClientProvider`, real `ApiError` class so the error-branch tests exercise the true type). Cover: type-switch discard, disabled-until-valid per type, successful submit → confirmation + form clear (via the `key` remount), and the generic-error branch on a rejected mutation.
+- [x] `frontend/src/lib/dates.test.ts` — `isValidDateText`/`combineLocalDateTime` were already promoted and covered by Plan 08-01; unchanged by this plan, no new cases needed.
+- [x] No framework install needed — Vitest + Testing Library are already fully configured and exercising this exact component/hook shape (`CommandBar.test.tsx`, `UploadPage.test.tsx`).
 
 ---
 
@@ -71,11 +71,11 @@ regression check only.
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING (❌) references above
-- [ ] No watch-mode flags (`vitest run`, not `vitest`)
-- [ ] Feedback latency < 20s
-- [ ] `nyquist_compliant: true` set in frontmatter once the planner's task list satisfies all rows above
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING (❌) references above
+- [x] No watch-mode flags (`vitest run`, not `vitest`)
+- [x] Feedback latency < 20s
+- [x] `nyquist_compliant: true` set in frontmatter once the planner's task list satisfies all rows above
 
-**Approval:** pending
+**Approval:** confirmed — Wave 0 test files (LabFields.test.tsx, ProcedureFields.test.tsx, IncidentFields.test.tsx, AddRecordPage.test.tsx) exist and the full frontend suite is green as of Plan 08-03.
