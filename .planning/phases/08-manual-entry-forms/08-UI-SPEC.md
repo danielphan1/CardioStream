@@ -126,6 +126,11 @@ clinical category token anywhere in this phase's forms — those are reserved
 exclusively for blood-pressure clinical severity, unrelated to labs/
 incidents/procedures.
 
+**Primary focal point:** the enabled Submit button. It is the page's
+terminal call to action and, along with the active type-switcher segment,
+one of only two accent-colored elements on the page — a caregiver's eye
+lands there once required fields are filled.
+
 ---
 
 ## Copywriting Contract
