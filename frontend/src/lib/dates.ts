@@ -48,6 +48,21 @@ export function formatDateParam(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Strict "YYYY-MM-DD" check: regex shape + round-trip through parseDateOnly
+ * so impossible dates like 2025-02-31 (which JS rolls over) are rejected. */
+export function isValidDateText(s: string): boolean {
+  return DATE_RE.test(s) && formatDateParam(parseDateOnly(s)) === s;
+}
+
+/** Combine a "YYYY-MM-DD" date and "HH:MM" time into the codebase's naive-local,
+ * seconds-included datetime string (DATA-05) — NEVER `.toISOString()`, which
+ * appends `Z`/UTC-converts and would violate this file's naive-local contract. */
+export function combineLocalDateTime(dateText: string, timeText: string): string {
+  return `${dateText}T${timeText}:00`;
+}
+
 /** "June 13, 2025" — UI-SPEC long date form. */
 export function fmtLongDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {

@@ -8,21 +8,13 @@ import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 
-import { formatDateParam, parseDateOnly } from "../lib/dates";
+import { formatDateParam, isValidDateText, parseDateOnly } from "../lib/dates";
 
 type DateRangePickerProps = {
   from: string | null;
   to: string | null;
   onApply: (from: string, to: string) => void;
 };
-
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-/** Strict "YYYY-MM-DD" check: regex shape + round-trip through parseDateOnly
- * so impossible dates like 2025-02-31 (which JS rolls over) are rejected. */
-function isValidDateText(s: string): boolean {
-  return DATE_RE.test(s) && formatDateParam(parseDateOnly(s)) === s;
-}
 
 // v9 CSS custom properties — day cells at the 48px target floor, selected-day
 // styling on the accent tokens (theme-aware via index.css).

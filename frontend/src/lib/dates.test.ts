@@ -4,10 +4,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  combineLocalDateTime,
   fmtLongDate,
   fmtShortDate,
   fmtTooltipTitle,
   formatDateParam,
+  isValidDateText,
   parseDateOnly,
   presetLabel,
   resolveFilters,
@@ -111,5 +113,29 @@ describe("presetLabel", () => {
     expect(presetLabel("30d")).toBe("Last 30 days");
     expect(presetLabel("90d")).toBe("Last 90 days");
     expect(presetLabel("custom")).toBe("Custom range");
+  });
+});
+
+describe("isValidDateText", () => {
+  it("accepts a well-formed YYYY-MM-DD date", () => {
+    expect(isValidDateText("2025-06-13")).toBe(true);
+  });
+
+  it("rejects an impossible date that JS silently rolls over", () => {
+    expect(isValidDateText("2025-02-31")).toBe(false);
+  });
+
+  it("rejects an empty string", () => {
+    expect(isValidDateText("")).toBe(false);
+  });
+
+  it("rejects the wrong shape", () => {
+    expect(isValidDateText("13-06-2025")).toBe(false);
+  });
+});
+
+describe("combineLocalDateTime", () => {
+  it("combines date + time into naive-local seconds-included format (DATA-05)", () => {
+    expect(combineLocalDateTime("2025-04-01", "08:00")).toBe("2025-04-01T08:00:00");
   });
 });
