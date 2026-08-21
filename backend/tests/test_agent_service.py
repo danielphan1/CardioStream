@@ -158,3 +158,19 @@ def test_agent_reachable_returns_raw_last_outcome_with_no_cooldown_logic(monkeyp
 
     monkeypatch.setattr(service, "_last_outcome", False)
     assert service.agent_reachable() is False
+
+
+def test_toggle_dataset_maps_to_applied_filters_and_marks_reachable(monkeypatch) -> None:
+    parsed_output = AgentOutput(
+        result={"action": "toggle_dataset", "dataset": "incidents", "state": "off"}
+    )
+    fake_msg = type("FakeMsg", (), {"stop_reason": "end_turn", "parsed_output": parsed_output})()
+    fake = _make_fake_client(lambda **kwargs: fake_msg)
+    monkeypatch.setattr(service, "_get_client", lambda: fake())
+
+    reply = service.interpret("hide incidents", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.overlayDataset == "incidents"
+    assert reply.filters.overlayState == "off"
+    assert service._last_outcome is True
