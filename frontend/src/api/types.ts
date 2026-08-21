@@ -67,6 +67,62 @@ export type IngestSummary = {
   latest: string | null;
 };
 
+// ── Records wire contract (OVERLAY-02) — byte-identical mirror of backend
+// plan 07-01 schemas.py LabResultOut/LabResultCreate, IncidentOut/
+// IncidentCreate, ProcedureOut/ProcedureCreate (backend/app/schemas.py).
+export type LabResult = {
+  id: number;
+  date: string;
+  test_name: string;
+  result: number | null;
+  unit: string | null;
+  range_low: number | null;
+  range_high: number | null;
+  notes: string | null;
+};
+
+export type LabResultCreate = {
+  date: string;
+  test_name: string;
+  result?: number | null;
+  unit?: string | null;
+  range_low?: number | null;
+  range_high?: number | null;
+  notes?: string | null;
+};
+
+export type Incident = {
+  id: number;
+  datetime: string; // naive local ISO, no Z/offset (DATA-05)
+  incident_type: string;
+  duration: string | null;
+  notes: string | null;
+};
+
+export type IncidentCreate = {
+  datetime: string;
+  incident_type: string;
+  duration?: string | null;
+  notes?: string | null;
+};
+
+export type Procedure = {
+  id: number;
+  date: string;
+  procedure_name: string;
+  location: string | null;
+  outcome: string | null;
+  notes: string | null;
+};
+
+export type ProcedureCreate = {
+  date: string;
+  procedure_name: string;
+  location?: string | null;
+  outcome?: string | null;
+  notes?: string | null;
+};
+
 // Future agent command vocabulary (RESEARCH Code Example 3)
 export type ChartId =
   | "bp_timeline"

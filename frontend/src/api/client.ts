@@ -6,6 +6,12 @@ import type {
   AgentReply,
   AgentRequest,
   HealthStatus,
+  Incident,
+  IncidentCreate,
+  LabResult,
+  LabResultCreate,
+  Procedure,
+  ProcedureCreate,
   Reading,
   ResolvedFilters,
   StatsSummary,
@@ -156,4 +162,19 @@ export function getStatsSummary(
 // header attach is harmless here since /health ignores it either way.
 export function getHealth(): Promise<HealthStatus> {
   return getJson<HealthStatus>("/health");
+}
+
+// Records create wrappers (OVERLAY-02) — same postJson path as postAgent/
+// postAuth; Bearer attach, ApiError discipline, and 401→logout are already
+// centralized there for every new wrapper below.
+export function postLab(body: LabResultCreate): Promise<LabResult> {
+  return postJson<LabResultCreate, LabResult>("/labs", body);
+}
+
+export function postIncident(body: IncidentCreate): Promise<Incident> {
+  return postJson<IncidentCreate, Incident>("/incidents", body);
+}
+
+export function postProcedure(body: ProcedureCreate): Promise<Procedure> {
+  return postJson<ProcedureCreate, Procedure>("/procedures", body);
 }
