@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: planning
-last_updated: "2026-08-21T00:05:52.533Z"
+last_updated: "2026-08-21T08:36:17.587Z"
 last_activity: 2026-08-20
 progress:
   total_phases: 7
@@ -91,10 +91,10 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 ## Session Continuity
 
-Last session: 2026-08-21T00:05:52.523Z
-Stopped at: Phase 8 context gathered
+Last session: 2026-08-21T08:36:17.577Z
+Stopped at: Phase 8 UI-SPEC approved
 Next action: `/gsd-plan-phase 6` to plan Agent Availability (Liveness Detection).
-Resume file: .planning/phases/08-manual-entry-forms/08-CONTEXT.md
+Resume file: .planning/phases/08-manual-entry-forms/08-UI-SPEC.md
 
 ## Operator Next Steps
 
