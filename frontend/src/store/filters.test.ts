@@ -10,6 +10,7 @@ const INITIAL = {
   customRange: { from: null, to: null },
   amPm: "all" as const,
   bpCategory: "all" as const,
+  overlayDatasets: { labs: false, incidents: false, procedures: false },
 };
 
 beforeEach(() => {
@@ -67,6 +68,7 @@ describe("showAllData (D-11)", () => {
     s0.setCustomRange("2025-03-01", "2025-03-31");
     s0.setAmPm("PM");
     s0.setBpCategory("Hypertensive Crisis");
+    s0.setOverlayDataset("procedures", true);
 
     useFilters.getState().showAllData();
 
@@ -76,5 +78,27 @@ describe("showAllData (D-11)", () => {
     expect(s.customRange).toEqual({ from: null, to: null });
     expect(s.amPm).toBe("all");
     expect(s.bpCategory).toBe("all");
+    expect(s.overlayDatasets).toEqual({
+      labs: false,
+      incidents: false,
+      procedures: false,
+    });
+  });
+});
+
+describe("overlay multi-select (D-01/D-07)", () => {
+  it("setOverlayDataset('labs', true) mutates only that dataset's flag", () => {
+    useFilters.getState().setOverlayDataset("labs", true);
+    expect(useFilters.getState().overlayDatasets).toEqual({
+      labs: true,
+      incidents: false,
+      procedures: false,
+    });
+  });
+
+  it("setOverlayDataset can toggle a dataset back off", () => {
+    useFilters.getState().setOverlayDataset("incidents", true);
+    useFilters.getState().setOverlayDataset("incidents", false);
+    expect(useFilters.getState().overlayDatasets.incidents).toBe(false);
   });
 });
