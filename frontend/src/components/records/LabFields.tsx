@@ -22,10 +22,13 @@ const inputClass =
   "min-h-12 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
 const labelClass = "flex flex-col gap-1 text-[20px] font-bold text-[var(--color-ink)]";
 
-/** Empty string is valid (field untouched/optional); otherwise must parse as a finite number
- * (Pitfall 3 guard — never let a non-empty-but-non-numeric value silently become null). */
+/** Empty (or whitespace-only) string is valid (field untouched/optional); otherwise must parse
+ * as a finite number (Pitfall 3 guard — never let a non-empty-but-non-numeric value silently
+ * become null). Trimmed first: `Number("   ")` is `0`, a finite number, so an untrimmed check
+ * would treat whitespace-only input as valid and silently write a fabricated 0. */
 function numericFieldValid(text: string): boolean {
-  return text === "" || Number.isFinite(Number(text));
+  const t = text.trim();
+  return t === "" || Number.isFinite(Number(t));
 }
 
 export function LabFields({ onDraftChange }: LabFieldsProps) {
@@ -54,10 +57,10 @@ export function LabFields({ onDraftChange }: LabFieldsProps) {
     const body: LabResultCreate = {
       date: dateText,
       test_name: testName.trim(),
-      ...(resultText !== "" ? { result: Number(resultText) } : {}),
+      ...(resultText.trim() !== "" ? { result: Number(resultText.trim()) } : {}),
       ...(unit.trim() !== "" ? { unit: unit.trim() } : {}),
-      ...(rangeLowText !== "" ? { range_low: Number(rangeLowText) } : {}),
-      ...(rangeHighText !== "" ? { range_high: Number(rangeHighText) } : {}),
+      ...(rangeLowText.trim() !== "" ? { range_low: Number(rangeLowText.trim()) } : {}),
+      ...(rangeHighText.trim() !== "" ? { range_high: Number(rangeHighText.trim()) } : {}),
       ...(notes.trim() !== "" ? { notes: notes.trim() } : {}),
     };
     onDraftChange(canSubmit ? body : null);
