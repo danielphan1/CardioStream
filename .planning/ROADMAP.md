@@ -128,10 +128,29 @@ Plans:
   4. On the BP Categories and AM/PM charts, overlay controls visibly indicate they don't apply there, instead of silently doing nothing.
   5. Every overlaid event is also available in an accessible list/table, so keyboard and screen-reader users get full access regardless of chart-marker limits.
 
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+**Wave 1**
+
+- [ ] 09-01-PLAN.md — Backend ToggleDataset agent schema, service dispatch, prompt vocabulary (OVERLAY-03)
+- [ ] 09-02-PLAN.md — Frontend wire contract: AppliedFilters mirror, client wrappers, overlayDatasets store, agent bridge, color tokens (OVERLAY-03, OVERLAY-04)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 09-03-PLAN.md — Overlay read hooks, cache invalidation, pure event-shaping module (OVERLAY-04, OVERLAY-06)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 09-04-PLAN.md — OverlayToggle + OverlayEventsList components (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
+- [ ] 09-05-PLAN.md — Chart marker rendering: BPTimeline/PulseTrend/ChartDeck (OVERLAY-04)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 09-06-PLAN.md — App.tsx wiring + manual verification checkpoint (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
+
 **UI hint**: yes
 
-> **Note (folded from research):** research/SUMMARY.md proposed splitting click-based overlay rendering and voice-driven toggle control into two phases (with voice framed as a stretch goal). That framing is reconciled here: PROJECT.md's non-negotiable "every feature operable by voice" constraint and REQUIREMENTS.md's OVERLAY-03 text ("by voice or click") place voice-toggle support in v1.1 scope, not v2 — so both interaction modes are delivered together in this phase. The underlying risk the research flagged (the agent's `DashboardCommand` schema needs a new `toggle_dataset` action shape, not a bolt-on) still applies and should be treated as this phase's hardest design decision, resolved explicitly during `/gsd-plan-phase 9`, not defaulted silently. The accessibility-mechanism choice for overlay markers (ReferenceLine+list vs. a real Scatter series bound into `accessibilityLayer`) is a second open decision flagged by research for the same phase.
+> **Note (folded from research):** research/SUMMARY.md proposed splitting click-based overlay rendering and voice-driven toggle control into two phases (with voice framed as a stretch goal). That framing is reconciled here: PROJECT.md's non-negotiable "every feature operable by voice" constraint and REQUIREMENTS.md's OVERLAY-03 text ("by voice or click") place voice-toggle support in v1.1 scope, not v2 — so both interaction modes are delivered together in this phase. The underlying risk the research flagged (the agent's `DashboardCommand` schema needs a new `toggle_dataset` action shape, not a bolt-on) still applies and should be treated as this phase's hardest design decision, resolved explicitly during `/gsd-plan-phase 9`, not defaulted silently. The accessibility-mechanism choice for overlay markers (ReferenceLine+list vs. a real Scatter series bound into `accessibilityLayer`) is a second open decision flagged by research for the same phase — both resolved in 09-CONTEXT.md (D-01/D-06) and executed by 09-01 through 09-06 above.
 
 ### Phase 10: Spoken Replies (TTS)
 
@@ -206,7 +225,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete    | 2026-08-20 |
 | 7. Records Backend | v1.1 | 2/2 | Complete    | 2026-08-20 |
 | 8. Manual-Entry Forms | v1.1 | 3/3 | Complete    | 2026-08-21 |
-| 9. Multi-Dataset Overlay & Filtering | v1.1 | 0/TBD | Not started | - |
+| 9. Multi-Dataset Overlay & Filtering | v1.1 | 0/6 | Planned | - |
 | 10. Spoken Replies (TTS) | v1.1 | 0/TBD | Not started | - |
 | 11. Full Site Guide | v1.1 | 0/TBD | Not started | - |
 | 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
