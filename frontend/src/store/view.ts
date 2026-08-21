@@ -6,7 +6,7 @@
 // (CLAUDE.md separation).
 import { create } from "zustand";
 
-export type View = "dashboard" | "upload";
+export type View = "dashboard" | "upload" | "records";
 
 interface ViewState {
   view: View;

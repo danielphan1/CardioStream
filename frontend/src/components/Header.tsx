@@ -12,7 +12,7 @@
 // focus ring and full keyboard operability.
 // All colors are index.css tokens — no hex values here.
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Moon, Sailboat, Sun, Upload } from "lucide-react";
+import { ClipboardPlus, LogOut, Moon, Sailboat, Sun, Upload } from "lucide-react";
 
 import { useAuth } from "../store/auth";
 import { useTheme } from "../store/theme";
@@ -169,16 +169,39 @@ export function Header() {
             {isDark ? "Dark" : "Light"}
           </button>
 
-          {/* View toggle (D-06): "Upload" on the dashboard, "Back to dashboard"
-              on the upload view. Discreet — exempt from the 48px floor. */}
-          <button
-            type="button"
-            onClick={() => go(onDashboard ? "upload" : "dashboard")}
-            className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
-          >
-            <Upload aria-hidden="true" size={24} />
-            {onDashboard ? "Upload" : "Back to dashboard"}
-          </button>
+          {/* View toggle (D-06, widened to three states by Phase 8 D-01):
+              "Upload" + "Add Record" show together on the dashboard; either
+              non-dashboard view shows exactly one "Back to dashboard" button.
+              Discreet — exempt from the 48px floor. */}
+          {onDashboard ? (
+            <>
+              <button
+                type="button"
+                onClick={() => go("upload")}
+                className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+              >
+                <Upload aria-hidden="true" size={24} />
+                Upload
+              </button>
+              <button
+                type="button"
+                onClick={() => go("records")}
+                className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+              >
+                <ClipboardPlus aria-hidden="true" size={24} />
+                Add Record
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => go("dashboard")}
+              className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+            >
+              <Upload aria-hidden="true" size={24} />
+              Back to dashboard
+            </button>
+          )}
 
           {/* Log out (D-03): opens the confirm dialog rather than logging out
               immediately (the no-expiry token means only a caregiver can

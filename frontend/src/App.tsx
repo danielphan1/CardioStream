@@ -10,6 +10,7 @@
 // (ApiError details stay in the console at most).
 import type { ReactNode } from "react";
 
+import { AddRecordPage } from "./components/AddRecordPage";
 import { AgentStatusBanner } from "./components/AgentStatusBanner";
 import { ChartDeck } from "./components/ChartDeck";
 import { CommandBar } from "./components/CommandBar";
@@ -149,16 +150,29 @@ function UploadView() {
   );
 }
 
+/** The caregiver "Add Record" surface (Phase 8, D-01). Same wrapper shape as
+ *  UploadView — Header persists, AddRecordPage mounts no read-data hooks so
+ *  switching here fires no fetch (only its own POST mutations on submit). */
+function RecordsView() {
+  return (
+    <div className="min-h-screen bg-[var(--color-foam)]">
+      <Header />
+      <AddRecordPage />
+    </div>
+  );
+}
+
 /** Auth gate (D-01): until a token exists the app renders ONLY the LoginGate —
  *  no header, no dashboard chrome, and crucially no data hooks mount (the
  *  Dashboard tree is not rendered), so nothing fetches before authentication.
  *  Once authed, a zustand view swap (D-05, no react-router) chooses between the
- *  dashboard and the caregiver upload page. */
+ *  dashboard and the caregiver upload/records pages. */
 function App() {
   const token = useAuth((s) => s.token);
   const view = useView((s) => s.view);
   if (token === null) return <LoginGate />;
   if (view === "upload") return <UploadView />;
+  if (view === "records") return <RecordsView />;
   return <Dashboard />;
 }
 
