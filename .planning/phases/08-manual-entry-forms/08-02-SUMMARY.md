@@ -121,3 +121,10 @@ None - no external service configuration required.
 ---
 *Phase: 08-manual-entry-forms*
 *Completed: 2026-08-21*
+
+## Self-Check: PASSED
+
+All 6 created source files verified present on disk (LabFields.tsx, ProcedureFields.tsx,
+IncidentFields.tsx, LabFields.test.tsx, ProcedureFields.test.tsx, IncidentFields.test.tsx),
+plus this SUMMARY.md. All 5 commit hashes (`6f0cf62`, `64b17ab`, `02e4ba1`, `66c56c9`,
+`ec67db1`) verified present in `git log`.
