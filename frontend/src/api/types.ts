@@ -149,6 +149,11 @@ export type ClarifyContext = { original_text: string; question: string };
 // POST /agent body — text plus optional clarification context (VOICE-08).
 export type AgentRequest = { text: string; context: ClarifyContext | null };
 
+// The single declaration site for the overlay dataset union (OVERLAY-03/04) —
+// store/filters.ts imports this rather than re-declaring it, matching the
+// file's existing convention for BPCategory/ChartId.
+export type OverlayDataset = "labs" | "incidents" | "procedures";
+
 // Server-composed filter delta — only these closed-union fields mutate the
 // store (T-03-07). Wire key is `from` (backend serializes `from_` alias "from").
 export type AppliedFilters = {
@@ -157,6 +162,8 @@ export type AppliedFilters = {
   customRange?: { from: string; to: string } | null;
   amPm?: "all" | "AM" | "PM" | null;
   bpCategory?: "all" | BPCategory | null;
+  overlayDataset?: OverlayDataset | null;
+  overlayState?: "on" | "off" | null;
   reset?: boolean;
 };
 
