@@ -41,6 +41,12 @@
   --cat-crisis: #7F1D1D;
   --band-opacity: 0.10;
   --cat-chip-text: #FFFFFF;
+
+  /* Overlay dataset marker/toggle colors (D-05) — violet/magenta/olive hue
+     families, chosen to sit outside every existing clinical/chart hue range */
+  --overlay-labs: #6A3FA0;
+  --overlay-incidents: #A32672;
+  --overlay-procedures: #5C6B1E;
 }
 
 .dark {
@@ -64,6 +70,10 @@
   --cat-crisis: #F2564D;
   --band-opacity: 0.14;
   --cat-chip-text: #0B1626;
+
+  --overlay-labs: #C9A6EA;
+  --overlay-incidents: #F0A8D0;
+  --overlay-procedures: #C9D48A;
 }
 
 body {

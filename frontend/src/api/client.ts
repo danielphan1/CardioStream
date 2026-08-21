@@ -178,3 +178,19 @@ export function postIncident(body: IncidentCreate): Promise<Incident> {
 export function postProcedure(body: ProcedureCreate): Promise<Procedure> {
   return postJson<ProcedureCreate, Procedure>("/procedures", body);
 }
+
+// Records read wrappers (OVERLAY-03/04) — same getJson path as getReadings/
+// getStatsSummary; ApiError discipline and 401→logout already centralized.
+type DateWindow = { start_date?: string; end_date?: string };
+
+export function getLabs(window: DateWindow): Promise<LabResult[]> {
+  return getJson<LabResult[]>("/labs", window);
+}
+
+export function getIncidents(window: DateWindow): Promise<Incident[]> {
+  return getJson<Incident[]>("/incidents", window);
+}
+
+export function getProcedures(window: DateWindow): Promise<Procedure[]> {
+  return getJson<Procedure[]>("/procedures", window);
+}

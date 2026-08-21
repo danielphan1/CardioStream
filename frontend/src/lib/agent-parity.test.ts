@@ -53,6 +53,7 @@ const STORE_ACTIONS = [
   "setAmPm",
   "setBpCategory",
   "showAllData",
+  "setOverlayDataset",
 ] as const;
 
 beforeEach(() => {
@@ -62,6 +63,7 @@ beforeEach(() => {
     customRange: { from: null, to: null },
     amPm: "all",
     bpCategory: "all",
+    overlayDatasets: { labs: false, incidents: false, procedures: false },
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
 });
@@ -154,6 +156,13 @@ describe("store↔command 1:1 mapping — no unreachable action, no dead field",
       action: "showAllData",
       apply: () => applyAgentFilters({ reset: true }),
       assert: () => expect(useFilters.getState().datePreset).toBe("all"),
+    },
+    {
+      action: "setOverlayDataset",
+      apply: () =>
+        applyAgentFilters({ overlayDataset: "labs", overlayState: "on" }),
+      assert: () =>
+        expect(useFilters.getState().overlayDatasets.labs).toBe(true),
     },
   ];
 

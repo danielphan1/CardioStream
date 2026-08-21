@@ -21,6 +21,7 @@ beforeEach(() => {
     customRange: { from: null, to: null },
     amPm: "all",
     bpCategory: "all",
+    overlayDatasets: { labs: false, incidents: false, procedures: false },
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
 });
@@ -113,11 +114,24 @@ describe("applyAgentFilters", () => {
     expect(pulse.seq).toBe(1); // bumped from 0
   });
 
-  it("reset marks all four pulse groups", () => {
+  it("reset marks all five pulse groups", () => {
     applyAgentFilters({ reset: true });
 
-    const expected: PulseField[] = ["amPm", "bpCategory", "chart", "dateRange"];
+    const expected: PulseField[] = [
+      "amPm",
+      "bpCategory",
+      "chart",
+      "dateRange",
+      "overlay",
+    ];
     expect([...useAgentPulse.getState().fields].sort()).toEqual(expected);
+  });
+
+  it("overlayDataset + overlayState reaches setOverlayDataset and pulses overlay", () => {
+    applyAgentFilters({ overlayDataset: "labs", overlayState: "on" });
+
+    expect(useFilters.getState().overlayDatasets.labs).toBe(true);
+    expect(useAgentPulse.getState().fields).toContain("overlay");
   });
 });
 

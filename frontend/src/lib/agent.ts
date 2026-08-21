@@ -12,8 +12,13 @@ import type { DatePreset } from "./dates";
 import { parseDateOnly, presetLabel } from "./dates";
 import { useFilters } from "../store/filters";
 
-// The four filter groups FilterBar (plan 03-04) highlights on a D-08 pulse.
-export type PulseField = "chart" | "dateRange" | "amPm" | "bpCategory";
+// The five filter groups FilterBar (plan 03-04) highlights on a D-08 pulse.
+export type PulseField =
+  | "chart"
+  | "dateRange"
+  | "amPm"
+  | "bpCategory"
+  | "overlay";
 
 // Tiny zustand signal store: `mark` bumps `seq` and replaces `fields`, so a
 // FilterBar effect keyed on `seq` re-runs its highlight even when the same
@@ -40,11 +45,12 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   const touched = new Set<PulseField>();
 
   if (f.reset) {
-    s.showAllData(); // datePreset/customRange/amPm/bpCategory → defaults
+    s.showAllData(); // datePreset/customRange/amPm/bpCategory/overlayDatasets → defaults
     touched.add("chart");
     touched.add("dateRange");
     touched.add("amPm");
     touched.add("bpCategory");
+    touched.add("overlay");
   }
 
   // Present-value deltas only (`!= null` — "all" is a valid present value, so
@@ -69,6 +75,10 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   if (f.bpCategory != null) {
     s.setBpCategory(f.bpCategory);
     touched.add("bpCategory");
+  }
+  if (f.overlayDataset != null && f.overlayState != null) {
+    s.setOverlayDataset(f.overlayDataset, f.overlayState === "on");
+    touched.add("overlay");
   }
 
   const fields = [...touched];

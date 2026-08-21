@@ -10,7 +10,7 @@
 // load shows Chris's full range (RESEARCH Open Question 2; ROADMAP SC4).
 import { create } from "zustand";
 
-import type { BPCategory, ChartId } from "../api/types";
+import type { BPCategory, ChartId, OverlayDataset } from "../api/types";
 import type { DatePreset } from "../lib/dates";
 
 export type { DatePreset };
@@ -26,6 +26,8 @@ interface FilterState {
   setCustomRange: (from: string, to: string) => void;
   setAmPm: (v: "all" | "AM" | "PM") => void;
   setBpCategory: (v: "all" | BPCategory) => void;
+  overlayDatasets: Record<OverlayDataset, boolean>; // D-01 independent multi-select
+  setOverlayDataset: (dataset: OverlayDataset, on: boolean) => void;
   showAllData: () => void; // D-11 big button
 }
 
@@ -35,6 +37,7 @@ export const useFilters = create<FilterState>((set) => ({
   customRange: { from: null, to: null },
   amPm: "all",
   bpCategory: "all",
+  overlayDatasets: { labs: false, incidents: false, procedures: false },
   setActiveChart: (activeChart) => set({ activeChart }),
   setDatePreset: (datePreset) =>
     set({ datePreset, customRange: { from: null, to: null } }),
@@ -42,11 +45,14 @@ export const useFilters = create<FilterState>((set) => ({
     set({ datePreset: "custom", customRange: { from, to } }),
   setAmPm: (amPm) => set({ amPm }),
   setBpCategory: (bpCategory) => set({ bpCategory }),
+  setOverlayDataset: (dataset, on) =>
+    set((s) => ({ overlayDatasets: { ...s.overlayDatasets, [dataset]: on } })),
   showAllData: () =>
     set({
       datePreset: "all",
       customRange: { from: null, to: null },
       amPm: "all",
       bpCategory: "all",
+      overlayDatasets: { labs: false, incidents: false, procedures: false },
     }),
 }));
