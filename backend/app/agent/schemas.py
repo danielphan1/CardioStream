@@ -46,6 +46,8 @@ MonthToken = Literal[
     "july", "august", "september", "october", "november", "december",
 ]
 
+DatasetToken = Literal["labs", "incidents", "procedures"]
+
 
 # --------------------------------------------------------------------------- #
 # Claude-facing DateRange union — constraint-free, Literal-tagged (Pitfall 3)
@@ -129,10 +131,26 @@ class Unintelligible(BaseModel):
     action: Literal["unclear"]
 
 
+class ToggleDataset(BaseModel):
+    """Overlay data toggle — one dataset token + explicit on/off state (D-03/D-04):
+    single-valued (never list-typed) and always explicit (never a flip/toggle)."""
+
+    action: Literal["toggle_dataset"]
+    dataset: DatasetToken
+    state: Literal["on", "off"]
+
+
 class AgentOutput(BaseModel):
     """The closed union Claude fills via structured outputs (API-04)."""
 
-    result: DashboardCommand | DataQuestion | Clarification | MedicalRefusal | Unintelligible
+    result: (
+        DashboardCommand
+        | DataQuestion
+        | Clarification
+        | MedicalRefusal
+        | Unintelligible
+        | ToggleDataset
+    )
 
     @field_validator("result", mode="before")
     @classmethod
@@ -195,6 +213,8 @@ class AppliedFilters(BaseModel):
     bpCategory: Literal[
         "all", "Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Hypertensive Crisis"
     ] | None = None
+    overlayDataset: DatasetToken | None = None
+    overlayState: Literal["on", "off"] | None = None
     reset: bool = False
 
 
