@@ -90,7 +90,8 @@ _Plan metadata commit (SUMMARY.md) follows this summary._
 - `frontend/src/hooks/useCreateRecord.ts` (new) - useCreateLab/useCreateIncident/useCreateProcedure mutation hooks
 
 ## Decisions Made
-- None beyond what the plan specified — followed the plan's exact field mappings, wrapper shapes, and extraction approach.
+- Did NOT mark `OVERLAY-02` complete in `.planning/REQUIREMENTS.md` despite it appearing in this plan's frontmatter `requirements:` field. Per REQUIREMENTS.md's own text, `OVERLAY-02` is "Accessible manual-entry forms for labs, incidents, and procedures ... the tables are otherwise unreachable" — a Phase-8-wide requirement satisfied only once a caregiver can actually submit a form (Plans 08-02/08-03). This plan is explicitly non-visual foundation work ("touches zero UI a caregiver will see" per its own objective). Marking the requirement complete here would be inaccurate; leaving it `[ ] Pending` for whichever later plan in this phase actually ships the forms to flip.
+- Otherwise followed the plan's exact field mappings, wrapper shapes, and extraction approach — no other deviations.
 
 ## Deviations from Plan
 
