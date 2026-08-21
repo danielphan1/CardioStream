@@ -43,7 +43,7 @@ export function ProcedureFields({ onDraftChange }: ProcedureFieldsProps) {
       ...(notes.trim() !== "" ? { notes: notes.trim() } : {}),
     };
     onDraftChange(canSubmit ? body : null);
-  }, [dateText, procedureName, location, outcome, notes]);
+  }, [dateText, procedureName, location, outcome, notes, onDraftChange]);
 
   return (
     <div className="flex flex-col gap-4">

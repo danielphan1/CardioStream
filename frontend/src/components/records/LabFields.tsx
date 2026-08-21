@@ -64,7 +64,7 @@ export function LabFields({ onDraftChange }: LabFieldsProps) {
       ...(notes.trim() !== "" ? { notes: notes.trim() } : {}),
     };
     onDraftChange(canSubmit ? body : null);
-  }, [dateText, testName, resultText, unit, rangeLowText, rangeHighText, notes]);
+  }, [dateText, testName, resultText, unit, rangeLowText, rangeHighText, notes, onDraftChange]);
 
   return (
     <div className="flex flex-col gap-4">
