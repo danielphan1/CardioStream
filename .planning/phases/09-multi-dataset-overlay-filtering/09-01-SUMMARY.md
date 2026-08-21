@@ -104,3 +104,7 @@ None - no external service configuration required.
 ---
 *Phase: 09-multi-dataset-overlay-filtering*
 *Completed: 2026-08-21*
+
+## Self-Check: PASSED
+
+All 5 claimed files found on disk (schemas.py, service.py, prompt.py, test_agent_schemas.py, test_agent_service.py). All 4 claimed commit hashes (3e3ec8b, 3aeee11, 0a044d3, f912255) found in `git log --oneline --all`.
