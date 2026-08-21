@@ -99,7 +99,20 @@ Plans:
   3. A caregiver can submit a new procedure through an accessible form.
   4. A submitted record shows up in the data immediately, without a page reload.
 
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 08-01-PLAN.md — Records API contracts, date primitives, and creation hooks (OVERLAY-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 08-02-PLAN.md — Lab/Incident/Procedure field-set components (OVERLAY-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 08-03-PLAN.md — AddRecordPage container + Header/App navigation wiring (OVERLAY-02)
+
 **UI hint**: yes
 
 ### Phase 9: Multi-Dataset Overlay & Filtering
@@ -192,7 +205,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 5. Upload, Auth Gate & Deployment | v1.0 | 7/7 | Complete | 2026-08-05 |
 | 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete    | 2026-08-20 |
 | 7. Records Backend | v1.1 | 2/2 | Complete    | 2026-08-20 |
-| 8. Manual-Entry Forms | v1.1 | 0/TBD | Not started | - |
+| 8. Manual-Entry Forms | v1.1 | 0/3 | Not started | - |
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 0/TBD | Not started | - |
 | 10. Spoken Replies (TTS) | v1.1 | 0/TBD | Not started | - |
 | 11. Full Site Guide | v1.1 | 0/TBD | Not started | - |
