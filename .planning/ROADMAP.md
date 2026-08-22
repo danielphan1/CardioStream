@@ -128,7 +128,7 @@ Plans:
   4. On the BP Categories and AM/PM charts, overlay controls visibly indicate they don't apply there, instead of silently doing nothing.
   5. Every overlaid event is also available in an accessible list/table, so keyboard and screen-reader users get full access regardless of chart-marker limits.
 
-**Plans**: 6 plans
+**Plans**: 7 plans
 Plans:
 **Wave 1**
 
@@ -147,6 +147,10 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [x] 09-06-PLAN.md — App.tsx wiring + manual verification checkpoint (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
+
+**Gap closure** *(from 09-VERIFICATION.md — 2 BLOCKERs: stale toggle-off overlay data, dark-mode contrast failure)*
+
+- [ ] 09-07-PLAN.md — Gate overlay events on toggle state (not just query error state) + theme-aware ink token + agent-parity DatasetToken coverage (OVERLAY-03, OVERLAY-04, OVERLAY-06)
 
 **UI hint**: yes
 
