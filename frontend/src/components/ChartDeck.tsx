@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import type { ChartId, Reading, StatsSummary } from "../api/types";
+import type { OverlayEvent } from "../lib/overlayEvents";
 import { useFilters } from "../store/filters";
 
 import AmPmComparison from "./charts/AmPmComparison";
@@ -29,6 +30,7 @@ import PulseTrend from "./charts/PulseTrend";
 export type ChartDeckProps = {
   readings: Reading[];
   stats: StatsSummary | undefined;
+  overlayEvents?: OverlayEvent[];
 };
 
 type ChartEntry = {
@@ -47,15 +49,23 @@ const CHART_REGISTRY: readonly ChartEntry[] = [
     id: "bp_timeline",
     title: "Blood Pressure",
     ariaName: "blood pressure",
-    hero: ({ readings }) => <BPTimeline readings={readings} variant="hero" />,
-    mini: ({ readings }) => <BPTimeline readings={readings} variant="mini" />,
+    hero: ({ readings, overlayEvents }) => (
+      <BPTimeline readings={readings} variant="hero" overlayEvents={overlayEvents} />
+    ),
+    mini: ({ readings, overlayEvents }) => (
+      <BPTimeline readings={readings} variant="mini" overlayEvents={overlayEvents} />
+    ),
   },
   {
     id: "pulse_trend",
     title: "Pulse",
     ariaName: "pulse trend",
-    hero: ({ readings }) => <PulseTrend readings={readings} variant="hero" />,
-    mini: ({ readings }) => <PulseTrend readings={readings} variant="mini" />,
+    hero: ({ readings, overlayEvents }) => (
+      <PulseTrend readings={readings} variant="hero" overlayEvents={overlayEvents} />
+    ),
+    mini: ({ readings, overlayEvents }) => (
+      <PulseTrend readings={readings} variant="mini" overlayEvents={overlayEvents} />
+    ),
   },
   {
     id: "bp_categories",
@@ -112,7 +122,7 @@ function FadeSwap({ children }: { children: ReactNode }) {
   );
 }
 
-export function ChartDeck({ readings, stats }: ChartDeckProps) {
+export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
   const activeChart = useFilters((s) => s.activeChart);
   const setActiveChart = useFilters((s) => s.setActiveChart);
 
@@ -120,7 +130,7 @@ export function ChartDeck({ readings, stats }: ChartDeckProps) {
   const active =
     CHART_REGISTRY.find((c) => c.id === activeChart) ?? CHART_REGISTRY[0];
   const minis = CHART_REGISTRY.filter((c) => c.id !== active.id);
-  const data: ChartDeckProps = { readings, stats };
+  const data: ChartDeckProps = { readings, stats, overlayEvents };
 
   return (
     <section aria-label="Charts" className="flex flex-col gap-6">

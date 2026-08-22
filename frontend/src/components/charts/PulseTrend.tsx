@@ -26,15 +26,22 @@ import {
 import type { Reading } from "../../api/types";
 import { prefersReducedMotion, toTimePoints } from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
+import type { OverlayEvent } from "../../lib/overlayEvents";
+import { OVERLAY_META } from "../../lib/overlayMeta";
 
 import ChartTooltip from "./ChartTooltip";
 
 export type PulseTrendProps = {
   readings: Reading[];
   variant: "hero" | "mini";
+  overlayEvents?: OverlayEvent[];
 };
 
-export default function PulseTrend({ readings, variant }: PulseTrendProps) {
+export default function PulseTrend({
+  readings,
+  variant,
+  overlayEvents,
+}: PulseTrendProps) {
   const hero = variant === "hero";
   const points = toTimePoints(readings);
   const [dismissed, setDismissed] = useState(false);
@@ -113,6 +120,25 @@ export default function PulseTrend({ readings, variant }: PulseTrendProps) {
             activeDot={{ r: 10 }}
             isAnimationActive={animate}
           />
+          {hero &&
+            overlayEvents?.map((evt) => {
+              const meta = OVERLAY_META[evt.type];
+              return (
+                <ReferenceLine
+                  key={`${evt.type}-${evt.id}`}
+                  x={evt.ts}
+                  stroke={meta.color}
+                  strokeWidth={2}
+                  ifOverflow="extendDomain"
+                  label={{
+                    value: meta.glyph,
+                    position: "top",
+                    fontSize: 14,
+                    fill: meta.color,
+                  }}
+                />
+              );
+            })}
         </LineChart>
       </ResponsiveContainer>
     </div>

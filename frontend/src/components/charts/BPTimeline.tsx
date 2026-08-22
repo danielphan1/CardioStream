@@ -18,6 +18,7 @@ import {
   Line,
   LineChart,
   ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -28,6 +29,8 @@ import {
 import type { BPCategory, Reading } from "../../api/types";
 import { prefersReducedMotion, toTimePoints } from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
+import type { OverlayEvent } from "../../lib/overlayEvents";
+import { OVERLAY_META } from "../../lib/overlayMeta";
 import { categoryColor } from "../../lib/palette";
 
 import ChartTooltip from "./ChartTooltip";
@@ -35,6 +38,7 @@ import ChartTooltip from "./ChartTooltip";
 export type BPTimelineProps = {
   readings: Reading[];
   variant: "hero" | "mini";
+  overlayEvents?: OverlayEvent[];
 };
 
 /**
@@ -80,7 +84,11 @@ function makeEndLabel(lastIndex: number, text: string, fill: string) {
   };
 }
 
-export default function BPTimeline({ readings, variant }: BPTimelineProps) {
+export default function BPTimeline({
+  readings,
+  variant,
+  overlayEvents,
+}: BPTimelineProps) {
   const hero = variant === "hero";
   const points = toTimePoints(readings);
   const lastIndex = points.length - 1;
@@ -210,6 +218,25 @@ export default function BPTimeline({ readings, variant }: BPTimelineProps) {
             />
           )}
         </Line>
+        {hero &&
+          overlayEvents?.map((evt) => {
+            const meta = OVERLAY_META[evt.type];
+            return (
+              <ReferenceLine
+                key={`${evt.type}-${evt.id}`}
+                x={evt.ts}
+                stroke={meta.color}
+                strokeWidth={2}
+                ifOverflow="extendDomain"
+                label={{
+                  value: meta.glyph,
+                  position: "top",
+                  fontSize: 14,
+                  fill: meta.color,
+                }}
+              />
+            );
+          })}
         </LineChart>
       </ResponsiveContainer>
     </div>
