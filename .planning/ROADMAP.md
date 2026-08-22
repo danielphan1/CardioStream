@@ -137,7 +137,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 09-03-PLAN.md — Overlay read hooks, cache invalidation, pure event-shaping module (OVERLAY-04, OVERLAY-06)
+- [x] 09-03-PLAN.md — Overlay read hooks, cache invalidation, pure event-shaping module (OVERLAY-04, OVERLAY-06)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -225,7 +225,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete    | 2026-08-20 |
 | 7. Records Backend | v1.1 | 2/2 | Complete    | 2026-08-20 |
 | 8. Manual-Entry Forms | v1.1 | 3/3 | Complete    | 2026-08-21 |
-| 9. Multi-Dataset Overlay & Filtering | v1.1 | 2/6 | In Progress|  |
+| 9. Multi-Dataset Overlay & Filtering | v1.1 | 3/6 | In Progress|  |
 | 10. Spoken Replies (TTS) | v1.1 | 0/TBD | Not started | - |
 | 11. Full Site Guide | v1.1 | 0/TBD | Not started | - |
 | 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
