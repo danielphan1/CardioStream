@@ -20,7 +20,7 @@ export const OVERLAY_META: Record<
   {
     label: string;
     tableLabel: string;
-    Icon: ComponentType<{ size?: number; "aria-hidden"?: string }>;
+    Icon: ComponentType<{ size?: number; "aria-hidden"?: "true" | "false" }>;
     color: string;
     glyph: string;
   }
