@@ -8,6 +8,7 @@
 // Error presentation is centralized here (T-02-11): only the UI-SPEC copy
 // renders — never raw error messages, status codes, or stack traces
 // (ApiError details stay in the console at most).
+import { useMemo } from "react";
 import type { ReactNode } from "react";
 
 import { AddRecordPage } from "./components/AddRecordPage";
@@ -68,15 +69,34 @@ function Dashboard() {
   // overlay endpoints have no server-side effect for am_pm/bp_category, so
   // never key/gate on the full `resolved` object).
   const overlayDatasets = useFilters((s) => s.overlayDatasets);
-  const window = { start_date: resolved.start_date, end_date: resolved.end_date };
-  const labs = useLabs(window, overlayDatasets.labs);
-  const incidents = useIncidents(window, overlayDatasets.incidents);
-  const procedures = useProcedures(window, overlayDatasets.procedures);
+  const dateWindow = { start_date: resolved.start_date, end_date: resolved.end_date };
+  const labs = useLabs(dateWindow, overlayDatasets.labs);
+  const incidents = useIncidents(dateWindow, overlayDatasets.incidents);
+  const procedures = useProcedures(dateWindow, overlayDatasets.procedures);
 
-  const labsEvents = labsToEvents(labs.data ?? []);
-  const incidentsEvents = incidentsToEvents(incidents.data ?? []);
-  const proceduresEvents = proceduresToEvents(procedures.data ?? []);
-  const overlayEvents = mergeOverlayEvents(labsEvents, incidentsEvents, proceduresEvents);
+  // Gated on the toggle flag, not just query state (Gap 1 / CR-1 fix):
+  // TanStack Query's `enabled: false` stops future fetches but does NOT
+  // clear previously-cached `data`, so toggling a dataset off while another
+  // stays on must short-circuit to [] here rather than trusting labs.data
+  // to already be empty. useMemo also restores referential stability across
+  // unrelated re-renders (WR-2) since Query keeps `.data` stable via
+  // structural sharing when content is unchanged.
+  const labsEvents = useMemo(
+    () => (overlayDatasets.labs ? labsToEvents(labs.data ?? []) : []),
+    [overlayDatasets.labs, labs.data],
+  );
+  const incidentsEvents = useMemo(
+    () => (overlayDatasets.incidents ? incidentsToEvents(incidents.data ?? []) : []),
+    [overlayDatasets.incidents, incidents.data],
+  );
+  const proceduresEvents = useMemo(
+    () => (overlayDatasets.procedures ? proceduresToEvents(procedures.data ?? []) : []),
+    [overlayDatasets.procedures, procedures.data],
+  );
+  const overlayEvents = useMemo(
+    () => mergeOverlayEvents(labsEvents, incidentsEvents, proceduresEvents),
+    [labsEvents, incidentsEvents, proceduresEvents],
+  );
 
   // EmptyState copy inputs (D-11) — read from the same store the charts use.
   const datePreset = useFilters((s) => s.datePreset);
