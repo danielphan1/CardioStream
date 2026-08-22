@@ -141,8 +141,8 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 09-04-PLAN.md — OverlayToggle + OverlayEventsList components (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
-- [ ] 09-05-PLAN.md — Chart marker rendering: BPTimeline/PulseTrend/ChartDeck (OVERLAY-04)
+- [x] 09-04-PLAN.md — OverlayToggle + OverlayEventsList components (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
+- [x] 09-05-PLAN.md — Chart marker rendering: BPTimeline/PulseTrend/ChartDeck (OVERLAY-04)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -225,7 +225,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete    | 2026-08-20 |
 | 7. Records Backend | v1.1 | 2/2 | Complete    | 2026-08-20 |
 | 8. Manual-Entry Forms | v1.1 | 3/3 | Complete    | 2026-08-21 |
-| 9. Multi-Dataset Overlay & Filtering | v1.1 | 3/6 | In Progress|  |
+| 9. Multi-Dataset Overlay & Filtering | v1.1 | 5/6 | In Progress|  |
 | 10. Spoken Replies (TTS) | v1.1 | 0/TBD | Not started | - |
 | 11. Full Site Guide | v1.1 | 0/TBD | Not started | - |
 | 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
