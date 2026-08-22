@@ -1,18 +1,32 @@
 // TanStack v5 mutation wrappers around postLab/postIncident/postProcedure
-// (OVERLAY-02). Mirrors useAgent.ts's exact one-line-per-hook shape — no
-// query cache, no wrapper logic beyond the mutationFn.
-import { useMutation } from "@tanstack/react-query";
+// (OVERLAY-02). Mirrors useAgent.ts's exact one-line-per-hook shape, plus an
+// onSuccess cache invalidation (OVERLAY-04) so a caregiver's newly submitted
+// record surfaces in the overlay immediately instead of waiting out
+// useLabs/useIncidents/useProcedures' 5-minute staleTime.
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { postIncident, postLab, postProcedure } from "../api/client";
 
 export function useCreateLab() {
-  return useMutation({ mutationFn: postLab });
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: postLab,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["labs"] }),
+  });
 }
 
 export function useCreateIncident() {
-  return useMutation({ mutationFn: postIncident });
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: postIncident,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["incidents"] }),
+  });
 }
 
 export function useCreateProcedure() {
-  return useMutation({ mutationFn: postProcedure });
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: postProcedure,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["procedures"] }),
+  });
 }
