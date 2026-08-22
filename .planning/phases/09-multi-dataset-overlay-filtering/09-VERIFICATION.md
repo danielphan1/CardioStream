@@ -1,145 +1,169 @@
 ---
 phase: 09-multi-dataset-overlay-filtering
-verified: 2026-08-22T09:30:00Z
-status: gaps_found
-score: 4/5 must-haves verified
+verified: 2026-08-22T22:29:43Z
+status: passed
+score: 5/5 must-haves verified
 overrides_applied: 0
-gaps:
-  - truth: "Toggling any of the 3 overlay buttons by click shows/hides matching markers on whichever of BP Timeline / Pulse Trend is the current hero chart (Plan 09-06 must-have; underlies ROADMAP SC1/SC3/SC5)"
-    status: failed
-    reason: "App.tsx computes labsEvents/incidentsEvents/proceduresEvents from labs.data/incidents.data/procedures.data without gating on overlayDatasets.{type}, and OverlayEventsList's merged useMemo filters only on isError, never on the enabled prop. TanStack Query's enabled:false stops refetching but does NOT clear previously-cached data. Result: once a dataset has been toggled ON and fetched, toggling it back OFF while any other dataset remains ON leaves its stale ReferenceLine markers on the chart and its stale rows in the accessible table, even though its button now reads aria-pressed=\"false\". Confirmed independently by reading the code (not just trusting 09-REVIEW.md's CR-1) — this is a deterministic, code-provable bug, not a matter of visual judgment."
-    artifacts:
-      - path: frontend/src/App.tsx
-        issue: "Lines 76-79: labsEvents/incidentsEvents/proceduresEvents/overlayEvents are derived from labs.data/incidents.data/procedures.data with no overlayDatasets.{type} gate"
-      - path: frontend/src/components/OverlayEventsList.tsx
-        issue: "Lines 61-76: the merged useMemo filters each dataset's contribution only on isError, never on enabled — a disabled-but-previously-fetched dataset's events still flow into the merged/sorted array and the chart-marker array"
-      - path: frontend/src/hooks/useLabs.ts
-        issue: "enabled:false (TanStack Query) stops future fetches but does not clear the query's cached data — the documented behavior this bug depends on"
-    missing:
-      - "Gate labsEvents/incidentsEvents/proceduresEvents in App.tsx on overlayDatasets.labs/.incidents/.procedures (e.g. overlayDatasets.labs ? labsToEvents(labs.data ?? []) : [])"
-      - "Additionally require labs.enabled/incidents.enabled/procedures.enabled inside OverlayEventsList's merged useMemo (defense in depth, since the component is the reusable/testable unit)"
-      - "Add a regression test simulating 'toggle on, fetch succeeds, toggle off while a second dataset stays on' to prevent this class of bug recurring (not covered by any existing test — all OverlayEventsList.test.tsx OFF fixtures use events: [] paired with enabled: false, which is the initial-state case, not the stale-cache case)"
-deferred: []
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/5
+  gaps_closed:
+    - "Toggling any of the 3 overlay buttons by click shows/hides matching markers on whichever of BP Timeline / Pulse Trend is the current hero chart (Plan 09-06 must-have; underlies ROADMAP SC1/SC3/SC5) — stale TanStack Query cache data no longer survives a toggle-off"
+  gaps_remaining: []
+  regressions: []
 human_verification: []
 ---
 
 # Phase 9: Multi-Dataset Overlay & Filtering Verification Report
 
 **Phase Goal:** Chris and caregivers can mix and match which data types they're looking at — by voice or click — and see them overlaid together on one timeline instead of living in separate silos.
-**Verified:** 2026-08-22T09:30:00Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Verified:** 2026-08-22T22:29:43Z
+**Status:** passed
+**Re-verification:** Yes — after gap closure (Plan 09-07)
 
 ## Goal Achievement
+
+Both BLOCKER-class gaps from the prior verification were independently re-checked by direct
+code inspection (not by trusting 09-SUMMARY.md or 09-REVIEW.md claims) and confirmed fixed on
+disk. Full detail below.
 
 ### Observable Truths (ROADMAP Success Criteria)
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Chris can toggle any combination of BP, pulse, labs, incidents, and procedures on or off by voice command. | ✗ FAILED | Voice infrastructure is fully built and tested (backend `ToggleDataset` schema/dispatch/prompt vocabulary, frontend `applyAgentFilters` bridge, `agent-parity.test.ts` structural gate) — see Requirements Coverage. BP/pulse voice chart-switching is a pre-existing Phase 3/4 feature reused here, per a documented, user-approved reinterpretation in `09-DISCUSSION-LOG.md` ("BP/pulse aren't real toggle items" — BP Timeline/Pulse Trend stay the two hero charts; the 3 event types are the real toggle set). However, the combination-toggle behavior itself is broken: turning a dataset OFF while another stays ON does not remove its stale markers/rows (see Gap below). This fails Plan 09-06's own declared must-have and undermines the "mix and match" core value proposition. |
-| 2 | A caregiver can toggle the same combinations by click, with pressed/not-pressed state shown by word or icon, never color alone. | ✓ VERIFIED | `OverlayToggle.tsx`'s 3 buttons always render an `Icon` + text `label` regardless of pressed state (never color-only), `aria-pressed={on}` correctly mirrors `overlayDatasets[key]` — confirmed via code (`frontend/src/components/OverlayToggle.tsx:68-84`) and 12 passing behavior tests in `OverlayToggle.test.tsx`. **Note:** a related but distinct accessibility defect exists — see CR-2 under Anti-Patterns (dark-mode contrast failure) — flagged separately because it does not violate this truth's literal "never color alone" wording, but is a real, independently-recomputed WCAG violation. |
-| 3 | Selected dataset types appear overlaid together on the BP Timeline and Pulse Trend charts (e.g. a hospital-stay marker plotted directly on the BP timeline). | ✓ VERIFIED (with caveat) | `BPTimeline.tsx`/`PulseTrend.tsx` both accept `overlayEvents` and render one shape+color-distinguishable `ReferenceLine` per event, hero-gated (`hero &&`), positioned after the existing `<Line>` elements (correct z-order); `ChartDeck.tsx` threads `overlayEvents` into exactly the `bp_timeline`/`pulse_trend` registry entries, leaving `bp_categories`/`am_pm_comparison` untouched. Human-verified in Plan 09-06's manual checkpoint (11-step script, user responded "approved"). **Caveat:** subject to the same stale-data gap as Truth 1 — a toggled-OFF dataset's markers can persist when mixed with an ON dataset. |
-| 4 | On the BP Categories and AM/PM charts, overlay controls visibly indicate they don't apply there, instead of silently doing nothing. | ✓ VERIFIED | `OverlayToggle.tsx` computes `overlayApplies = activeChart === "bp_timeline" \|\| activeChart === "pulse_trend"`; when false, the button row dims (`opacity-60`) and an `aria-live="polite"` note renders ("Overlays aren't shown on this chart — switch to Blood Pressure or Pulse to see them."), while all 3 buttons remain fully clickable (no `disabled` attribute in either state) — confirmed via code and passing `OverlayToggle.test.tsx` cases for both note-visibility and non-disabled states. |
-| 5 | Every overlaid event is also available in an accessible list/table, so keyboard and screen-reader users get full access regardless of chart-marker limits. | ✓ VERIFIED (with caveat) | `OverlayEventsList.tsx` renders a 4-column (`Date`/`Type`/`What happened`/`Notes`) `<table>` with `scope="col"` headers, `sr-only` caption, plain React text-node rendering (never `dangerouslySetInnerHTML`), 20-row pagination ("Show 20 more"/"Showing all N"), and per-type error isolation (`role="alert"` for one failed fetch never suppresses another dataset's rows) — confirmed via code and 9 passing `OverlayEventsList.test.tsx` cases. **Caveat:** same stale-data gap as Truth 1 — a toggled-off dataset's rows can persist in the table when mixed with an ON dataset, which is inaccurate/misleading even though the table mechanism itself is architecturally sound. |
+| 1 | Chris can toggle any combination of BP, pulse, labs, incidents, and procedures on or off by voice command. | ✓ VERIFIED | Voice infra unchanged and still fully wired (backend `ToggleDataset` schema/dispatch/prompt vocabulary, frontend `applyAgentFilters` bridge). The combination-toggle defect that previously FAILED this truth is fixed: `App.tsx`'s `labsEvents`/`incidentsEvents`/`proceduresEvents`/`overlayEvents` are now `useMemo`-wrapped and gate on `overlayDatasets.{type}` (`frontend/src/App.tsx:84-99` — `overlayDatasets.labs ? labsToEvents(labs.data ?? []) : []`), short-circuiting to `[]` the instant a toggle flips off regardless of TanStack Query's stale cached `.data`. Human-verified end-to-end via Plan 09-07's Task 4 blocking checkpoint (7-step script covering both hero charts and all 3 toggle pairings) — user responded "everything passes." Per this verification's own instructions, this sign-off is treated as already-satisfied and not re-requested. |
+| 2 | A caregiver can toggle the same combinations by click, with pressed/not-pressed state shown by word or icon, never color alone. | ✓ VERIFIED | Unchanged from prior verification: `OverlayToggle.tsx`'s 3 buttons always render `Icon` + text `label` regardless of pressed state, `aria-pressed={on}` mirrors `overlayDatasets[key]` (`frontend/src/components/OverlayToggle.tsx:68-92`). Additionally, the previously-failing dark-mode contrast defect on this exact control is now fixed (see Gap 2 closure below) — active-button ink now independently recomputes to 8.75:1-11.47:1 against all 3 per-dataset dark-mode fills (was 1.58:1-2.07:1), clearing the CLAUDE.md non-negotiable "high contrast" floor. 12 `OverlayToggle.test.tsx` cases plus 1 new style-assertion test pass. |
+| 3 | Selected dataset types appear overlaid together on the BP Timeline and Pulse Trend charts (e.g. a hospital-stay marker plotted directly on the BP timeline). | ✓ VERIFIED | `BPTimeline.tsx`/`PulseTrend.tsx` still accept `overlayEvents` and render hero-gated `ReferenceLine` markers (`hero && overlayEvents?.map(...)`, confirmed at `BPTimeline.tsx:221-238`); `ChartDeck.tsx` still threads `overlayEvents` into exactly `bp_timeline`/`pulse_trend`. The stale-marker caveat from the prior verification is resolved: `overlayEvents` now flows from the same gated `useMemo` chain as Truth 1, so a toggled-OFF dataset's markers cannot persist. Human-verified directly (chart-marker rendering cannot be exercised in jsdom — Recharts renders 0x0 — so Plan 09-07's Task 4 checkpoint is the only verification path for this half, and it passed). |
+| 4 | On the BP Categories and AM/PM charts, overlay controls visibly indicate they don't apply there, instead of silently doing nothing. | ✓ VERIFIED | Unchanged: `OverlayToggle.tsx` computes `overlayApplies = activeChart === "bp_timeline" \|\| activeChart === "pulse_trend"`; when false, the button row dims (`opacity-60`) and an `aria-live="polite"` note renders, all 3 buttons remain clickable. Confirmed via code and passing tests. |
+| 5 | Every overlaid event is also available in an accessible list/table, so keyboard and screen-reader users get full access regardless of chart-marker limits. | ✓ VERIFIED | `OverlayEventsList.tsx` still renders the 4-column accessible `<table>` with pagination and per-type error isolation. The stale-row caveat is resolved: the `merged` useMemo now independently gates each dataset's contribution on `{type}.enabled` alongside the existing `!isError` check (`frontend/src/components/OverlayEventsList.tsx:67-85`, defense-in-depth per 09-VERIFICATION.md's explicit instruction that both the composition root and the reusable leaf enforce the invariant). A new automated regression test (`describe("stale-cache toggle-off regression (Gap 1 / CR-1)")`, `OverlayEventsList.test.tsx:216-256`) simulates the exact "toggle on, fetch succeeds, toggle off while a second dataset stays on" scenario via `rerender` restating a stale (unchanged) events array — asserts the stale row disappears and the still-on dataset's row remains. This test passes and, per its construction (identical to the App.tsx gate logic), would fail if the `.enabled` gate were reverted. |
 
-**Score:** 4/5 truths verified (Truth 1 FAILED; Truths 3 and 5 carry the same root-cause caveat as Truth 1 but their own literal wording — "types appear overlaid," "every overlaid event is available" — is satisfied for the toggle-ON case, so they are not separately failed)
+**Score:** 5/5 truths verified (prior FAILED Truth 1, and the stale-data caveats on Truths 3/5, are all resolved)
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `backend/app/agent/schemas.py` | `DatasetToken`, `ToggleDataset`, `AppliedFilters.overlayDataset/overlayState` | ✓ VERIFIED | All present exactly as specified; confirmed via grep (lines 49, 134, 216-217) |
-| `backend/app/agent/service.py` | `_apply_toggle_dataset()` + `interpret()` dispatch branch | ✓ VERIFIED | Present and wired (lines 209, 245-246) |
-| `backend/app/agent/prompt.py` | Overlay vocabulary paragraph before "Routing rules:" | ✓ VERIFIED | Present (lines 41-47, before line 61 "Routing rules:") |
-| `frontend/src/api/types.ts` | `OverlayDataset` union + `AppliedFilters` fields | ✓ VERIFIED | Byte-identical field names to backend (lines 155, 165-166) |
-| `frontend/src/api/client.ts` | `getLabs`/`getIncidents`/`getProcedures` | ✓ VERIFIED | Present |
-| `frontend/src/lib/overlayMeta.ts` | `OVERLAY_META`/`OVERLAY_ORDER` | ✓ VERIFIED | Present, imported by both OverlayToggle and OverlayEventsList (no duplicated maps) |
-| `frontend/src/store/filters.ts` | `overlayDatasets` + `setOverlayDataset` + `showAllData` reset | ✓ VERIFIED | Present (lines 29-30, 40, 48-49, 56) |
-| `frontend/src/lib/agent.ts` | `"overlay"` `PulseField` + `applyAgentFilters` bridge | ✓ VERIFIED | Present (lines 79-80) |
-| `frontend/src/lib/overlayEvents.ts` | `OverlayEvent` shaping + copy builders | ✓ VERIFIED | Present, 23 passing unit tests |
-| `frontend/src/hooks/useLabs.ts`/`useIncidents.ts`/`useProcedures.ts` | Lazy, narrowly-keyed TanStack Query hooks | ✓ VERIFIED | Present, `enabled` gate + `DateWindow`-only key |
-| `frontend/src/hooks/useCreateRecord.ts` | Cache invalidation on create | ✓ VERIFIED | `onSuccess: () => qc.invalidateQueries(...)` present for all 3 mutations |
-| `frontend/src/components/OverlayToggle.tsx` | 3-button multi-select + doesn't-apply note + pulse parity | ✓ VERIFIED | All behaviors present and test-covered |
-| `frontend/src/components/OverlayEventsList.tsx` | Accessible paginated table, conditional mount, error isolation | ⚠️ WIRED but data-flow HOLLOW for the toggle-off case | Component logic is correct in isolation (its own tests only exercise `enabled:false` paired with `events:[]`, the initial-state case); the real defect is upstream in how `App.tsx` supplies stale `events` for a disabled type — see Gap |
-| `frontend/src/components/charts/BPTimeline.tsx`/`PulseTrend.tsx` | `overlayEvents` prop + hero-gated `ReferenceLine` | ✓ VERIFIED | Present, correct z-order, `hero &&` gate |
-| `frontend/src/components/ChartDeck.tsx` | `overlayEvents` threaded to `bp_timeline`/`pulse_trend` only | ✓ VERIFIED | `bp_categories`/`am_pm_comparison` entries untouched |
-| `frontend/src/App.tsx` | Full Dashboard() wiring | ⚠️ WIRED but data-flow HOLLOW | All components mounted at correct positions; the overlay-off gate is missing (Gap) |
+| `frontend/src/App.tsx` | `useMemo`-gated per-dataset event derivation, toggle-off short-circuits to `[]` | ✓ VERIFIED | Lines 84-99: `labsEvents`/`incidentsEvents`/`proceduresEvents` each a `useMemo` gated on `overlayDatasets.{type}`; `overlayEvents` a `useMemo` over the three. Also fixes the `window`-shadowing (renamed `dateWindow`, line 72) noted as INFO in the prior review. |
+| `frontend/src/components/OverlayEventsList.tsx` | `merged` useMemo gated on `{type}.enabled` (defense-in-depth) + theme-aware ink token | ✓ VERIFIED | Lines 67-85: `labs.enabled && !labs.isError ? labs.events : []` pattern for all 3 types, deps array includes all 3 `.enabled` flags. Line 174: Type badge uses `color: "var(--overlay-chip-text)"`, no hardcoded `"white"` (`grep -c 'color: "white"'` → 0). |
+| `frontend/src/components/OverlayToggle.tsx` | Active-button ink uses theme-aware token, no hardcoded `text-white` | ✓ VERIFIED | Line 30 `activeClass` no longer contains `text-white` (confirmed via grep, 0 matches); line 83 inline style sets `color: "var(--overlay-chip-text)"` when `on`. |
+| `frontend/src/index.css` | `--overlay-chip-text` token pair, `:root`/`.dark`, mirroring `--cat-chip-text` | ✓ VERIFIED | Line 50: `--overlay-chip-text: #FFFFFF;` (`:root`); line 78: `--overlay-chip-text: #0B1626;` (`.dark`) — exact match to the `--cat-chip-text` pattern (lines 43/73). |
+| `frontend/src/lib/agent-parity.test.ts` | `DATASETS` const + `it.each` reachability + backend↔frontend token parity test | ✓ VERIFIED | Line 46: `DATASETS` const; line 122: `it.each(DATASETS)` block; line 226: `"backend DatasetToken equals the frontend OverlayDataset union verbatim"` test. |
+| `frontend/src/components/OverlayEventsList.test.tsx` | New stale-cache toggle-off regression test | ✓ VERIFIED | Lines 216-256: exercises the exact stale-cache `rerender` scenario, asserts stale row removed / fresh row retained / row count correct. |
+| `frontend/src/components/OverlayToggle.test.tsx` | New style-assertion test for the ink token | ✓ VERIFIED | Lines 76-77: asserts active button's `style` contains `var(--overlay-chip-text)` and `className` excludes `text-white`. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|-----|-----|--------|---------|
-| `service.py` | `schemas.py` | `isinstance(result, ToggleDataset)` dispatch | ✓ WIRED | Confirmed, lines 245-246 |
-| `lib/agent.ts` | `store/filters.ts` | `s.setOverlayDataset(f.overlayDataset, f.overlayState === "on")` | ✓ WIRED | Confirmed, lines 79-80 |
-| `lib/agent-parity.test.ts` | `store/filters.ts` | `STORE_ACTIONS` includes `setOverlayDataset` | ✓ WIRED | Confirmed, structural gate passes |
-| `components/OverlayToggle.tsx` | `store/filters.ts` | `onClick={() => setOverlayDataset(key, !overlayDatasets[key])}` | ✓ WIRED | Confirmed |
-| `components/OverlayEventsList.tsx` | `lib/overlayEvents.ts` | `mergeOverlayEvents`/`buildEmptyMessage`/`buildErrorMessage` | ✓ WIRED (logic) / ⚠️ HOLLOW (data) | The link itself is correctly wired, but the data flowing through it from `App.tsx` is not correctly gated on toggle state (Gap) |
-| `ChartDeck.tsx` | `charts/BPTimeline.tsx` | `hero: ({ readings, overlayEvents }) => <BPTimeline ... overlayEvents={overlayEvents} />` | ✓ WIRED | Confirmed |
-| `App.tsx` | `ChartDeck.tsx` | `<ChartDeck ... overlayEvents={overlayEvents} />` | ✓ WIRED (logic) / ⚠️ HOLLOW (data) | Same root cause as above |
-| `App.tsx` | `components/OverlayEventsList.tsx` | `<OverlayEventsList labs=... incidents=... procedures=... />` | ✓ WIRED (logic) / ⚠️ HOLLOW (data) | Same root cause as above |
+| `App.tsx` | `store/filters.ts` | `overlayDatasets.labs ? labsToEvents(labs.data ?? []) : []` (and `.incidents`/`.procedures`) | ✓ WIRED | Confirmed present for all 3 types; gate is on the live toggle flag, not query state alone. |
+| `OverlayEventsList.tsx`'s `merged` useMemo | `{type}.enabled` prop | `labs.enabled && !labs.isError ? labs.events : []` | ✓ WIRED | Confirmed, plus deps array includes `.enabled` for all 3 types. |
+| `OverlayToggle.tsx` | `index.css` | inline `style` references `var(--overlay-chip-text)` | ✓ WIRED | Confirmed at both the button's active-state style and the CSS token definition. |
+| `OverlayEventsList.tsx`'s Type badge | `index.css` | inline `style` references `var(--overlay-chip-text)` | ✓ WIRED | Confirmed. |
+| `ChartDeck.tsx` | `charts/BPTimeline.tsx`/`PulseTrend.tsx` | `overlayEvents` prop threaded to hero-gated `ReferenceLine` | ✓ WIRED | Unchanged from prior verification, still correct (`hero &&` gate confirmed at `BPTimeline.tsx:221`). |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 |----------|---------------|--------|---------------------|--------|
-| `ChartDeck` hero markers | `overlayEvents` | `App.tsx`'s `mergeOverlayEvents(labsEvents, incidentsEvents, proceduresEvents)` | Yes, but not correctly gated on `overlayDatasets` — includes stale data for toggled-off types | ⚠️ HOLLOW (stale, not empty) |
-| `OverlayEventsList` table rows | `labs`/`incidents`/`procedures` props | Same `App.tsx` computation | Yes, same gating defect | ⚠️ HOLLOW (stale, not empty) |
-| `OverlayToggle` button `aria-pressed` | `overlayDatasets[key]` | `store/filters.ts` `useFilters` | Yes, correctly reflects click/voice state | ✓ FLOWING |
+| `ChartDeck` hero markers | `overlayEvents` | `App.tsx`'s gated `useMemo` chain (`overlayDatasets.{type} ? ... : []`) | Yes, and correctly clears on toggle-off (no longer stale) | ✓ FLOWING |
+| `OverlayEventsList` table rows | `labs`/`incidents`/`procedures` props | Same `App.tsx` gated computation, plus component-level defense-in-depth gate | Yes, correctly clears on toggle-off | ✓ FLOWING |
+| `OverlayToggle` button `aria-pressed` + ink color | `overlayDatasets[key]` / `--overlay-chip-text` | `store/filters.ts` / `index.css` | Yes | ✓ FLOWING |
+
+### Independent WCAG Contrast Recomputation
+
+Recomputed from scratch (relative-luminance formula, not copied from 09-REVIEW.md's numbers):
+
+| Dataset | Dark-mode fill | Old ink (`#FFFFFF`) | New ink (`#0B1626`) | Floor | Result |
+|---------|----------------|----------------------|----------------------|-------|--------|
+| Labs | `#C9A6EA` | 2.07:1 (FAIL) | **8.75:1** | 3:1 / 4.5:1 | ✓ PASS |
+| Incidents | `#F0A8D0` | 1.87:1 (FAIL) | **9.69:1** | 3:1 / 4.5:1 | ✓ PASS |
+| Procedures | `#C9D48A` | 1.58:1 (FAIL) | **11.47:1** | 3:1 / 4.5:1 | ✓ PASS |
+
+Light-mode fills (unaffected by this change, independently reconfirmed): `#6A3FA0`/`#A32672`/`#5C6B1E` vs. `#FFFFFF` ink → 7.42:1 / 6.82:1 / 5.87:1 — all comfortably clear both floors, confirming light mode was never broken and remains unaffected by the token swap.
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| Backend test suite green | `cd backend && pytest -q` | `253 passed, 7 skipped, 35 deselected` | ✓ PASS |
+| Backend test suite green | `cd backend && python -m pytest -q` | `253 passed, 7 skipped, 35 deselected` | ✓ PASS |
 | Frontend type-check clean | `cd frontend && npx tsc --noEmit` | No output (clean) | ✓ PASS |
-| Frontend test suite green | `cd frontend && npx vitest run` | `24 files, 263 tests passed` | ✓ PASS |
-| WCAG contrast of dark-mode overlay colors vs. hardcoded white text | Independently recomputed (relative-luminance formula) for `#C9A6EA`/`#F0A8D0`/`#C9D48A` vs `#FFFFFF` | 2.07:1 / 1.87:1 / 1.58:1 — all fail the 3:1 large-text/UI-component floor and the 4.5:1 normal-text floor | ✗ FAIL (confirms CR-2, see Anti-Patterns) |
-| Toggle-off stale-data bug | Static code trace: `App.tsx:76-79` + `OverlayEventsList.tsx:61-76` vs. TanStack Query's documented `enabled:false` cache-retention behavior | No gate on `overlayDatasets.{type}`/`enabled` anywhere in the merge path | ✗ FAIL (confirms CR-1, see Gap) |
+| Frontend full test suite green | `cd frontend && npx vitest run` | `24 files, 269 tests passed` | ✓ PASS |
+| Gap-1/Gap-2 targeted test files | `npx vitest run src/components/OverlayToggle.test.tsx src/components/OverlayEventsList.test.tsx src/lib/agent-parity.test.ts` | `3 files, 58 tests passed` | ✓ PASS |
+| Commits referenced in 09-07-SUMMARY.md exist and match claimed diffs | `git show --stat 2e83a34 / 5b33797 / 7e0b910` | All 3 commits present, file diffs match summary claims | ✓ PASS |
+| No hardcoded white text remains | `grep -c "text-white" OverlayToggle.tsx` / `grep -c 'color: "white"' OverlayEventsList.tsx` | 0 / 0 | ✓ PASS |
+| No debt markers in phase-touched files | `grep -n -E "TBD\|FIXME\|XXX"` across App.tsx, OverlayEventsList.tsx, OverlayToggle.tsx, index.css, agent-parity.test.ts, both test files | No matches | ✓ PASS |
 
-Marker shape/color/position on-chart rendering itself was not re-spot-checked live (Recharts renders 0×0 in jsdom, a documented project constraint) — this was already human-verified in Plan 09-06's checkpoint and is not re-litigated here.
+Marker shape/color/position on-chart rendering itself was not re-spot-checked live in this
+session (Recharts renders 0×0 in jsdom, a documented project constraint) — this is the one
+behavior class with no automated test path in this codebase, and it was already directly
+human-verified during Plan 09-07's Task 4 blocking checkpoint (7-step script, user responded
+"everything passes"). Per this verification's explicit instructions, that sign-off is treated as
+already-satisfied and is not re-requested as a pending human-verification item.
 
 ### Requirements Coverage
 
 | Requirement | Source Plan(s) | Description | Status | Evidence |
 |-------------|-----------------|--------------|--------|----------|
-| OVERLAY-03 | 09-01, 09-02, 09-04, 09-06 | Multi-select toggle controls, voice or click, independent of active chart | ⚠️ PARTIALLY SATISFIED | Voice/click toggle mechanisms are fully built and test-covered; the underlying "show any combination" promise is broken for toggle-off-while-mixed scenarios (Gap) |
-| OVERLAY-04 | 09-02, 09-03, 09-05, 09-06 | Selected dataset types overlay together on BP Timeline/Pulse Trend; non-color-only toggle encoding | ⚠️ PARTIALLY SATISFIED | Chart marker rendering is correctly built for the toggle-ON case (human-verified); toggle-OFF combination case is broken (Gap). Non-color-only encoding (word/icon + aria-pressed) is satisfied. |
-| OVERLAY-05 | 09-04, 09-05 | Overlay controls on BP Categories/AM-PM visibly indicate non-applicability | ✓ SATISFIED | Confirmed via code + tests |
-| OVERLAY-06 | 09-03, 09-04, 09-06 | Accessible list/table of every overlaid event | ⚠️ PARTIALLY SATISFIED | Table mechanism (columns, pagination, plain-text rendering, error isolation) is correctly built; content can include stale rows for a toggled-off dataset (Gap) |
+| OVERLAY-03 | 09-01, 09-02, 09-04, 09-06, 09-07 | Multi-select toggle controls, voice or click, independent of active chart | ✓ SATISFIED | Voice/click toggle mechanisms fully built and test-covered; the "show any combination" promise now holds for toggle-off-while-mixed scenarios (Gap 1 closed). |
+| OVERLAY-04 | 09-02, 09-03, 09-05, 09-06, 09-07 | Selected dataset types overlay together on BP Timeline/Pulse Trend; non-color-only toggle encoding | ✓ SATISFIED | Chart marker rendering correct for toggle-ON and toggle-OFF-while-mixed cases (human-verified); non-color-only encoding (word/icon + `aria-pressed`) satisfied; dark-mode contrast on the toggle control itself now also clears WCAG floors. |
+| OVERLAY-05 | 09-04, 09-05 | Overlay controls on BP Categories/AM-PM visibly indicate non-applicability | ✓ SATISFIED | Unchanged from prior verification — confirmed via code + tests. |
+| OVERLAY-06 | 09-03, 09-04, 09-06, 09-07 | Accessible list/table of every overlaid event | ✓ SATISFIED | Table mechanism correctly built; content no longer includes stale rows for a toggled-off dataset (Gap 1 closed, with an automated regression test); Type-badge contrast now also clears WCAG floors (Gap 2 closed). |
 
-No orphaned requirements — REQUIREMENTS.md maps exactly OVERLAY-03/04/05/06 to Phase 9, and all four appear in plan frontmatter (09-01 through 09-06).
+REQUIREMENTS.md maps exactly OVERLAY-03/04/05/06 to Phase 9. All four appear in plan frontmatter
+across 09-01 through 09-07 (09-07 declares `requirements: [OVERLAY-03, OVERLAY-04, OVERLAY-06]`
+in its gap-closure scope). No orphaned requirements.
 
 ### Anti-Patterns Found
 
 | File | Line(s) | Pattern | Severity | Impact |
 |------|---------|---------|----------|--------|
-| `frontend/src/App.tsx` | 76-79 | Stale TanStack Query cache flows through un-gated on `overlayDatasets` | 🛑 BLOCKER | Toggling a dataset OFF while another remains ON does not remove its markers/rows — directly contradicts Plan 09-06's own must-have and the phase's core "mix and match" promise (see Gap in frontmatter) |
-| `frontend/src/components/OverlayEventsList.tsx` | 61-76 | `merged` useMemo filters only on `isError`, never on `enabled`/toggle state | 🛑 BLOCKER | Same defect, second half of the data path — confirms this isn't a one-line typo but a missing gate at both the caller and the reusable component |
-| `frontend/src/components/OverlayToggle.tsx` | 29-30, 77-78 | Hardcoded `text-white` on a per-dataset inline `backgroundColor` fill | 🛑 BLOCKER | Dark-mode active-button fill (`#C9A6EA`/`#F0A8D0`/`#C9D48A`) against white text yields 1.58:1–2.07:1 contrast — independently recomputed, fails WCAG's 3:1 UI-component floor. Violates CLAUDE.md's explicit non-negotiable "high contrast" accessibility constraint. |
-| `frontend/src/components/OverlayEventsList.tsx` | 163-168 | Same hardcoded `color: "white"` pattern on the Type-column badge | 🛑 BLOCKER | Same contrast failure, second surface (18px non-bold table text — 4.5:1 floor applies, even further from compliant) |
-| `frontend/src/lib/agent.ts` (composeConfirmation, not directly modified this phase but consumed by `toggle_dataset` replies) | ~89-145 | Voice/text confirmation template has no overlay clause | ⚠️ WARNING | A caregiver saying "show my labs" gets no spoken/on-screen acknowledgment that labs were toggled on beyond the separate `aria-live` sentence in `OverlayToggle` — degrades voice-first UX but does not block the toggle itself functioning |
-| `frontend/src/App.tsx` | 76-79 | `labsEvents`/`incidentsEvents`/`proceduresEvents`/`overlayEvents` recomputed unmemoized on every `Dashboard` render | ⚠️ WARNING | Defeats `OverlayEventsList`'s own documented pagination-reset guard on unrelated re-renders (e.g. background refetch) — "Show 20 more" can silently reset; a UX papercut, not a functional break |
-| `frontend/src/lib/agent-parity.test.ts` | — | No `DATASETS` `it.each` reachability block or `DatasetToken`⇄`OverlayDataset` read-file parity test | ⚠️ WARNING | Test-coverage gap in the file whose stated purpose is catching exactly this class of drift; values match today but future drift wouldn't be caught |
-| `frontend/src/App.tsx` | 71 | `const window = {...}` shadows the global `Window` | ℹ️ INFO | No live bug today; footgun for a future `window.*` call inside `Dashboard` |
-| `backend/app/agent/schemas.py` | 168 | Docstring understates `_lower_value`'s actual recursion depth | ℹ️ INFO | Cosmetic; implementation is more correct than documented |
+| `frontend/src/App.tsx` / `OverlayEventsList.tsx` / `useLabs.ts` (and siblings) | App.tsx:73-75,189-201; OverlayEventsList.tsx:23-33,87-91; useLabs.ts:13-21 | A dataset toggled ON for the first time in a session (or after a date-window change) can transiently render "No labs recorded in this date range." while the fetch is still in flight, because `isPending` is not distinguished from "confirmed empty" in the props passed to `OverlayEventsList` | ⚠️ WARNING | Newly surfaced by the fresh 09-REVIEW.md pass (not one of the 2 original BLOCKER gaps, and not touched by Plan 09-07's scope — `useLabs.ts` predates this phase's gap-closure plan, added in 09-03). Self-corrects once the fetch resolves; does not misrepresent data that has actually loaded. Does not fail any of the 5 roadmap truths as literally worded (the table mechanism and its steady-state content are both correct) but is a real, code-provable, voice-first UX accuracy gap worth a follow-up fix. Not blocking Phase 9 goal achievement. |
+| `backend/app/agent/service.py` | 228-276 | `interpret()`'s catch-all exception handler logs no `exc_info`/stack trace | ⚠️ WARNING | Diagnostics gap, not a functional defect in this phase's delivered behavior; carried forward from 09-REVIEW.md, does not affect any of the 5 truths. |
+| `frontend/src/lib/agent.ts` | ~114-145 | Voice/text confirmation banner (`composeConfirmation`) has no overlay clause | ⚠️ WARNING | Explicitly and deliberately deferred by Plan 09-07 (documented in its "Deferred" section as WR-1) — not a regression, the toggle itself still applies and is still announced via `OverlayToggle`'s own `aria-live` sentence, just not in the primary banner. Does not fail any of the 5 roadmap truths. |
 
-No `TBD`/`FIXME`/`XXX` debt markers found in any file modified by this phase.
+No `TBD`/`FIXME`/`XXX` debt markers found in any file modified by this phase or its gap-closure plan.
 
 ### Human Verification Required
 
-None. All findings in this report are deterministically code-provable (data-flow tracing, independently recomputed WCAG contrast ratios) and do not require subjective human judgment to confirm. The one behavior class that genuinely has no automated test path in this codebase — chart marker shape/color/position rendering (Recharts renders 0×0 in jsdom) — was already human-verified and approved in Plan 09-06's manual checkpoint, and no evidence in this verification contradicts that sign-off for the toggle-ON case.
+None. The one behavior class in this fix with no automated test path in this codebase (chart-marker
+shape/color/position rendering — Recharts renders 0×0 in jsdom) was already directly human-verified
+and explicitly approved during Plan 09-07's Task 4 blocking checkpoint ("everything passes," covering
+both hero charts and all 3 toggle pairings). No new untested behavior was introduced by this
+gap-closure plan that would require a fresh human-verification request.
 
 ### Gaps Summary
 
-Six of six plans executed, both automated suites (253 backend / 263 frontend tests) are green, and the phase's voice/click toggle infrastructure, chart-marker rendering, "doesn't apply here" indicator, and accessible table are all genuinely built — this is a substantial, mostly-correct implementation, not a stub. However, two BLOCKER-class defects, both already caught by this phase's own code review (`09-REVIEW.md`) and independently re-confirmed here by direct code inspection rather than trusting that document, remain unfixed in the codebase as submitted:
+Both BLOCKER-class gaps identified by the prior verification are closed and independently
+re-confirmed here by direct code inspection (not by trusting SUMMARY.md or REVIEW.md claims):
 
-1. **Stale overlay data survives toggle-off when mixed with another active dataset** (CR-1): `App.tsx` and `OverlayEventsList.tsx` never gate a dataset's contribution to the merged chart-marker array / table rows on its `overlayDatasets`/`enabled` flag — only on TanStack Query's `isError`. Because disabling a query does not clear its cache, a caregiver who turns "Labs" off while "Incidents" stays on will see stale lab markers/rows persist despite the Labs button correctly reading `aria-pressed="false"`. This is exactly the failure mode Plan 09-06's own must-have ("Toggling any of the 3 overlay buttons by click shows/hides matching markers...") was meant to prevent, and it directly undermines the phase's stated goal of letting Chris "mix and match" reliably. The fix is a small, well-scoped, two-file change (add the missing gate in both `App.tsx` and `OverlayEventsList.tsx`), not a redesign.
+1. **Stale overlay data surviving toggle-off (Gap 1 / CR-1) — CLOSED.** `App.tsx`'s
+   `labsEvents`/`incidentsEvents`/`proceduresEvents`/`overlayEvents` are now `useMemo`-gated on
+   `overlayDatasets.{type}`, short-circuiting to `[]` regardless of TanStack Query's stale cached
+   `.data`. `OverlayEventsList.tsx`'s `merged` useMemo independently enforces the same gate as
+   defense-in-depth. A new automated regression test proves the table-row half of the fix; the
+   chart-marker half (no automated test path in this codebase — Recharts renders 0×0 in jsdom) was
+   directly human-verified and approved.
 
-2. **Dark-mode WCAG contrast failure on overlay buttons/badges** (CR-2): the three `--overlay-*` dark-theme color tokens were chosen as light pastels (correct for chart-line/marker legibility against a dark background) but are reused as a solid fill behind hardcoded white text in `OverlayToggle.tsx`'s active-button state and `OverlayEventsList.tsx`'s Type badge. Independently recomputed contrast ratios (1.58:1–2.07:1) confirm all three fail even the relaxed 3:1 UI-component floor, let alone the 4.5:1 body-text floor — a direct violation of CLAUDE.md's non-negotiable "high contrast" constraint. Light mode is unaffected. The fix is likely a theme-aware ink token (mirroring the existing `--cat-chip-text` pattern, which already solves this exact problem for category chips) swapped in for the hardcoded `text-white`/`color: "white"`.
+2. **Dark-mode WCAG contrast failure (Gap 2 / CR-2) — CLOSED.** The new `--overlay-chip-text`
+   theme-aware token replaces all hardcoded white text on the active toggle button and the events
+   table's Type badge. Independently recomputed from scratch (not copied from any prior report):
+   8.75:1 / 9.69:1 / 11.47:1 in dark mode (was 1.58:1-2.07:1), and light mode remains unaffected at
+   5.87:1-7.42:1 — both comfortably clear WCAG's 3:1 UI-component and 4.5:1 normal-text floors.
 
-Both are narrowly scoped, mechanically fixable defects in already-working code, not missing features — a follow-up plan closing these two gaps (plus, optionally, the three WARNING-level items) should be short.
+Both automated suites remain fully green (253 backend / 269 frontend tests, up from 263 prior to
+this gap-closure plan — 6 new tests: 1 stale-cache regression, 2 style assertions, 3 `it.each`
+dataset-parity cases). All 4 requirement IDs (OVERLAY-03/04/05/06) are satisfied. No new BLOCKER
+findings were introduced by the gap-closure plan; one new WARNING-level finding (WR-01, transient
+loading-state text) was surfaced by the fresh code review but predates this phase's scope, does not
+fail any of the 5 roadmap truths, and does not block Phase 9's goal achievement.
+
+Phase 9's goal — "Chris and caregivers can mix and match which data types they're looking at — by
+voice or click — and see them overlaid together on one timeline instead of living in separate
+silos" — is achieved: all 5 roadmap success criteria are verified true against the current
+codebase, with the toggle-off combination behavior now working correctly and the dark-mode
+accessibility floor now met.
 
 ---
 
-*Verified: 2026-08-22T09:30:00Z*
+*Verified: 2026-08-22T22:29:43Z*
 *Verifier: Claude (gsd-verifier)*

@@ -26,10 +26,10 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 
 - [x] **OVERLAY-01**: Backend CRUD (GET filtered + POST create) for labs, incidents, and procedures, mirroring the existing readings API, Bearer-gated like every other route
 - [x] **OVERLAY-02**: Accessible manual-entry forms for labs, incidents, and procedures (≥48px targets, no drag/precision input) — the tables are otherwise unreachable
-- [ ] **OVERLAY-03**: Multi-select toggle controls let Chris and caregivers show any combination of BP, pulse, labs, incidents/hospital stays, and procedures at once, by voice or click — independent of which single chart is active
-- [ ] **OVERLAY-04**: Selected dataset types overlay together on the BP Timeline and Pulse Trend charts (e.g. hospital-stay markers plotted directly on the timeline) rather than living in separate silos; toggle state uses non-color-only encoding (word/icon + `aria-pressed`)
-- [ ] **OVERLAY-05**: Overlay controls on the two non-timeline charts (BP Categories, AM/PM) visibly indicate they don't apply there, rather than silently doing nothing
-- [ ] **OVERLAY-06**: An accessible list/table equivalent of every overlaid event exists so keyboard and screen-reader users get full access to overlay data regardless of chart-marker accessibility limits
+- [x] **OVERLAY-03**: Multi-select toggle controls let Chris and caregivers show any combination of BP, pulse, labs, incidents/hospital stays, and procedures at once, by voice or click — independent of which single chart is active
+- [x] **OVERLAY-04**: Selected dataset types overlay together on the BP Timeline and Pulse Trend charts (e.g. hospital-stay markers plotted directly on the timeline) rather than living in separate silos; toggle state uses non-color-only encoding (word/icon + `aria-pressed`)
+- [x] **OVERLAY-05**: Overlay controls on the two non-timeline charts (BP Categories, AM/PM) visibly indicate they don't apply there, rather than silently doing nothing
+- [x] **OVERLAY-06**: An accessible list/table equivalent of every overlaid event exists so keyboard and screen-reader users get full access to overlay data regardless of chart-marker accessibility limits
 
 ### Full Site Guide (GUIDE)
 
@@ -87,10 +87,10 @@ Explicitly excluded. Documented to prevent scope creep.
 | LIVE-04 | Phase 6: Agent Availability (Liveness Detection) | Complete |
 | OVERLAY-01 | Phase 7: Records Backend | Complete |
 | OVERLAY-02 | Phase 8: Manual-Entry Forms | Complete |
-| OVERLAY-03 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
-| OVERLAY-04 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
-| OVERLAY-05 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
-| OVERLAY-06 | Phase 9: Multi-Dataset Overlay & Filtering | Pending |
+| OVERLAY-03 | Phase 9: Multi-Dataset Overlay & Filtering | Complete |
+| OVERLAY-04 | Phase 9: Multi-Dataset Overlay & Filtering | Complete |
+| OVERLAY-05 | Phase 9: Multi-Dataset Overlay & Filtering | Complete |
+| OVERLAY-06 | Phase 9: Multi-Dataset Overlay & Filtering | Complete |
 | TTS-01 | Phase 10: Spoken Replies (TTS) | Pending |
 | TTS-02 | Phase 10: Spoken Replies (TTS) | Pending |
 | TTS-03 | Phase 10: Spoken Replies (TTS) | Pending |
