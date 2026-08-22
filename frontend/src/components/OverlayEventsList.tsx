@@ -171,7 +171,7 @@ function OverlayEventRow({ event }: { event: OverlayEvent }) {
       <td className="p-2">
         <span
           className="inline-block rounded-full px-3 py-1 text-lg"
-          style={{ backgroundColor: color, color: "white" }}
+          style={{ backgroundColor: color, color: "var(--overlay-chip-text)" }}
         >
           <Icon aria-hidden="true" size={16} /> {tableLabel}
         </span>

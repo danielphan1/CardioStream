@@ -47,6 +47,7 @@
   --overlay-labs: #6A3FA0;
   --overlay-incidents: #A32672;
   --overlay-procedures: #5C6B1E;
+  --overlay-chip-text: #FFFFFF;
 }
 
 .dark {
@@ -74,6 +75,7 @@
   --overlay-labs: #C9A6EA;
   --overlay-incidents: #F0A8D0;
   --overlay-procedures: #C9D48A;
+  --overlay-chip-text: #0B1626;
 }
 
 body {

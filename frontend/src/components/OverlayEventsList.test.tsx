@@ -271,5 +271,7 @@ describe("Type badge", () => {
 
     const badge = screen.getByText("Lab");
     expect(badge.getAttribute("style")).toContain("var(--overlay-labs)");
+    expect(badge.getAttribute("style")).toContain("var(--overlay-chip-text)");
+    expect(badge.getAttribute("style")).not.toContain("white");
   });
 });

@@ -68,6 +68,15 @@ describe("OverlayToggle button group", () => {
     expect(useFilters.getState().overlayDatasets.labs).toBe(false);
   });
 
+  it('pressed "Labs" button uses the theme-aware ink token, never hardcoded white text', () => {
+    render(<OverlayToggle />);
+    const labsBtn = screen.getByRole("button", { name: "Labs" });
+    fireEvent.click(labsBtn);
+
+    expect(labsBtn.getAttribute("style")).toContain("var(--overlay-chip-text)");
+    expect(labsBtn.className).not.toContain("text-white");
+  });
+
   it("buttons stay fully interactive (no disabled attribute) regardless of activeChart", () => {
     useFilters.setState({ activeChart: "bp_categories" });
     render(<OverlayToggle />);

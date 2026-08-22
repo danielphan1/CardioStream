@@ -27,7 +27,7 @@ const NOTE_COPY =
 const inactiveClass =
   "min-h-12 flex items-center gap-2 rounded-lg px-4 text-[20px] font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
 const activeClass =
-  "min-h-12 flex items-center gap-2 rounded-lg px-4 text-[20px] font-bold text-white border-2";
+  "min-h-12 flex items-center gap-2 rounded-lg px-4 text-[20px] font-bold border-2";
 
 export function OverlayToggle() {
   const overlayDatasets = useFilters((s) => s.overlayDatasets);
@@ -75,7 +75,15 @@ export function OverlayToggle() {
                 aria-pressed={on}
                 onClick={() => setOverlayDataset(key, !on)}
                 className={on ? activeClass : inactiveClass}
-                style={on ? { backgroundColor: color, borderColor: color } : undefined}
+                style={
+                  on
+                    ? {
+                        backgroundColor: color,
+                        borderColor: color,
+                        color: "var(--overlay-chip-text)",
+                      }
+                    : undefined
+                }
               >
                 <Icon aria-hidden="true" size={20} />
                 {label}
