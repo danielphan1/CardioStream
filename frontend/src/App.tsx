@@ -18,12 +18,23 @@ import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
 import { Header } from "./components/Header";
 import { LoginGate } from "./components/LoginGate";
+import { OverlayEventsList } from "./components/OverlayEventsList";
+import { OverlayToggle } from "./components/OverlayToggle";
 import { ReadingsTable } from "./components/ReadingsTable";
 import { StatsStrip } from "./components/StatsStrip";
 import { UploadPage } from "./components/UploadPage";
+import { useIncidents } from "./hooks/useIncidents";
+import { useLabs } from "./hooks/useLabs";
+import { useProcedures } from "./hooks/useProcedures";
 import { useReadings } from "./hooks/useReadings";
 import { useResolvedFilters, useStats } from "./hooks/useStats";
 import { presetLabel } from "./lib/dates";
+import {
+  incidentsToEvents,
+  labsToEvents,
+  mergeOverlayEvents,
+  proceduresToEvents,
+} from "./lib/overlayEvents";
 import { useAuth } from "./store/auth";
 import { useFilters } from "./store/filters";
 import { useView } from "./store/view";
@@ -51,6 +62,21 @@ function Dashboard() {
   const resolved = useResolvedFilters();
   const readings = useReadings(resolved);
   const stats = useStats(resolved);
+
+  // Overlay data (OVERLAY-03/04/05/06) — fetched only when the matching
+  // toggle is on, keyed narrowly on { start_date, end_date } (T-09-06: the
+  // overlay endpoints have no server-side effect for am_pm/bp_category, so
+  // never key/gate on the full `resolved` object).
+  const overlayDatasets = useFilters((s) => s.overlayDatasets);
+  const window = { start_date: resolved.start_date, end_date: resolved.end_date };
+  const labs = useLabs(window, overlayDatasets.labs);
+  const incidents = useIncidents(window, overlayDatasets.incidents);
+  const procedures = useProcedures(window, overlayDatasets.procedures);
+
+  const labsEvents = labsToEvents(labs.data ?? []);
+  const incidentsEvents = incidentsToEvents(incidents.data ?? []);
+  const proceduresEvents = proceduresToEvents(procedures.data ?? []);
+  const overlayEvents = mergeOverlayEvents(labsEvents, incidentsEvents, proceduresEvents);
 
   // EmptyState copy inputs (D-11) — read from the same store the charts use.
   const datePreset = useFilters((s) => s.datePreset);
@@ -105,7 +131,13 @@ function Dashboard() {
       />
     );
   } else {
-    chartRegion = <ChartDeck readings={readings.data ?? []} stats={stats.data} />;
+    chartRegion = (
+      <ChartDeck
+        readings={readings.data ?? []}
+        stats={stats.data}
+        overlayEvents={overlayEvents}
+      />
+    );
   }
 
   return (
@@ -125,6 +157,7 @@ function Dashboard() {
           rhythm between sections; single column (UI-SPEC responsive). */}
       <main className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 py-8 md:px-8 xl:px-16">
         <FilterBar latestReading={latestReading} />
+        <OverlayToggle />
         <StatsStrip stats={stats.data} isLoading={stats.isPending} />
         {chartRegion}
         <section aria-label="Readings table">
@@ -133,6 +166,19 @@ function Dashboard() {
           </h2>
           <ReadingsTable readings={readings.data ?? []} />
         </section>
+        <OverlayEventsList
+          labs={{ enabled: overlayDatasets.labs, events: labsEvents, isError: labs.isError }}
+          incidents={{
+            enabled: overlayDatasets.incidents,
+            events: incidentsEvents,
+            isError: incidents.isError,
+          }}
+          procedures={{
+            enabled: overlayDatasets.procedures,
+            events: proceduresEvents,
+            isError: procedures.isError,
+          }}
+        />
       </main>
     </div>
   );
