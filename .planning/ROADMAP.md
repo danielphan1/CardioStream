@@ -34,7 +34,7 @@ Full phase goals, dependencies, and plan lists archived in
 - [x] **Phase 6: Agent Availability (Liveness Detection)** - Real "assistant unavailable" detection replaces silent mislabeling as "didn't catch that" (completed 2026-08-20)
 - [x] **Phase 7: Records Backend** - CRUD API for labs, incidents, and procedures, mirroring the existing readings API (completed 2026-08-20)
 - [x] **Phase 8: Manual-Entry Forms** - Accessible forms so caregivers can populate labs/incidents/procedures (completed 2026-08-21)
-- [ ] **Phase 9: Multi-Dataset Overlay & Filtering** - Toggle and overlay any combination of BP/pulse/labs/incidents/procedures, by voice or click
+- [x] **Phase 9: Multi-Dataset Overlay & Filtering** - Toggle and overlay any combination of BP/pulse/labs/incidents/procedures, by voice or click (completed 2026-08-22)
 - [ ] **Phase 10: Spoken Replies (TTS)** - Dashboard speaks its confirmations aloud, closing the hands-free loop
 - [ ] **Phase 11: Full Site Guide** - Accessible, voice-navigable walkthrough of every control, chart, and flow
 - [ ] **Phase 12: Visual Refresh** - Modernized theme/typography/spacing/color, accessibility preserved
@@ -146,7 +146,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 09-06-PLAN.md — App.tsx wiring + manual verification checkpoint (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
+- [x] 09-06-PLAN.md — App.tsx wiring + manual verification checkpoint (OVERLAY-03, OVERLAY-04, OVERLAY-05, OVERLAY-06)
 
 **UI hint**: yes
 
@@ -225,7 +225,7 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 6. Agent Availability (Liveness) | v1.1 | 3/3 | Complete    | 2026-08-20 |
 | 7. Records Backend | v1.1 | 2/2 | Complete    | 2026-08-20 |
 | 8. Manual-Entry Forms | v1.1 | 3/3 | Complete    | 2026-08-21 |
-| 9. Multi-Dataset Overlay & Filtering | v1.1 | 5/6 | In Progress|  |
+| 9. Multi-Dataset Overlay & Filtering | v1.1 | 6/6 | Complete   | 2026-08-22 |
 | 10. Spoken Replies (TTS) | v1.1 | 0/TBD | Not started | - |
 | 11. Full Site Guide | v1.1 | 0/TBD | Not started | - |
 | 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
