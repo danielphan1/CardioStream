@@ -58,18 +58,27 @@ export function OverlayEventsList({
   // re-renders caused by internal state changes, only recomputing when the
   // underlying data actually changes — matching ReadingsTable's own
   // stable-prop-identity assumption.
+  //
+  // `.enabled` gates (Gap 1 / CR-1 fix, defense-in-depth): App.tsx is the
+  // primary gate for stale cached data surviving a toggle-off, but this
+  // component is the reusable/testable unit and must independently enforce
+  // the same invariant so it stays correct even if a future caller forgets
+  // the App.tsx-level gate.
   const merged = useMemo(
     () =>
       mergeOverlayEvents(
-        labs.isError ? [] : labs.events,
-        incidents.isError ? [] : incidents.events,
-        procedures.isError ? [] : procedures.events,
+        labs.enabled && !labs.isError ? labs.events : [],
+        incidents.enabled && !incidents.isError ? incidents.events : [],
+        procedures.enabled && !procedures.isError ? procedures.events : [],
       ),
     [
+      labs.enabled,
       labs.events,
       labs.isError,
+      incidents.enabled,
       incidents.events,
       incidents.isError,
+      procedures.enabled,
       procedures.events,
       procedures.isError,
     ],
@@ -162,7 +171,7 @@ function OverlayEventRow({ event }: { event: OverlayEvent }) {
       <td className="p-2">
         <span
           className="inline-block rounded-full px-3 py-1 text-lg"
-          style={{ backgroundColor: color, color: "white" }}
+          style={{ backgroundColor: color, color: "var(--overlay-chip-text)" }}
         >
           <Icon aria-hidden="true" size={16} /> {tableLabel}
         </span>

@@ -20,7 +20,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { applyAgentFilters, useAgentPulse } from "./agent";
 import { useFilters } from "../store/filters";
-import type { BPCategory, ChartId } from "../api/types";
+import type { BPCategory, ChartId, OverlayDataset } from "../api/types";
 
 // The full frontend unions — enumerated so a future addition without a command
 // path (or a backend token drift) fails a concrete assertion, not silently.
@@ -42,6 +42,8 @@ const BP_CATEGORIES = [
 
 const DATE_PRESETS = ["7d", "30d", "90d", "all"] as const;
 const AMPM = ["all", "AM", "PM"] as const;
+
+const DATASETS = ["labs", "incidents", "procedures"] as const satisfies readonly OverlayDataset[];
 
 // The six mutating actions on the filter store (store/filters.ts). Every one MUST
 // be reachable through some AppliedFilters field (ACC-03); the store is compared
@@ -116,6 +118,14 @@ describe("enumeration reachability — every UI filter is voice-reachable (ACC-0
     expect(s.amPm).toBe("all");
     expect(s.bpCategory).toBe("all");
   });
+
+  it.each(DATASETS)(
+    "applyAgentFilters({ overlayDataset: '%s', overlayState: 'on' }) mutates the store",
+    (dataset) => {
+      applyAgentFilters({ overlayDataset: dataset, overlayState: "on" });
+      expect(useFilters.getState().overlayDatasets[dataset]).toBe(true);
+    },
+  );
 });
 
 describe("store↔command 1:1 mapping — no unreachable action, no dead field", () => {
@@ -211,6 +221,13 @@ describe("frontend voice vocabulary matches backend tokens (D-15)", () => {
       schemaText.match(/bpCategory: Literal\[([^\]]*)\]/),
     );
     expect(backendBp).toEqual(["all", ...BP_CATEGORIES].sort());
+  });
+
+  it("backend DatasetToken equals the frontend OverlayDataset union verbatim", () => {
+    const backendDatasets = literalTokens(
+      schemaText.match(/DatasetToken = Literal\[([^\]]*)\]/),
+    );
+    expect(backendDatasets).toEqual([...DATASETS].sort());
   });
 
   it("schemas.py contains every chart token and BP category label (presence)", () => {

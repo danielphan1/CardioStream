@@ -213,6 +213,48 @@ describe("Notes cell", () => {
   });
 });
 
+describe("stale-cache toggle-off regression (Gap 1 / CR-1)", () => {
+  it("removes a toggled-off dataset's stale rows immediately while another dataset stays on", () => {
+    const staleLabEvent = makeOverlayEvent(0, {
+      id: 1,
+      type: "labs",
+      whatHappened: "Stale lab event",
+    });
+    const incidentEvent = makeOverlayEvent(0, {
+      id: 2,
+      type: "incidents",
+      whatHappened: "Fresh incident event",
+    });
+
+    const { rerender } = render(
+      <OverlayEventsList
+        labs={{ enabled: true, events: [staleLabEvent], isError: false }}
+        incidents={OFF}
+        procedures={OFF}
+      />,
+    );
+
+    expect(screen.getByText("Stale lab event")).toBeInTheDocument();
+
+    // Simulate TanStack Query's `enabled: false` behavior: it stops future
+    // fetches but does NOT clear previously-cached `data`, so the SAME
+    // stale event array is restated here even though the toggle just
+    // flipped off. React Testing Library's `rerender` replaces the entire
+    // prop set, so every prop must be restated — not merged.
+    rerender(
+      <OverlayEventsList
+        labs={{ enabled: false, events: [staleLabEvent], isError: false }}
+        incidents={{ enabled: true, events: [incidentEvent], isError: false }}
+        procedures={OFF}
+      />,
+    );
+
+    expect(screen.queryByText("Stale lab event")).not.toBeInTheDocument();
+    expect(screen.getByText("Fresh incident event")).toBeInTheDocument();
+    expect(rowCount()).toBe(2); // header + 1 incident row only
+  });
+});
+
 describe("Type badge", () => {
   it("shows the per-type icon badge with the type's color token", () => {
     render(
@@ -229,5 +271,7 @@ describe("Type badge", () => {
 
     const badge = screen.getByText("Lab");
     expect(badge.getAttribute("style")).toContain("var(--overlay-labs)");
+    expect(badge.getAttribute("style")).toContain("var(--overlay-chip-text)");
+    expect(badge.getAttribute("style")).not.toContain("white");
   });
 });
