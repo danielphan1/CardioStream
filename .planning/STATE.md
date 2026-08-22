@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: planning
-last_updated: "2026-08-22T23:03:42.013Z"
+last_updated: "2026-08-22T23:28:57.652Z"
 last_activity: 2026-08-22
 progress:
   total_phases: 7
@@ -93,10 +93,10 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 ## Session Continuity
 
-Last session: 2026-08-22T23:03:42.002Z
-Stopped at: Phase 10 context gathered
+Last session: 2026-08-22T23:28:57.643Z
+Stopped at: Phase 10 UI-SPEC approved
 Next action: `/gsd-plan-phase 9` — context is captured, both open design decisions resolved.
-Resume file: .planning/phases/10-spoken-replies-tts/10-CONTEXT.md
+Resume file: .planning/phases/10-spoken-replies-tts/10-UI-SPEC.md
 
 ## Operator Next Steps
 
