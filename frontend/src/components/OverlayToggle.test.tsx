@@ -3,7 +3,7 @@
 // per-button aria-pressed state, the "doesn't apply here" indicator that
 // never disables the buttons, the overlay-state sentence, and agent-pulse
 // visual parity.
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { useAgentPulse } from "../lib/agent";
@@ -144,7 +144,9 @@ describe("agent-pulse visual parity", () => {
     const group = screen.getByRole("group", { name: "Overlay events" });
     expect(group.className).not.toContain("animate-pulse");
 
-    useAgentPulse.getState().mark(["overlay"]);
+    act(() => {
+      useAgentPulse.getState().mark(["overlay"]);
+    });
 
     expect(group.className).toContain("motion-safe:animate-pulse");
   });
@@ -153,7 +155,9 @@ describe("agent-pulse visual parity", () => {
     render(<OverlayToggle />);
     const group = screen.getByRole("group", { name: "Overlay events" });
 
-    useAgentPulse.getState().mark(["amPm"]);
+    act(() => {
+      useAgentPulse.getState().mark(["amPm"]);
+    });
 
     expect(group.className).not.toContain("animate-pulse");
   });
