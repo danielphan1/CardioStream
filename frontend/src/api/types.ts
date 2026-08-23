@@ -164,6 +164,7 @@ export type AppliedFilters = {
   bpCategory?: "all" | BPCategory | null;
   overlayDataset?: OverlayDataset | null;
   overlayState?: "on" | "off" | null;
+  speechEnabled?: "on" | "off" | null;
   reset?: boolean;
 };
 
