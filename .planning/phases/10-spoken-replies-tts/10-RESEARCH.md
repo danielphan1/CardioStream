@@ -652,17 +652,19 @@ export function installFakeSpeechSynthesis(): void {
 | A5 | An empty/whitespace `SpeechSynthesisUtterance` reliably unlocks iOS Safari's synthesis engine for the rest of the page session | Pattern 3 | Medium — this is the single highest-value technical bet in this research; if it doesn't hold on the real target device, TTS-05 fails outright for iOS. This is exactly why success criterion 5 mandates real-device verification — treat the priming code as a hypothesis to validate on first real-device test, not a guarantee |
 | A6 | A `keydown`/form-submit triggered by pressing Enter (not clicking Send) still counts as a sufficient "user gesture" for iOS Safari's synthesis unlock | Pattern 3, Open Questions | Low-Medium — if untrue, an Enter-only user on iOS would need to also click Send once (or tap the mic) before TTS works; flagged as an Open Question for real-device testing |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does pressing Enter to submit (vs. clicking the Send button) count as a sufficient user gesture for iOS Safari's `speechSynthesis` unlock?**
    - What we know: Both are handled by the same `onSubmit` form handler in `CommandBar.tsx`, and general browser autoplay-policy documentation treats trusted `keydown`/`submit` events as carrying the same "sticky activation" as a click.
    - What's unclear: Whether iOS Safari's *specific* synthesis-unlock gate (as opposed to `<audio>`/`<video>` autoplay) makes the same distinction — not independently verified this session.
    - Recommendation: No code change needed either way (priming already fires from `onSubmit` regardless of trigger source); just include this in the mandatory real-device test pass for TTS-05 (test: type + press Enter only, never click Send or tap mic, then verify TTS speaks).
+   - RESOLVED: No code change required. Folded into 10-06-PLAN.md's manual real-device verification steps 4 and 10 (Enter-vs-Send gesture parity is exercised as part of the mandatory TTS-05 real-device pass).
 
 2. **Should stopping the mic session (tapping the mic button) also cancel any in-progress speech?**
    - What we know: D-06 locks that *manual filter clicks* never touch TTS playback; it does not explicitly address the mic stop button, which is voice-control-specific (not a filter action).
    - What's unclear: Whether a caregiver tapping "Stop voice control" mid-utterance expects the reply to also go silent, or to keep playing to completion.
    - Recommendation: Default to *not* cancelling (let it finish) — stopping voice input isn't the same intent as "be quiet," and the dedicated mute toggle already exists for that; this is a one-line, low-risk decision to revisit if user feedback disagrees.
+   - RESOLVED: Recommendation adopted as-is — 10-04-PLAN.md's mic-stop path does not call the speech-cancel path; in-progress speech is left to finish. No code or plan change needed.
 
 ## Environment Availability
 
