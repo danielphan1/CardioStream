@@ -46,6 +46,12 @@ procedures.
   token and state = off.
 - "incidents" also covers "hospital stays" and "hospitalizations".
 
+Spoken-reply toggle (use exactly this action, never toggle_dataset):
+- "mute the voice replies", "turn off voice replies", "stop talking",
+  "quiet" -> toggle_speech with state = off.
+- "turn on voice replies", "unmute voice replies", "start talking again"
+  -> toggle_speech with state = on.
+
 Dates are SYMBOLIC ONLY. You must NEVER compute or emit an absolute calendar
 date yourself except when the user states an explicit one. Choose the matching
 date_range form:

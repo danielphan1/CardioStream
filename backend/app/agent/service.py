@@ -55,6 +55,7 @@ from app.agent.schemas import (
     DataQuestion,
     MedicalRefusal,
     ToggleDataset,
+    ToggleSpeech,
     Unintelligible,
 )
 
@@ -214,6 +215,14 @@ def _apply_toggle_dataset(cmd: ToggleDataset) -> AgentReply:
     return AgentReply(kind="applied", filters=filters, message="", context=None)
 
 
+def _apply_toggle_speech(cmd: ToggleSpeech) -> AgentReply:
+    """Map a ``ToggleSpeech`` result to an ``applied`` reply (D-01)."""
+    filters = AppliedFilters(speechEnabled=cmd.state)
+    # message="" — same convention as _apply_toggle_dataset: the frontend
+    # composes the confirmation, the server never authors it.
+    return AgentReply(kind="applied", filters=filters, message="", context=None)
+
+
 def interpret(
     text: str,
     context: ClarifyContext | None,
@@ -244,6 +253,9 @@ def interpret(
 
         if isinstance(result, ToggleDataset):
             return _apply_toggle_dataset(result)
+
+        if isinstance(result, ToggleSpeech):
+            return _apply_toggle_speech(result)
 
         if isinstance(result, DataQuestion):
             filters = AppliedFilters(activeChart=result.chart) if result.chart else AppliedFilters()
