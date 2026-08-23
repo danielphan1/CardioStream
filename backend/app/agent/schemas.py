@@ -140,6 +140,15 @@ class ToggleDataset(BaseModel):
     state: Literal["on", "off"]
 
 
+class ToggleSpeech(BaseModel):
+    """Spoken-replies mute/unmute — explicit on/off state (D-01), mirrors
+    ToggleDataset exactly except there is only one toggleable concept (no
+    dataset discriminator): single-valued (never a flip/toggle)."""
+
+    action: Literal["toggle_speech"]
+    state: Literal["on", "off"]
+
+
 class AgentOutput(BaseModel):
     """The closed union Claude fills via structured outputs (API-04)."""
 
@@ -150,6 +159,7 @@ class AgentOutput(BaseModel):
         | MedicalRefusal
         | Unintelligible
         | ToggleDataset
+        | ToggleSpeech
     )
 
     @field_validator("result", mode="before")
@@ -215,6 +225,7 @@ class AppliedFilters(BaseModel):
     ] | None = None
     overlayDataset: DatasetToken | None = None
     overlayState: Literal["on", "off"] | None = None
+    speechEnabled: Literal["on", "off"] | None = None
     reset: bool = False
 
 
