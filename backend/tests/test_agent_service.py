@@ -174,3 +174,16 @@ def test_toggle_dataset_maps_to_applied_filters_and_marks_reachable(monkeypatch)
     assert reply.filters.overlayDataset == "incidents"
     assert reply.filters.overlayState == "off"
     assert service._last_outcome is True
+
+
+def test_toggle_speech_maps_to_applied_filters_and_marks_reachable(monkeypatch) -> None:
+    parsed_output = AgentOutput(result={"action": "toggle_speech", "state": "off"})
+    fake_msg = type("FakeMsg", (), {"stop_reason": "end_turn", "parsed_output": parsed_output})()
+    fake = _make_fake_client(lambda **kwargs: fake_msg)
+    monkeypatch.setattr(service, "_get_client", lambda: fake())
+
+    reply = service.interpret("mute the voice replies", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.speechEnabled == "off"
+    assert service._last_outcome is True

@@ -30,6 +30,7 @@ from app.agent.schemas import (
     DataQuestion,
     MedicalRefusal,
     ToggleDataset,
+    ToggleSpeech,
     Unintelligible,
 )
 from app.deps import BPCategory
@@ -86,6 +87,14 @@ def test_toggle_dataset_variant_parses():
     assert out.result.state == "on"
 
 
+def test_toggle_speech_variant_parses():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "toggle_speech", "state": "on"}}
+    )
+    assert isinstance(out.result, ToggleSpeech)
+    assert out.result.state == "on"
+
+
 def test_command_with_nested_date_ranges_parse():
     for dr in (
         {"kind": "preset", "preset": "30d"},
@@ -128,6 +137,14 @@ def test_toggle_dataset_case_drift_normalizes():
     )
     assert isinstance(out.result, ToggleDataset)
     assert out.result.dataset == "incidents"
+    assert out.result.state == "off"
+
+
+def test_toggle_speech_case_drift_normalizes():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "Toggle_Speech", "state": "OFF"}}
+    )
+    assert isinstance(out.result, ToggleSpeech)
     assert out.result.state == "off"
 
 
@@ -253,6 +270,10 @@ def test_system_prompt_enumerates_all_four_chart_tokens():
 def test_system_prompt_enumerates_overlay_dataset_tokens():
     for token in ("labs", "incidents", "procedures", "toggle_dataset"):
         assert token in SYSTEM_PROMPT
+
+
+def test_system_prompt_enumerates_toggle_speech_token():
+    assert "toggle_speech" in SYSTEM_PROMPT
 
 
 def test_system_prompt_forbids_date_computation():
