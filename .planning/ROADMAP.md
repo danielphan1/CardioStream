@@ -169,7 +169,23 @@ Plans:
   4. The mic pauses listening while the dashboard is speaking and resumes right after, so the assistant never mishears its own voice as a new command.
   5. Spoken replies work correctly on both Chrome/Edge and Safari/iOS, verified on a real device.
 
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+**Wave 1**
+
+- [ ] 10-01-PLAN.md — Backend ToggleSpeech agent schema, service dispatch, prompt vocabulary (TTS-02)
+- [ ] 10-02-PLAN.md — Frontend speech store, test double, wire contract (TTS-02, TTS-03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 10-03-PLAN.md — CommandBar wiring: speak()/primeSpeech(), Speaking… indicator (TTS-01, TTS-03, TTS-05)
+- [ ] 10-04-PLAN.md — useVoiceCommand wiring: mic pause/resume around TTS playback (TTS-01, TTS-04, TTS-05)
+- [ ] 10-05-PLAN.md — Header Voice Replies toggle + agent fan-out wiring (TTS-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 10-06-PLAN.md — Real-device manual verification checkpoint (TTS-05)
+
 **UI hint**: yes
 
 ### Phase 11: Full Site Guide / Instructions Tab
