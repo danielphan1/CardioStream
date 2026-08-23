@@ -128,3 +128,7 @@ None - no external service configuration required.
 ---
 *Phase: 10-spoken-replies-tts*
 *Completed: 2026-08-22*
+
+## Self-Check: PASSED
+
+All created/modified files verified present on disk (`frontend/src/store/speech.ts`, `frontend/src/store/speech.test.ts`, `frontend/src/tests/fakeSpeechSynthesis.ts`, `frontend/src/api/types.ts`, `frontend/src/main.tsx`, this SUMMARY.md). All commit hashes (`240e544`, `c7f2c10`, `c0b35b0`, `ed85b31`) verified present in `git log --oneline --all`.
