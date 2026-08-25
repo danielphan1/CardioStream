@@ -14,10 +14,15 @@ import type { AgentReply } from "../api/types";
 import { useAgentPulse } from "../lib/agent";
 import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
+import { useSpeech } from "../store/speech";
 import {
   FakeRecognition,
   installFakeRecognition,
 } from "../tests/fakeRecognition";
+import {
+  FakeUtterance,
+  installFakeSpeechSynthesis,
+} from "../tests/fakeSpeechSynthesis";
 import { useVoiceCommand } from "./useVoiceCommand";
 
 // Keep the real module (ApiError, getJson, …) — replace only postAgent.
@@ -46,6 +51,7 @@ function renderVoice(latestReading: string | null = null) {
 beforeEach(() => {
   mockPostAgent.mockReset();
   installFakeRecognition();
+  installFakeSpeechSynthesis();
   useFilters.setState({
     activeChart: "bp_timeline",
     datePreset: "all",
@@ -55,6 +61,7 @@ beforeEach(() => {
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
   useAgentStatus.setState({ unavailable: false });
+  useSpeech.setState({ enabled: true, isSpeaking: false, primed: false });
 });
 
 afterEach(() => {
@@ -134,6 +141,8 @@ describe("useVoiceCommand final submit (D-03)", () => {
     expect(useFilters.getState().activeChart).toBe("pulse_trend");
     expect(result.current.message).toMatch(/^Showing pulse/);
     expect(result.current.state).toBe("listening"); // D-13 back to listening
+    // Voice path speaks the exact echoed confirmation (TTS-01).
+    expect(FakeUtterance.instances.at(-1)?.text).toMatch(/^Showing pulse/);
   });
 
   it("surfaces an unavailable reply and reports it to agentStatus, returning to listening (D-07/LIVE-01)", async () => {
@@ -368,6 +377,67 @@ describe("useVoiceCommand restart resilience (D-12/D-13/D-14, Pitfall 2/5)", () 
     Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
     act(() => document.dispatchEvent(new Event("visibilitychange")));
     expect(rec.abort).toHaveBeenCalled(); // mic released, no audio in the background
+
+    // Restore for later tests.
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+  });
+});
+
+describe("useVoiceCommand mic pause/resume during speech (TTS-04)", () => {
+  it("aborts the recognizer and enters 'speaking' when isSpeaking flips true while armed", () => {
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    act(() => useSpeech.setState({ isSpeaking: true }));
+
+    expect(rec.abort).toHaveBeenCalled();
+    expect(result.current.state).toBe("speaking");
+  });
+
+  it("restarts the recognizer and returns to 'listening' when isSpeaking flips back to false", () => {
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    act(() => useSpeech.setState({ isSpeaking: true }));
+    act(() => useSpeech.setState({ isSpeaking: false }));
+
+    expect(rec.start).toHaveBeenCalledTimes(2); // initial session start + TTS-driven resume
+    expect(result.current.state).toBe("listening");
+  });
+
+  it("never touches an unarmed/absent recognizer (Pitfall 3 regression)", () => {
+    renderVoice(); // start() never called — text-only path
+
+    act(() => useSpeech.setState({ isSpeaking: true }));
+
+    expect(FakeRecognition.instances).toHaveLength(0);
+  });
+
+  it("suppresses the natural restart loop when onend fires from the TTS-driven abort (Pitfall 4)", () => {
+    vi.useFakeTimers();
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    act(() => useSpeech.setState({ isSpeaking: true }));
+    act(() => rec.onend?.());
+    act(() => vi.advanceTimersByTime(2000));
+
+    expect(rec.start).toHaveBeenCalledTimes(1); // initial session start only — no restart scheduled
+    vi.useRealTimers();
+  });
+
+  it("cancels in-flight speech when the tab backgrounds mid-utterance (Pitfall 6)", () => {
+    renderVoice();
+
+    act(() => useSpeech.setState({ isSpeaking: true }));
+
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
+
+    expect(useSpeech.getState().isSpeaking).toBe(false);
 
     // Restore for later tests.
     Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
