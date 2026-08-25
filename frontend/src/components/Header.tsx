@@ -12,9 +12,19 @@
 // focus ring and full keyboard operability.
 // All colors are index.css tokens — no hex values here.
 import { useEffect, useRef, useState } from "react";
-import { ClipboardPlus, LogOut, Moon, Sailboat, Sun, Upload } from "lucide-react";
+import {
+  ClipboardPlus,
+  LogOut,
+  Moon,
+  Sailboat,
+  Sun,
+  Upload,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
 import { useAuth } from "../store/auth";
+import { useSpeech } from "../store/speech";
 import { useTheme } from "../store/theme";
 import { useView } from "../store/view";
 
@@ -113,6 +123,8 @@ export function Header() {
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggleTheme);
   const isDark = theme === "dark";
+  const speechEnabled = useSpeech((s) => s.enabled);
+  const toggleSpeech = useSpeech((s) => s.toggleEnabled);
 
   const view = useView((s) => s.view);
   const go = useView((s) => s.go);
@@ -167,6 +179,24 @@ export function Header() {
               <Sun aria-hidden="true" size={24} />
             )}
             {isDark ? "Dark" : "Light"}
+          </button>
+
+          {/* Voice Replies toggle (D-02, TTS-02) — mute/quiet control for the
+              spoken-confirmation feature; styled identically to the Theme
+              toggle above (icon + text, aria-pressed, >=48px, bordered sky
+              surface, never accent-filled). */}
+          <button
+            type="button"
+            onClick={toggleSpeech}
+            aria-pressed={speechEnabled}
+            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
+          >
+            {speechEnabled ? (
+              <Volume2 aria-hidden="true" size={24} />
+            ) : (
+              <VolumeX aria-hidden="true" size={24} />
+            )}
+            {speechEnabled ? "Voice Replies: On" : "Voice Replies: Off"}
           </button>
 
           {/* View toggle (D-06, widened to three states by Phase 8 D-01):
