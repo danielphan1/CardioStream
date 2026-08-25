@@ -28,15 +28,18 @@ import {
 } from "../lib/voice";
 import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
+import { useSpeech } from "../store/speech";
 import { useAgent } from "./useAgent";
 
 // The stable voice-state contract the CommandBar renders (Wave 3). "triggered"
-// is armed-and-streaming-a-command; "paused" is the D-14 fatal fallback.
+// is armed-and-streaming-a-command; "speaking" is the TTS-04 mic-paused state
+// (Plan 10-04); "paused" is the D-14 fatal fallback.
 export type VoiceState =
   | "off"
   | "listening"
   | "triggered"
   | "working"
+  | "speaking"
   | "paused";
 
 // Fixed friendly copy for every client-visible failure (VOICE-07) — duplicated
@@ -67,6 +70,8 @@ export function useVoiceCommand({
   const { mutate } = useAgent();
 
   const supported = isSpeechSupported();
+  // TTS-04: drives the mic pause/resume effect below (armedRef-gated).
+  const isSpeaking = useSpeech((s) => s.isSpeaking);
 
   const [state, setVoiceState] = useState<VoiceState>("off");
   const [interim, setInterim] = useState("");
@@ -80,6 +85,10 @@ export function useVoiceCommand({
   const consecutiveRestartsRef = useRef(0);
   const lastErrorFatalRef = useRef(false);
   const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // TTS-04: last-seen isSpeaking value, mirrored from the store on every real
+  // transition (Pattern 2) — also guards onend against the abort-driven race
+  // (Pitfall 4).
+  const speakingRef = useRef(false);
 
   // latestReading + mutate flow through refs so the construct-once handlers never
   // close over a stale value (useState setters are already stable).
@@ -138,6 +147,7 @@ export function useVoiceCommand({
         );
         if (reply.message.trim() !== "") msg += " " + reply.message;
         setMessage(msg);
+        useSpeech.getState().speak(msg); // TTS-01 voice path — one of exactly two speak() call sites (D-06)
         break;
       }
       case "refuse":
@@ -213,6 +223,7 @@ export function useVoiceCommand({
       // an explicit stop() (armed=false) leaves the session off — no flicker.
       rec.onend = () => {
         if (!armedRef.current) return; // caregiver tapped stop → stay off (D-13)
+        if (speakingRef.current) return; // TTS owns the resume — suppress the natural restart loop (Pitfall 4)
         if (lastErrorFatalRef.current) {
           enterPaused();
           return;
@@ -242,6 +253,27 @@ export function useVoiceCommand({
     recRef.current?.abort();
   }
 
+  // TTS-04: pause the mic while the dashboard speaks, resume right after — ONLY
+  // when a voice session is genuinely open (armedRef gate, Pitfall 3). Never
+  // touches armedRef itself, so D-13's explicit-stop-only invariant holds.
+  useEffect(() => {
+    if (isSpeaking === speakingRef.current) return; // no-op on unrelated re-render
+    speakingRef.current = isSpeaking;
+    if (!armedRef.current) return; // text-only path — never touch an inactive/absent recognizer
+    if (isSpeaking) {
+      clearRestartTimer(); // suppress any pending backoff restart (onend guard covers the rest — Pitfall 4)
+      setVoiceState("speaking");
+      recRef.current?.abort();
+    } else {
+      setVoiceState("listening");
+      try {
+        recRef.current?.start(); // resume right after speech ends (TTS-04)
+      } catch {
+        /* InvalidStateError: already running → no-op (Pitfall 5) */
+      }
+    }
+  }, [isSpeaking]);
+
   // Pitfall 2: never listen in the background. When the tab hides, drop the pending
   // restart and hold; when it returns to the foreground and we're still armed, resume
   // the loop honestly. Listeners + the restart timer + the recognizer are all torn
@@ -250,6 +282,7 @@ export function useVoiceCommand({
     function onVisibility() {
       const hidden = typeof document !== "undefined" && document.hidden;
       if (hidden) {
+        useSpeech.getState().cancelForBackground(); // Pitfall 6 — proactively cancel; iOS onend/onerror may never fire
         clearRestartTimer(); // background → stop trying to restart
         recRef.current?.abort(); // stop the LIVE session — never listen in the background (T-04-05)
         return;
