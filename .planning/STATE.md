@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: 10 (spoken-replies-tts) — EXECUTING
 Plan: 1 of 6
 Status: Executing Phase 10
-Last activity: 2026-08-23 -- Phase 10 execution started
+Last activity: 2026-08-25 - Completed quick task 260825-h9l: Document CLAUDE.md convention pairing impeccable skill with GSD workflow for frontend design work
 
 Progress: [█████████░░░░░░░░░░░] 43% (3/7 v1.1 phases; v1.0 shipped 100% — see milestones/v1.0-ROADMAP.md)
 
@@ -79,6 +79,12 @@ None yet.
 - [Phase 10 planning]: TTS vs. existing aria-live confirmation is an open product decision (does TTS coexist with aria-live, opt-in vs. default-on framing of the mute toggle) — JS cannot reliably detect screen-reader presence; decide explicitly during Phase 10 planning.
 - [Phase 8 follow-up]: CR-01's fix (guard against a stale mutation race clobbering `AddRecordPage` state on mid-submit type-switch) is a concurrency fix that automated tests can't fully exercise (existing suite is synchronous-mock only) — spot-check manually: fill Lab form → submit → switch to Incident before the response resolves → confirm nothing is clobbered.
 - [Phase 12]: Visual Refresh has no research grounding (research/SUMMARY.md gap) — run a lightweight research/planning pass before executing, checked against existing accessibility-floor conventions (e.g. BPTimeline.tsx's contrast-exempt decorative-tint carve-out).
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260825-h9l | Document CLAUDE.md convention pairing impeccable skill with GSD workflow for frontend design work | 2026-08-25 | 132438c | [260825-h9l-document-claude-md-convention-pairing-im](./quick/260825-h9l-document-claude-md-convention-pairing-im/) |
 
 ## Deferred Items
 
