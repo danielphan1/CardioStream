@@ -19,7 +19,7 @@
 // State machine + clarify context live in local useState (PATTERNS: like
 // FilterBar's customOpen), NOT the zustand store, which stays the pure command
 // schema. Only server-composed AppliedFilters reach the store (T-03-16/17).
-import { Mic, MicOff } from "lucide-react";
+import { Mic, MicOff, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ApiError } from "../api/client";
@@ -30,6 +30,7 @@ import { applyAgentFilters, composeConfirmation } from "../lib/agent";
 import { WAKE_WORD } from "../lib/voice";
 import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
+import { useSpeech } from "../store/speech";
 
 type CommandBarProps = {
   latestReading: string | null;
@@ -84,6 +85,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     start,
     stop,
   } = useVoiceCommand({ latestReading });
+  const isSpeaking = useSpeech((s) => s.isSpeaking);
 
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -116,6 +118,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     setStatus("confirmed");
     setText(""); // D-03 clears only on an applied command
     setClarifyContext(null);
+    useSpeech.getState().speak(msg); // TTS-01: speak the exact echoed confirmation
   }
 
   function onSuccess(reply: AgentReply) {
@@ -169,6 +172,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    useSpeech.getState().primeSpeech(); // TTS-05 Pitfall 1: gesture-unlock on every real submit
     const trimmed = text.trim();
     if (trimmed === "") return; // trimmed-empty → no-op (D-04)
     // D-03: keep text visible, lock the controls, show the Working… state.
@@ -184,7 +188,8 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   const sessionOpen =
     voiceState === "listening" ||
     voiceState === "triggered" ||
-    voiceState === "working";
+    voiceState === "working" ||
+    voiceState === "speaking";
   const placeholder = `Try: "${EXAMPLES[exampleIdx]}"`;
 
   // The whole bar transforms to signal state (D-06): the existing accent ring is
@@ -220,6 +225,11 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   } else if (voiceState === "paused") {
     lineText = VOICE_PAUSED_COPY; // D-14 fixed copy
     lineGlyph = "micoff";
+  } else if (voiceState === "speaking") {
+    // Leave this slot blank — the Speaking… indicator below is the sole
+    // visible signal for this sub-state (10-UI-SPEC.md).
+    lineText = "";
+    lineGlyph = null;
   } else {
     lineText = message; // voice off → the text path owns the region
     lineGlyph = MARKER[status] !== "" ? "marker" : null;
@@ -227,7 +237,10 @@ export function CommandBar({ latestReading }: CommandBarProps) {
 
   function onMicClick() {
     if (sessionOpen) stop();
-    else start(); // synchronous start inside the tap (D-01 user gesture)
+    else {
+      useSpeech.getState().primeSpeech(); // TTS-05 Pitfall 1: gesture-unlock for voice-first users
+      start(); // synchronous start inside the tap (D-01 user gesture)
+    }
   }
 
   return (
@@ -285,6 +298,21 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-ink)] border-t-transparent motion-safe:animate-spin"
           />
           {voiceWorking ? "WORKING…" : "Working…"}
+        </p>
+      )}
+
+      {/* Speaking… indicator (D-05) — a third, independent conditional block.
+          Plain paragraph, no aria-live: the meaning is already announced by
+          the confirmation region below (and, when unmuted, by the audio
+          itself) — a second live announcement here would double-speak the
+          same event for screen-reader users. */}
+      {isSpeaking && (
+        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-ink)]">
+          <Volume2
+            aria-hidden="true"
+            className="h-5 w-5 motion-safe:animate-pulse motion-reduce:animate-none"
+          />
+          Speaking…
         </p>
       )}
 
