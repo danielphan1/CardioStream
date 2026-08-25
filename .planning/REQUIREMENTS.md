@@ -18,9 +18,9 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 
 - [x] **TTS-01**: Dashboard speaks the same confirmation text already shown visually (`composeConfirmation()` output) aloud via Web SpeechSynthesis, on applied voice/agent commands only — never new/different content, never triggered by manual click/keyboard filter changes
 - [x] **TTS-02**: Spoken replies are on by default; a prominent, persisted, voice-reachable mute/quiet toggle lets Chris or caregivers turn them off
-- [ ] **TTS-03**: Only one utterance ever plays at a time — cancel-before-speak, never overlapping or queued
+- [x] **TTS-03**: Only one utterance ever plays at a time — cancel-before-speak, never overlapping or queued
 - [x] **TTS-04**: The live voice-recognition session pauses while the dashboard is speaking and resumes after, so the mic never hears its own confirmation as a new command
-- [ ] **TTS-05**: Spoken replies work on both Chrome/Edge and Safari/iOS, including iOS's gesture-unlock and backgrounding-cancel quirks — verified on a real device
+- [x] **TTS-05**: Spoken replies work on both Chrome/Edge and Safari/iOS, including iOS's gesture-unlock and backgrounding-cancel quirks — verified on a real device
 
 ### Multi-Dataset Filtering & Overlay (OVERLAY)
 
@@ -93,9 +93,9 @@ Explicitly excluded. Documented to prevent scope creep.
 | OVERLAY-06 | Phase 9: Multi-Dataset Overlay & Filtering | Complete |
 | TTS-01 | Phase 10: Spoken Replies (TTS) | Complete |
 | TTS-02 | Phase 10: Spoken Replies (TTS) | Complete |
-| TTS-03 | Phase 10: Spoken Replies (TTS) | Pending |
+| TTS-03 | Phase 10: Spoken Replies (TTS) | Complete |
 | TTS-04 | Phase 10: Spoken Replies (TTS) | Complete |
-| TTS-05 | Phase 10: Spoken Replies (TTS) | Pending — requires 10-06 real-device sign-off |
+| TTS-05 | Phase 10: Spoken Replies (TTS) | Complete |
 | GUIDE-01 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | GUIDE-02 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | GUIDE-03 | Phase 11: Full Site Guide / Instructions Tab | Pending |
