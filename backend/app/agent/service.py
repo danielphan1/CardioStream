@@ -262,7 +262,13 @@ def interpret(
             return AgentReply(kind="applied", filters=filters, message=DATA_QUESTION_MESSAGE)
 
         if isinstance(result, Clarification):
-            question = result.question.strip()
+            # Clarification.question has no min_length (structured-outputs
+            # constraint — a soft clamp would become a hard parse error), so an
+            # empty/whitespace-only question is possible; fall back to a fixed
+            # prompt so the UI never renders a silent, invisible clarify state.
+            question = (
+                result.question.strip() or "Which chart or time range did you mean?"
+            )
             # Preserve the TRUE original across one repeated clarify while keeping
             # exactly one turn of memory (D-12): reuse the inbound context's
             # original_text when present, else this utterance.
