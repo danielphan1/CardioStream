@@ -99,10 +99,10 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 ## Session Continuity
 
-Last session: 2026-08-22T23:28:57.643Z
-Stopped at: Phase 10 UI-SPEC approved
-Next action: `/gsd-plan-phase 9` — context is captured, both open design decisions resolved.
-Resume file: .planning/phases/10-spoken-replies-tts/10-UI-SPEC.md
+Last session: 2026-08-25
+Stopped at: Session resumed, proceeding to execute Phase 10 wave 2 (10-03, 10-04, 10-05)
+Next action: `/gsd-execute-phase 10`
+Resume file: .planning/phases/10-spoken-replies-tts/10-06-PLAN.md (wave 3, blocked on wave 2)
 
 ## Operator Next Steps
 
