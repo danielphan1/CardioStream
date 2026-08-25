@@ -20,7 +20,7 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 - [x] **TTS-02**: Spoken replies are on by default; a prominent, persisted, voice-reachable mute/quiet toggle lets Chris or caregivers turn them off
 - [ ] **TTS-03**: Only one utterance ever plays at a time — cancel-before-speak, never overlapping or queued
 - [x] **TTS-04**: The live voice-recognition session pauses while the dashboard is speaking and resumes after, so the mic never hears its own confirmation as a new command
-- [x] **TTS-05**: Spoken replies work on both Chrome/Edge and Safari/iOS, including iOS's gesture-unlock and backgrounding-cancel quirks — verified on a real device
+- [ ] **TTS-05**: Spoken replies work on both Chrome/Edge and Safari/iOS, including iOS's gesture-unlock and backgrounding-cancel quirks — verified on a real device
 
 ### Multi-Dataset Filtering & Overlay (OVERLAY)
 
@@ -95,7 +95,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | TTS-02 | Phase 10: Spoken Replies (TTS) | Complete |
 | TTS-03 | Phase 10: Spoken Replies (TTS) | Pending |
 | TTS-04 | Phase 10: Spoken Replies (TTS) | Complete |
-| TTS-05 | Phase 10: Spoken Replies (TTS) | Complete |
+| TTS-05 | Phase 10: Spoken Replies (TTS) | Pending — requires 10-06 real-device sign-off |
 | GUIDE-01 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | GUIDE-02 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | GUIDE-03 | Phase 11: Full Site Guide / Instructions Tab | Pending |
