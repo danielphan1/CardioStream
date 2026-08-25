@@ -53,7 +53,10 @@ let seq = 0;
 // Strong reference to the in-flight utterance for its lifetime — some browser
 // implementations can garbage-collect an utterance that's referenced only by
 // a function-local variable, silently dropping onend/onerror (Pitfall 5).
+// Deliberately write-only (assigned, never read) — the `void` below is a
+// no-op read solely to satisfy `noUnusedLocals`, not a behavioral change.
 let currentUtterance: SpeechSynthesisUtterance | null = null;
+void currentUtterance;
 
 interface SpeechState {
   enabled: boolean;
