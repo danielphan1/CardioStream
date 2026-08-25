@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
-status: executing
-last_updated: "2026-08-25T19:46:40.383Z"
+status: ready_to_plan
+last_updated: 2026-08-25T20:31:31.657Z
 last_activity: 2026-08-25 -- Phase 10 execution started
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 21
-  completed_plans: 17
+  completed_plans: 21
   percent: 57
+stopped_at: Phase 10 complete (6/6) — ready to discuss Phase 11
 ---
 
 # Project State
@@ -20,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Phase 10 — spoken-replies-tts
+**Current focus:** Phase 11 — full site guide / instructions tab
 
 ## Current Position
 
-Phase: 10 (spoken-replies-tts) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 10
-Last activity: 2026-08-25 -- Phase 10 execution started
+Phase: 11
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-25
 
 Progress: [█████████░░░░░░░░░░░] 43% (3/7 v1.1 phases; v1.0 shipped 100% — see milestones/v1.0-ROADMAP.md)
 
@@ -35,7 +36,7 @@ Progress: [█████████░░░░░░░░░░░] 43% (3/
 
 **Velocity (v1.0, for reference):**
 
-- Total plans completed: 44 (per MILESTONES.md; 46 tasks across 5 phases)
+- Total plans completed: 50 (per MILESTONES.md; 46 tasks across 5 phases)
 - Average duration: ~7min/plan (early phases; Phase 04 P03 outlier at 35min)
 
 **By Phase (v1.0):**
