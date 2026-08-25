@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { useFilters } from "../store/filters";
+import { useSpeech } from "../store/speech";
 import {
   applyAgentFilters,
   composeConfirmation,
@@ -24,6 +25,7 @@ beforeEach(() => {
     overlayDatasets: { labs: false, incidents: false, procedures: false },
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
+  useSpeech.setState({ enabled: true, isSpeaking: false, primed: false });
 });
 
 type ConfState = {
@@ -132,6 +134,13 @@ describe("applyAgentFilters", () => {
 
     expect(useFilters.getState().overlayDatasets.labs).toBe(true);
     expect(useAgentPulse.getState().fields).toContain("overlay");
+  });
+
+  it("speechEnabled reaches useSpeech.setEnabled without touching the pulse (no PulseField for it)", () => {
+    const fields = applyAgentFilters({ speechEnabled: "off" });
+
+    expect(useSpeech.getState().enabled).toBe(false);
+    expect(fields).toEqual([]);
   });
 });
 

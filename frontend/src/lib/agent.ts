@@ -11,6 +11,7 @@ import type { AppliedFilters, BPCategory, ChartId } from "../api/types";
 import type { DatePreset } from "./dates";
 import { parseDateOnly, presetLabel } from "./dates";
 import { useFilters } from "../store/filters";
+import { useSpeech } from "../store/speech";
 
 // The five filter groups FilterBar (plan 03-04) highlights on a D-08 pulse.
 export type PulseField =
@@ -79,6 +80,11 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   if (f.overlayDataset != null && f.overlayState != null) {
     s.setOverlayDataset(f.overlayDataset, f.overlayState === "on");
     touched.add("overlay");
+  }
+  if (f.speechEnabled != null) {
+    useSpeech.getState().setEnabled(f.speechEnabled === "on");
+    // No touched.add(...) — Voice Replies is not one of FilterBar's five
+    // highlighted PulseField groups (RESEARCH: no PulseField exists for it).
   }
 
   const fields = [...touched];
