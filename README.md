@@ -1,4 +1,4 @@
-# Health Visualizer — Chris's Health Dashboard
+# Health Visualizer Revamped: CardioStream — Chris's Health Dashboard
 
 A personal health data dashboard for a single user: Chris, a C4 quadriplegic individual who tracks blood pressure, pulse, and other health metrics. It replaces an earlier Tableau Public prototype with a voice-controlled web app — Chris explores his data entirely hands-free ("show me my blood pressure for the last 30 days, mornings only"), while his wife and caregivers use the site to enter new readings. Built on a consistent Python (FastAPI, pandas, SQLAlchemy) + React (Vite, Recharts) stack as a data/software engineering and applied-AI portfolio project.
 
