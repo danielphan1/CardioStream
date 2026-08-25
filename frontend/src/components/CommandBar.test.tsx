@@ -18,10 +18,15 @@ import type { AgentReply } from "../api/types";
 import { useAgentPulse } from "../lib/agent";
 import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
+import { useSpeech } from "../store/speech";
 import {
   FakeRecognition,
   installFakeRecognition,
 } from "../tests/fakeRecognition";
+import {
+  FakeUtterance,
+  installFakeSpeechSynthesis,
+} from "../tests/fakeSpeechSynthesis";
 import { CommandBar } from "./CommandBar";
 
 // Keep the real module (ApiError, getJson, …) — replace only postAgent.
@@ -65,6 +70,7 @@ function typeAndSubmit(value: string) {
 
 beforeEach(() => {
   mockPostAgent.mockReset();
+  installFakeSpeechSynthesis();
   useFilters.setState({
     activeChart: "bp_timeline",
     datePreset: "all",
@@ -74,6 +80,7 @@ beforeEach(() => {
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
   useAgentStatus.setState({ unavailable: false });
+  useSpeech.setState({ enabled: true, isSpeaking: false, primed: false });
 });
 
 afterEach(() => {
@@ -275,6 +282,49 @@ describe("CommandBar", () => {
     const region = await screen.findByText(/^Showing pulse/);
     // The announced reply lives in an aria-live=polite container (D-05/D-06).
     expect(region.closest("[aria-live='polite']")).not.toBeNull();
+  });
+
+  it("speaks the exact on-screen confirmation text on an applied reply (TTS-01)", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+    );
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    await screen.findByText(/^Showing pulse/);
+    // onSubmit's primeSpeech() call creates an earlier utterance (text === " ")
+    // first — assert on the LAST instance, not the instance count.
+    expect(FakeUtterance.instances.at(-1)?.text).toMatch(/^Showing pulse/);
+  });
+
+  it("does not speak new content for clarify/refuse/unclear/unavailable replies, only the priming utterance", async () => {
+    mockPostAgent.mockResolvedValue(
+      reply({
+        kind: "unclear",
+        message: "Didn't catch that. Try: 'show my pulse' or 'last 30 days'.",
+      }),
+    );
+    renderBar();
+
+    typeAndSubmit("asdfghjkl");
+
+    await screen.findByText(
+      "Didn't catch that. Try: 'show my pulse' or 'last 30 days'.",
+    );
+    // Only the priming utterance (" ") fired from onSubmit — no real speech.
+    expect(FakeUtterance.instances).toHaveLength(1);
+    expect(FakeUtterance.instances[0].text).toBe(" ");
+  });
+
+  it("renders the Speaking… indicator when isSpeaking is true and hides it when false", () => {
+    renderBar();
+
+    act(() => useSpeech.setState({ isSpeaking: true }));
+    expect(screen.getByText("Speaking…")).toBeInTheDocument();
+
+    act(() => useSpeech.setState({ isSpeaking: false }));
+    expect(screen.queryByText("Speaking…")).toBeNull();
   });
 });
 
