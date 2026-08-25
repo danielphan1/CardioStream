@@ -52,9 +52,34 @@ MEDICAL_REFUSAL_PLAIN = (
 # numbers; point at the stats bar (verbatim from CONTEXT).
 DATA_QUESTION_MESSAGE = "Your averages are in the stats bar below."
 
+# Human-readable phrase per overlay dataset token, for the toggle-dataset
+# confirmation (WR-06 — the frontend's composeConfirmation() has no awareness
+# of overlay toggles, so this is the only place that action gets confirmed).
+DATASET_PHRASES = {
+    "labs": "labs",
+    "incidents": "incidents",
+    "procedures": "procedures",
+}
+
 
 def medical_refusal(chart: str | None) -> str:
     """Compose the D-10 refusal copy, pairing it with the relevant chart phrase."""
     if chart is not None and chart in CHART_PHRASES:
         return MEDICAL_REFUSAL_WITH_CHART.format(chart_phrase=CHART_PHRASES[chart])
     return MEDICAL_REFUSAL_PLAIN
+
+
+def toggle_speech_message(state: str) -> str:
+    """Compose the D-01 mute/unmute confirmation (WR-06) — composeConfirmation()
+    only describes chart/date/am-pm/category state, so this is the only place
+    that acknowledges the toggle a voice-only user just asked for."""
+    return "Voice replies are now on." if state == "on" else "Voice replies are now off."
+
+
+def toggle_dataset_message(dataset: str, state: str) -> str:
+    """Compose the D-03/D-04 overlay-toggle confirmation (WR-06), same rationale
+    as toggle_speech_message above."""
+    phrase = DATASET_PHRASES.get(dataset, dataset)
+    if state == "on":
+        return f"Now showing {phrase}."
+    return f"{phrase.capitalize()} hidden."

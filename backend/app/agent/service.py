@@ -39,6 +39,8 @@ from app.agent.copy import (
     UNAVAILABLE_MESSAGE,
     UNCLEAR_MESSAGE,
     medical_refusal,
+    toggle_dataset_message,
+    toggle_speech_message,
 )
 from app.agent.prompt import SYSTEM_PROMPT, build_messages
 from app.agent.resolver import InvalidRange, ResolvedDates, resolve_date_range
@@ -213,17 +215,32 @@ def _apply_command(
 def _apply_toggle_dataset(cmd: ToggleDataset) -> AgentReply:
     """Map a ``ToggleDataset`` result to an ``applied`` reply (D-03/D-04)."""
     filters = AppliedFilters(overlayDataset=cmd.dataset, overlayState=cmd.state)
-    # message="" — same convention as _apply_command: the frontend composes the
-    # confirmation, the server never authors it.
-    return AgentReply(kind="applied", filters=filters, message="", context=None)
+    # WR-06: composeConfirmation() (frontend) only describes chart/date/am-pm/
+    # category state — it has no awareness of overlay toggles — so the server
+    # composes a dedicated confirmation here instead of message="". The
+    # frontend appends this verbatim after its own echo (same mechanism as the
+    # D-16 stats-bar pointer), so the toggle itself is always acknowledged.
+    return AgentReply(
+        kind="applied",
+        filters=filters,
+        message=toggle_dataset_message(cmd.dataset, cmd.state),
+        context=None,
+    )
 
 
 def _apply_toggle_speech(cmd: ToggleSpeech) -> AgentReply:
     """Map a ``ToggleSpeech`` result to an ``applied`` reply (D-01)."""
     filters = AppliedFilters(speechEnabled=cmd.state)
-    # message="" — same convention as _apply_toggle_dataset: the frontend
-    # composes the confirmation, the server never authors it.
-    return AgentReply(kind="applied", filters=filters, message="", context=None)
+    # WR-06: same rationale as _apply_toggle_dataset above — composeConfirmation()
+    # has no speechEnabled awareness, so this is the only place the mute/unmute
+    # action itself gets confirmed (audibly, on unmute, since speak() runs
+    # after setEnabled(true)).
+    return AgentReply(
+        kind="applied",
+        filters=filters,
+        message=toggle_speech_message(cmd.state),
+        context=None,
+    )
 
 
 def interpret(
