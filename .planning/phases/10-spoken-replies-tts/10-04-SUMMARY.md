@@ -99,3 +99,12 @@ Full verification passed: `npx tsc --noEmit` clean; `npx vitest run src/hooks/us
 ---
 *Phase: 10-spoken-replies-tts*
 *Completed: 2026-08-25*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/hooks/useVoiceCommand.ts
+- FOUND: frontend/src/hooks/useVoiceCommand.test.ts
+- FOUND: .planning/phases/10-spoken-replies-tts/10-04-SUMMARY.md
+- FOUND commit: eac9629 (feat)
+- FOUND commit: e2202b2 (test)
+- FOUND commit: c1fa672 (docs)
