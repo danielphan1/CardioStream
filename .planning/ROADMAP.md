@@ -178,9 +178,9 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 10-03-PLAN.md — CommandBar wiring: speak()/primeSpeech(), Speaking… indicator (TTS-01, TTS-03, TTS-05)
-- [ ] 10-04-PLAN.md — useVoiceCommand wiring: mic pause/resume around TTS playback (TTS-01, TTS-04, TTS-05)
-- [ ] 10-05-PLAN.md — Header Voice Replies toggle + agent fan-out wiring (TTS-02)
+- [x] 10-03-PLAN.md — CommandBar wiring: speak()/primeSpeech(), Speaking… indicator (TTS-01, TTS-03, TTS-05)
+- [x] 10-04-PLAN.md — useVoiceCommand wiring: mic pause/resume around TTS playback (TTS-01, TTS-04, TTS-05)
+- [x] 10-05-PLAN.md — Header Voice Replies toggle + agent fan-out wiring (TTS-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -246,6 +246,6 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 7. Records Backend | v1.1 | 2/2 | Complete    | 2026-08-20 |
 | 8. Manual-Entry Forms | v1.1 | 3/3 | Complete    | 2026-08-21 |
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 7/7 | Complete    | 2026-08-22 |
-| 10. Spoken Replies (TTS) | v1.1 | 2/6 | In Progress|  |
+| 10. Spoken Replies (TTS) | v1.1 | 5/6 | In Progress|  |
 | 11. Full Site Guide | v1.1 | 0/TBD | Not started | - |
 | 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
