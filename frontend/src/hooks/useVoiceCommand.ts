@@ -183,7 +183,11 @@ export function useVoiceCommand({
       return;
     }
 
-    if (command === "") return; // wake word only → nothing to submit
+    if (command === "") {
+      setInterim("");
+      setVoiceState("listening"); // wake word only → nothing to submit, don't get stuck
+      return;
+    }
     consecutiveRestartsRef.current = 0; // a real final result resets the backoff
     const capturedSeq = ++seqRef.current;
     setInterim("");
