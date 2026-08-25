@@ -60,8 +60,8 @@ Declared values (multiples of 4), as already used throughout the codebase — no
 | Token | Value | Usage in this phase |
 |-------|-------|-------|
 | xs | 4px | Not introduced this phase |
-| sm | 8px | `gap-2` inside the new Guide header button (icon-to-label) and inside TOC chip links (icon-to-label, if an icon is used) — matches every existing header/chip button |
-| md | 16px | Header-right row gap (unchanged, `gap-4` — wait, see lg below); `gap-4` between TOC chips in a wrapped row, matching `OverlayToggle`'s chip-row `gap-2`/FilterBar's group spacing conventions |
+| sm | 8px | `gap-2` inside the new Guide header button (icon-to-label) and between TOC chip links in a wrapped row (`gap-2`), matching `OverlayToggle`'s and `FilterBar`'s existing chip-row spacing exactly |
+| md | 16px | Header-right row gap (unchanged, `gap-4`), matching `Header.tsx`'s existing header-right controls row |
 | lg | 24px | Vertical gap between the guide's own sections is `gap-6` where a section is visually a distinct block (e.g. surrounding the ToC card) |
 | xl | 32px | Vertical rhythm between guide sections (`gap-8`) — matches `<main>`'s existing `flex flex-col gap-8` rhythm exactly, so the guide's scroll rhythm feels identical to the dashboard's |
 | 2xl | 48px | Minimum interactive target height (`min-h-12`) on: the new Header "Guide" button, the guide's Close (X) button, and every TOC jump-link — non-negotiable, matches GUIDE-04 and every other control in the app |
