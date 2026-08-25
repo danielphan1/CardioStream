@@ -156,16 +156,19 @@ def call_claude(text: str, context: ClarifyContext | None) -> tuple[AgentOutput 
             messages=build_messages(text, context),
             output_format=AgentOutput,
         )
-    except APIError:
+    except APIError as exc:
         # Network/timeout/API problem — the real signal the breaker tracks.
-        # Do not log the payload or the key — a fixed warning only.
+        # Do not log the payload or the key — the exception's own type/message
+        # is safe to log (SEC-02/T-04-04) and is the only diagnostic trail here.
         _record_outcome(False)
-        logger.warning("Claude call failed for /agent; degrading to unavailable reply")
+        logger.warning("Claude call failed for /agent; degrading to unavailable reply: %s", exc)
         return None, False
-    except ValidationError:
+    except ValidationError as exc:
         # Response failed schema validation (e.g. enum-capitalization drift).
         # The network round-trip succeeded — do NOT touch the breaker.
-        logger.warning("Claude response failed schema validation; degrading to unclear reply")
+        logger.warning(
+            "Claude response failed schema validation; degrading to unclear reply: %s", exc
+        )
         return None, True
     if msg.stop_reason in ("refusal", "max_tokens"):  # Pitfall 5
         _record_outcome(True)  # network round-trip succeeded
@@ -290,7 +293,10 @@ def interpret(
         # Union is closed; this is an unreachable belt-and-suspenders branch.
         return AgentReply(kind="unclear", message=UNCLEAR_MESSAGE)  # pragma: no cover
     except Exception:  # noqa: BLE001 — absolute never-500 backstop (VOICE-07)
-        logger.warning("Unexpected error interpreting /agent input; degrading to unclear reply")
+        # logger.exception captures the exception's type/message/traceback so a
+        # genuinely unexpected bug is diagnosable in production — neither the
+        # user transcript nor the API key is included (SEC-02/T-04-04).
+        logger.exception("Unexpected error interpreting /agent input; degrading to unclear reply")
         return AgentReply(kind="unclear", message=UNCLEAR_MESSAGE)
 
 
