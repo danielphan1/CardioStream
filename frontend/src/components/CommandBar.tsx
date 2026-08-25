@@ -54,10 +54,11 @@ const RATE_LIMIT_COPY =
 const OFFLINE_COPY =
   "Couldn't reach the assistant. The buttons below still work. Try: 'show my pulse'.";
 // D-14 hard-failure fallback: shown when voice enters the fatal paused state
-// (mic denied/revoked, no hardware, restart-loop exhausted). A peer of the fixed
-// copy above — the raw recognizer error is NEVER rendered (VOICE-07). The text
-// input below stays fully usable so the caregiver is never trapped (VOICE-08).
-const VOICE_PAUSED_COPY = "Voice paused — tap to resume";
+// (mic denied/revoked, no hardware, restart-loop exhausted). The hook's
+// voiceMessage (PAUSED_COPY in useVoiceCommand.ts) is the single source of
+// truth for this copy — the raw recognizer error is NEVER rendered
+// (VOICE-07). The text input below stays fully usable so the caregiver is
+// never trapped (VOICE-08).
 
 // Non-color state markers (aria-hidden — the aria-live text carries the meaning
 // for screen readers; the glyph is a purely visual reinforcement, no color-only
@@ -223,7 +224,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
       lineGlyph = "mic";
     }
   } else if (voiceState === "paused") {
-    lineText = VOICE_PAUSED_COPY; // D-14 fixed copy
+    lineText = voiceMessage; // D-14 fixed copy, sourced from the hook (single source of truth)
     lineGlyph = "micoff";
   } else if (voiceState === "speaking") {
     // Leave this slot blank — the Speaking… indicator below is the sole

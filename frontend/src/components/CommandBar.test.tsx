@@ -436,7 +436,9 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
 
     // D-14 fixed copy (never the raw recognizer error) + the text box still works.
     expect(
-      screen.getByText("Voice paused — tap to resume"),
+      screen.getByText(
+        "Voice is paused — tap the mic to start listening again.",
+      ),
     ).toBeInTheDocument();
     const input = screen.getByRole("textbox", {
       name: "Type a dashboard command",
