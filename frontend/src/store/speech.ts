@@ -107,6 +107,7 @@ export const useSpeech = create<SpeechState>((set, get) => ({
   speak: (text) => {
     if (!get().enabled || text.trim() === "") return; // TTS-02 muted / nothing to say
     if (!isSpeechSynthesisSupported()) return;
+    if (typeof document !== "undefined" && document.hidden) return; // never start audio in a backgrounded tab
     const mySeq = ++seq;
     // TTS-03: always cancel first — safe no-op if nothing is playing, and the
     // only way to guarantee just one utterance ever plays at a time.
