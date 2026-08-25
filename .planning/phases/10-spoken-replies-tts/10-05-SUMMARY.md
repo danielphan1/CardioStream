@@ -98,3 +98,14 @@ None - no external service configuration required.
 ---
 *Phase: 10-spoken-replies-tts*
 *Completed: 2026-08-25*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/Header.tsx
+- FOUND: frontend/src/lib/agent.ts
+- FOUND: frontend/src/lib/agent.test.ts
+- FOUND: .planning/phases/10-spoken-replies-tts/10-05-SUMMARY.md
+- FOUND: 5e6dad4 (feat: Header toggle)
+- FOUND: c0c9b2a (test: RED)
+- FOUND: cb4c41c (feat: GREEN)
+- FOUND: 0b9be73 (docs: summary)
