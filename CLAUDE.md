@@ -138,7 +138,17 @@ This is also a portfolio project for the builder, demonstrating data engineering
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+### impeccable + GSD pairing (frontend design work)
+
+`impeccable` (global Claude Code skill, not part of GSD — installed at `~/.claude/skills/impeccable`) supplies frontend design judgment and critique (hierarchy, spacing, contrast, motion, accessibility); GSD supplies planning, commit, and tracking discipline. Per "GSD Workflow Enforcement" above, any actual file edit still goes through a GSD entry point — `impeccable` itself never Edits/Writes files directly; it informs judgment, a GSD command executes and commits.
+
+| Situation | Path |
+|-----------|------|
+| Pure critique/audit, no edits | Invoke `impeccable` directly, any time, no GSD command needed — nothing is written to the repo. Strong fit here given the project's non-negotiable accessibility floor (see Constraints above). |
+| Early UI idea / throwaway mockup | `/gsd-sketch` for the disposable HTML sketch, then an `impeccable` critique pass on the sketch before it becomes a real plan. |
+| Formal design contract for a phase | `/gsd-ui-phase` (produces UI-SPEC.md) — hold that spec to `impeccable`'s bar explicitly, given the accessibility constraints. |
+| Retroactive audit of already-built frontend | `/gsd-ui-review` (6-pillar visual audit); optionally layer a direct `impeccable` pass for a second opinion. |
+| Applying actual fixes | Route through `/gsd-quick` (small polish) or `/gsd-execute-phase` (planned work) so edits stay tracked; run `impeccable` first for design judgment on the specific component, then let the GSD command execute and commit. |
 <!-- GSD:conventions-end -->
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
