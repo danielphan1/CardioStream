@@ -28,6 +28,7 @@ import { useAgent } from "../hooks/useAgent";
 import { useVoiceCommand } from "../hooks/useVoiceCommand";
 import { applyAgentFilters, composeConfirmation } from "../lib/agent";
 import { WAKE_WORD } from "../lib/voice";
+import { EXAMPLES } from "../lib/voiceCommands";
 import { useAgentStatus } from "../store/agentStatus";
 import { useFilters } from "../store/filters";
 import { useSpeech } from "../store/speech";
@@ -37,15 +38,6 @@ type CommandBarProps = {
 };
 
 type Status = "idle" | "working" | "confirmed" | "clarify" | "error";
-
-// Real commands the box teaches by example (D-02). Kept short and concrete so
-// the placeholder reads as an invitation, not documentation.
-const EXAMPLES = [
-  "show my pulse",
-  "last 30 days, mornings only",
-  "show blood pressure",
-  "show all data",
-];
 
 // Fixed friendly copy for every client-visible failure (VOICE-07). error.message
 // (which may leak status/stack) is NEVER rendered — only these strings are.
