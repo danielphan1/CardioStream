@@ -108,3 +108,12 @@ All Phase 12 Wave 2+ plans (12-02 through 12-07) can now consume `--color-accent
 ---
 *Phase: 12-visual-refresh*
 *Completed: 2026-08-26*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/index.css
+- FOUND: frontend/src/tests/contrast.test.ts
+- FOUND: .planning/phases/12-visual-refresh/12-01-SUMMARY.md
+- FOUND commit: aea8412 (Task 1)
+- FOUND commit: 0c5ead1 (Task 2)
+- FOUND commit: 10d483f (SUMMARY.md)
