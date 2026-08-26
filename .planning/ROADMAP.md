@@ -228,10 +228,28 @@ Plans:
   1. Every screen (dashboard, upload, guide, forms) reflects a consistent, modernized theme — typography, spacing, and color.
   2. All existing accessibility floors (≥48px targets, ≥18px body text, high contrast, keyboard navigation) are verified intact or improved after the refresh, with no regressions.
 
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+**Wave 1**
+
+- [ ] 12-01-PLAN.md — Token foundation: accent replacement, shadow-elevation, type-scale tokens, contrast test (VISUAL-01, VISUAL-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 12-02-PLAN.md — Dashboard hero surfaces: StatsStrip, ChartTooltip, EmptyState, ReadingsTable depth/type-scale (VISUAL-01, VISUAL-02)
+- [ ] 12-03-PLAN.md — Chart deck + filter/overlay controls: ChartDeck, FilterBar, OverlayToggle, OverlayEventsList depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [ ] 12-04-PLAN.md — App shell: Header, AgentStatusBanner, CommandBar depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [ ] 12-05-PLAN.md — Caregiver admin screens: UploadPage, AddRecordPage, LoginGate depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [ ] 12-06-PLAN.md — GuideOverlay + DateRangePicker depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [ ] 12-07-PLAN.md — Records field-set inputs: SingleDateField, LabFields, IncidentFields, ProcedureFields radius/type-scale (VISUAL-01, VISUAL-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 12-08-PLAN.md — Full regression + cross-screen/cross-theme manual verification checkpoint (VISUAL-01, VISUAL-02)
+
 **UI hint**: yes
 
-> **Research flag:** Unlike Phases 6–11, this phase was not scoped by any of the four v1.1 research files (STACK/FEATURES/ARCHITECTURE/PITFALLS) — it is a genuine research gap. Run a lightweight, targeted research/planning pass before executing this phase, checked specifically against this codebase's existing accessibility-floor conventions (e.g. BPTimeline.tsx's documented "ambient decorative tint, exempt from contrast floors" carve-out) so the refresh doesn't accidentally regress them.
+> **Research flag:** Unlike Phases 6–11, this phase was not scoped by any of the four v1.1 research files (STACK/FEATURES/ARCHITECTURE/PITFALLS) — it is a genuine research gap. A lightweight, targeted research pass (12-RESEARCH.md) plus a UI-SPEC design contract (12-UI-SPEC.md) and pattern map (12-PATTERNS.md) were completed before planning, checked specifically against this codebase's existing accessibility-floor conventions (e.g. BPTimeline.tsx's documented "ambient decorative tint, exempt from contrast floors" carve-out) so the refresh doesn't accidentally regress them.
 
 ### 📋 v2 (Planned)
 
@@ -263,4 +281,4 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 7/7 | Complete    | 2026-08-22 |
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
 | 11. Full Site Guide | v1.1 | 5/5 | Complete    | 2026-08-26 |
-| 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
+| 12. Visual Refresh | v1.1 | 0/8 | Planned | - |
