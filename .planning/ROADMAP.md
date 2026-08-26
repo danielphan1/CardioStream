@@ -200,7 +200,22 @@ Plans:
   3. Opening the guide never interrupts or unmounts an active voice session — Chris can reach and navigate the guide by voice mid-session.
   4. The guide meets the same accessibility bar as the rest of the site (≥48px targets, ≥18px text, high contrast, keyboard + voice navigable).
 
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+**Wave 1**
+
+- [ ] 11-01-PLAN.md — Backend ToggleGuide agent schema, service dispatch, prompt vocabulary (GUIDE-03)
+- [ ] 11-02-PLAN.md — Frontend guide store, wire contract, D-07 auto-close fan-out (GUIDE-03)
+- [ ] 11-03-PLAN.md — Shared voice-command reference module + CommandBar extraction (GUIDE-02)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 11-04-PLAN.md — GuideOverlay component + Header Guide button (GUIDE-01, GUIDE-02, GUIDE-04)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 11-05-PLAN.md — App.tsx wiring + manual verification checkpoint (GUIDE-01, GUIDE-02, GUIDE-03, GUIDE-04)
+
 **UI hint**: yes
 
 ### Phase 12: Visual Refresh
