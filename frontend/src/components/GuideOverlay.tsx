@@ -28,7 +28,30 @@ const SECTIONS = [
 const h2Class = "text-2xl leading-tight font-bold text-[var(--color-ink)]";
 const bodyClass = "text-lg text-[var(--color-ink)]";
 
-export function GuideOverlay() {
+// See the paddingTop comment below for what these mean and why they exist.
+const CLOSE_BAR_HEIGHT = 64;
+const DEFAULT_CLEARANCE_ABOVE = 261;
+// Small breathing-room buffer on top of the exact measured value: the
+// caller's ResizeObserver-based measurement settles a moment after the
+// obstruction's real height changes (e.g. AgentStatusBanner mounting
+// async), so a mid-settle read can be a few px stale — this keeps that
+// briefly-stale state from reading as a touching/overlapping seam.
+const CLEARANCE_BUFFER = 12;
+
+interface GuideOverlayProps {
+  /** Real, measured height (px) of whatever sits above this overlay in the
+   *  document and stays visible while it's open — e.g. Header + the pinned
+   *  CommandBar band on Dashboard, or just Header on Upload/Add Record.
+   *  Passed by the caller (ResizeObserver-measured — see App.tsx) rather
+   *  than guessed here, because that height varies continuously with
+   *  viewport width (the Header and CommandBar both wrap to more rows on
+   *  narrow screens) and can't be captured by a single fixed padding value.
+   *  Falls back to a static estimate only for the (should-be-unreachable)
+   *  case a caller doesn't measure and pass one. */
+  clearanceAbove?: number;
+}
+
+export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
   const open = useGuide((s) => s.open);
   const setOpen = useGuide((s) => s.setOpen);
 
@@ -63,12 +86,35 @@ export function GuideOverlay() {
         </button>
       </div>
 
-      {/* pt-24 (96px) is a pragmatic estimate of the pinned CommandBar band's
-          rendered height (py-4 wrapping a min-h-12 row ≈ 80px, plus buffer).
-          Plan 11-05's manual verification checkpoint re-checks this value
-          against the band's real height (including taller voice-state
-          sub-lines) once the overlay is actually mounted under it. */}
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pt-24 pb-16 md:px-8 xl:px-16">
+      {/* paddingTop clears whatever sits above this overlay and stays
+          visible while it's open (Header + the pinned CommandBar band on
+          Dashboard, or just Header on Upload/Add Record) — Plan 11-05's
+          manual verification checkpoint found that a fixed Tailwind
+          padding class can't do this correctly: the CommandBar section
+          can't actually reach `sticky` top:0 while the guide is open,
+          because this overlay is `fixed inset-0` and captures scroll — so
+          the outer page's scroll position never advances past 0, leaving
+          CommandBar pinned at its natural in-flow position *below* the
+          (now-hidden) site header, not at the very top. Worse, that
+          combined header+CommandBar height varies continuously with
+          viewport width (both wrap to more rows on narrow screens), so
+          any single fixed px guess is wrong at some width. `clearanceAbove`
+          is the caller's real ResizeObserver measurement of that height;
+          CLOSE_BAR_HEIGHT (64px = py-2 + the close button's min-h-12,
+          both fixed regardless of viewport) is what the sticky Close-bar
+          above already covers via normal flow, so only the remainder needs
+          padding. DEFAULT_CLEARANCE_ABOVE is a desktop-shaped fallback for
+          the (should-be-unreachable) case a caller doesn't measure and
+          pass one. CLEARANCE_BUFFER covers the brief settle-lag window. */}
+      <div
+        className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pb-16 md:px-8 xl:px-16"
+        style={{
+          paddingTop: Math.max(
+            0,
+            (clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE) - CLOSE_BAR_HEIGHT + CLEARANCE_BUFFER,
+          ),
+        }}
+      >
         <h1 className="text-[32px] font-bold leading-tight text-[var(--color-ink)]">
           Site Guide
         </h1>

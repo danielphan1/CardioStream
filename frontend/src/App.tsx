@@ -8,8 +8,8 @@
 // Error presentation is centralized here (T-02-11): only the UI-SPEC copy
 // renders — never raw error messages, status codes, or stack traces
 // (ApiError details stay in the console at most).
-import { useMemo } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode, RefObject } from "react";
 
 import { AddRecordPage } from "./components/AddRecordPage";
 import { AgentStatusBanner } from "./components/AgentStatusBanner";
@@ -42,6 +42,33 @@ import { useFilters } from "./store/filters";
 import { useGuide } from "./store/guide";
 import { useView } from "./store/view";
 
+/** Sums the live rendered height of one or two elements and keeps it in
+ *  sync via ResizeObserver — gives GuideOverlay an exact `clearanceAbove`
+ *  instead of a guessed fixed padding (see its paddingTop comment for why
+ *  a fixed value can't work: Header/CommandBar wrap to more rows, and grow
+ *  taller, on narrower viewports). `primaryRef`/`secondaryRef` come from
+ *  `useRef` so they're referentially stable — the effect attaches its
+ *  observer once and never needs to re-run. */
+function useClearanceHeight(
+  primaryRef: RefObject<HTMLElement | null>,
+  secondaryRef?: RefObject<HTMLElement | null>,
+): number {
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const elements = [primaryRef.current, secondaryRef?.current].filter(
+      (el): el is HTMLElement => el != null,
+    );
+    if (elements.length === 0) return;
+    const recompute = () =>
+      setHeight(elements.reduce((sum, el) => sum + el.getBoundingClientRect().height, 0));
+    recompute();
+    const observer = new ResizeObserver(recompute);
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [primaryRef, secondaryRef]);
+  return height;
+}
+
 /** Skeleton hero + mini placeholders for the initial load only — after
  *  first load keepPreviousData keeps charts on screen (no spinner). */
 function ChartSkeleton() {
@@ -64,6 +91,9 @@ function ChartSkeleton() {
 function Dashboard() {
   const resolved = useResolvedFilters();
   const guideOpen = useGuide((s) => s.open);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const commandBarRef = useRef<HTMLElement>(null);
+  const guideClearance = useClearanceHeight(headerRef, commandBarRef);
   const readings = useReadings(resolved);
   const stats = useStats(resolved);
 
@@ -165,12 +195,22 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <Header />
+      {/* inert (GUIDE-03/04 keyboard fix): while the guide's opaque overlay
+          covers the header, it's still in normal document flow underneath —
+          without `inert`, Tab would walk into its invisible, unusable
+          controls before ever reaching CommandBar. `inert` removes it from
+          the tab sequence and screen-reader tree until the guide closes,
+          matching what's actually visible on screen. CommandBar and
+          GuideOverlay itself are deliberately left interactive (GUIDE-03). */}
+      <div inert={guideOpen} ref={headerRef}>
+        <Header />
+      </div>
       {/* Command bar (D-01) — full-width sky band under the header, top billing
           for the primary control. Inner div matches main's content-column
           gutters so the input aligns with the dashboard below. Phase 4 mounts
           the mic button into this same bar. */}
       <section
+        ref={commandBarRef}
         className={`bg-[var(--color-sky)]${guideOpen ? " sticky top-0 z-[60]" : ""}`}
       >
         <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
@@ -178,10 +218,14 @@ function Dashboard() {
           <AgentStatusBanner />
         </div>
       </section>
-      <GuideOverlay />
+      <GuideOverlay clearanceAbove={guideClearance} />
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); 32px vertical
-          rhythm between sections; single column (UI-SPEC responsive). */}
-      <main className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 py-8 md:px-8 xl:px-16">
+          rhythm between sections; single column (UI-SPEC responsive).
+          inert while the guide is open — see Header's comment above. */}
+      <main
+        inert={guideOpen}
+        className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 py-8 md:px-8 xl:px-16"
+      >
         <FilterBar latestReading={latestReading} />
         <OverlayToggle />
         <StatsStrip stats={stats.data} isLoading={stats.isPending} />
@@ -214,11 +258,20 @@ function Dashboard() {
  *  both views; UploadPage mounts no data hooks so switching here fires no fetch.
  *  Foam background matches the dashboard's min-h-screen wrapper. */
 function UploadView() {
+  const guideOpen = useGuide((s) => s.open);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const guideClearance = useClearanceHeight(headerRef);
   return (
     <div className="min-h-screen bg-[var(--color-foam)]">
-      <Header />
-      <GuideOverlay />
-      <UploadPage />
+      {/* inert while the guide overlay covers this view — see Dashboard's
+          Header comment for why (GUIDE-03/04 keyboard fix). */}
+      <div inert={guideOpen} ref={headerRef}>
+        <Header />
+      </div>
+      <GuideOverlay clearanceAbove={guideClearance} />
+      <div inert={guideOpen}>
+        <UploadPage />
+      </div>
     </div>
   );
 }
@@ -227,11 +280,20 @@ function UploadView() {
  *  UploadView — Header persists, AddRecordPage mounts no read-data hooks so
  *  switching here fires no fetch (only its own POST mutations on submit). */
 function RecordsView() {
+  const guideOpen = useGuide((s) => s.open);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const guideClearance = useClearanceHeight(headerRef);
   return (
     <div className="min-h-screen bg-[var(--color-foam)]">
-      <Header />
-      <GuideOverlay />
-      <AddRecordPage />
+      {/* inert while the guide overlay covers this view — see Dashboard's
+          Header comment for why (GUIDE-03/04 keyboard fix). */}
+      <div inert={guideOpen} ref={headerRef}>
+        <Header />
+      </div>
+      <GuideOverlay clearanceAbove={guideClearance} />
+      <div inert={guideOpen}>
+        <AddRecordPage />
+      </div>
     </div>
   );
 }
