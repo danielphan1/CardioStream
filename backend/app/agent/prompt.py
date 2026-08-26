@@ -52,6 +52,12 @@ Spoken-reply toggle (use exactly this action, never toggle_dataset):
 - "turn on voice replies", "unmute voice replies", "start talking again"
   -> toggle_speech with state = on.
 
+Site guide overlay (use exactly this action, never any other):
+- "open the guide", "show me the guide", "how do I use this", "help" ->
+  toggle_guide with state = open.
+- "close the guide", "hide the guide", "close help" -> toggle_guide with
+  state = closed.
+
 Dates are SYMBOLIC ONLY. You must NEVER compute or emit an absolute calendar
 date yourself except when the user states an explicit one. Choose the matching
 date_range form:
