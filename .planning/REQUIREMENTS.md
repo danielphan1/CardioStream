@@ -34,7 +34,7 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 ### Full Site Guide (GUIDE)
 
 - [ ] **GUIDE-01**: A static, always-available guide tab explains every control, filter, chart, and upload flow on the site — for both Chris and caregivers
-- [x] **GUIDE-02**: Guide includes a "what can I say" voice-command reference list, reusing the existing centralized command-copy source rather than a second, divergent list
+- [ ] **GUIDE-02**: Guide includes a "what can I say" voice-command reference list, reusing the existing centralized command-copy source rather than a second, divergent list
 - [ ] **GUIDE-03**: Guide is reachable and usable without unmounting the live voice session (rendered inside the dashboard's component tree, not as a view-swap that would kill the recognizer)
 - [ ] **GUIDE-04**: Guide meets the same accessibility bar as the rest of the site (≥48px targets, ≥18px text, high contrast, keyboard + voice navigable)
 
@@ -97,7 +97,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | TTS-04 | Phase 10: Spoken Replies (TTS) | Complete |
 | TTS-05 | Phase 10: Spoken Replies (TTS) | Complete |
 | GUIDE-01 | Phase 11: Full Site Guide / Instructions Tab | Pending |
-| GUIDE-02 | Phase 11: Full Site Guide / Instructions Tab | Complete |
+| GUIDE-02 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | GUIDE-03 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | GUIDE-04 | Phase 11: Full Site Guide / Instructions Tab | Pending |
 | VISUAL-01 | Phase 12: Visual Refresh | Pending |

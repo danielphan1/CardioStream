@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { useFilters } from "../store/filters";
+import { useGuide } from "../store/guide";
 import { useSpeech } from "../store/speech";
 import {
   applyAgentFilters,
@@ -26,6 +27,7 @@ beforeEach(() => {
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
   useSpeech.setState({ enabled: true, isSpeaking: false, primed: false });
+  useGuide.setState({ open: false });
 });
 
 type ConfState = {
@@ -141,6 +143,37 @@ describe("applyAgentFilters", () => {
 
     expect(useSpeech.getState().enabled).toBe(false);
     expect(fields).toEqual([]);
+  });
+
+  it("guideOpen reaches useGuide.setOpen without touching the pulse", () => {
+    const fields = applyAgentFilters({ guideOpen: "open" });
+
+    expect(useGuide.getState().open).toBe(true);
+    expect(fields).toEqual([]);
+  });
+
+  it("an unrelated command auto-closes an already-open guide (D-07)", () => {
+    useGuide.setState({ open: true });
+
+    applyAgentFilters({ activeChart: "pulse_trend" });
+
+    expect(useGuide.getState().open).toBe(false);
+  });
+
+  it("a guideOpen-only delta does not spuriously re-trigger the auto-close path", () => {
+    useGuide.setState({ open: true });
+
+    applyAgentFilters({ guideOpen: "closed" });
+
+    expect(useGuide.getState().open).toBe(false);
+  });
+
+  it("reset also auto-closes an already-open guide", () => {
+    useGuide.setState({ open: true });
+
+    applyAgentFilters({ reset: true });
+
+    expect(useGuide.getState().open).toBe(false);
   });
 });
 

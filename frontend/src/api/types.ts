@@ -165,6 +165,7 @@ export type AppliedFilters = {
   overlayDataset?: OverlayDataset | null;
   overlayState?: "on" | "off" | null;
   speechEnabled?: "on" | "off" | null;
+  guideOpen?: "open" | "closed" | null;
   reset?: boolean;
 };
 
