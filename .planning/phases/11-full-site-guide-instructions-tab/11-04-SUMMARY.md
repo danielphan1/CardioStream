@@ -127,3 +127,13 @@ None - no external service configuration required.
 ---
 *Phase: 11-full-site-guide-instructions-tab*
 *Completed: 2026-08-26*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/GuideOverlay.tsx
+- FOUND: frontend/src/components/GuideOverlay.test.tsx
+- FOUND: .planning/phases/11-full-site-guide-instructions-tab/11-04-SUMMARY.md
+- FOUND commit: 72f62d2 (test: RED)
+- FOUND commit: 6cd8272 (feat: GREEN)
+- FOUND commit: dbb8f51 (feat: Header Guide button)
+- FOUND commit: 26e3fe1 (docs: SUMMARY.md)
