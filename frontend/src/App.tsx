@@ -17,6 +17,7 @@ import { ChartDeck } from "./components/ChartDeck";
 import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
+import { GuideOverlay } from "./components/GuideOverlay";
 import { Header } from "./components/Header";
 import { LoginGate } from "./components/LoginGate";
 import { OverlayEventsList } from "./components/OverlayEventsList";
@@ -38,6 +39,7 @@ import {
 } from "./lib/overlayEvents";
 import { useAuth } from "./store/auth";
 import { useFilters } from "./store/filters";
+import { useGuide } from "./store/guide";
 import { useView } from "./store/view";
 
 /** Skeleton hero + mini placeholders for the initial load only — after
@@ -61,6 +63,7 @@ function ChartSkeleton() {
  *  before authentication (D-01, T-05-10). */
 function Dashboard() {
   const resolved = useResolvedFilters();
+  const guideOpen = useGuide((s) => s.open);
   const readings = useReadings(resolved);
   const stats = useStats(resolved);
 
@@ -167,12 +170,15 @@ function Dashboard() {
           for the primary control. Inner div matches main's content-column
           gutters so the input aligns with the dashboard below. Phase 4 mounts
           the mic button into this same bar. */}
-      <section className="bg-[var(--color-sky)]">
+      <section
+        className={`bg-[var(--color-sky)]${guideOpen ? " sticky top-0 z-[60]" : ""}`}
+      >
         <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
           <CommandBar latestReading={latestReading} />
           <AgentStatusBanner />
         </div>
       </section>
+      <GuideOverlay />
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); 32px vertical
           rhythm between sections; single column (UI-SPEC responsive). */}
       <main className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 py-8 md:px-8 xl:px-16">
@@ -211,6 +217,7 @@ function UploadView() {
   return (
     <div className="min-h-screen bg-[var(--color-foam)]">
       <Header />
+      <GuideOverlay />
       <UploadPage />
     </div>
   );
@@ -223,6 +230,7 @@ function RecordsView() {
   return (
     <div className="min-h-screen bg-[var(--color-foam)]">
       <Header />
+      <GuideOverlay />
       <AddRecordPage />
     </div>
   );
