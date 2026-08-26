@@ -329,22 +329,25 @@ describe("light theme — accent contrast floors", () => {
 | A2 | Draft accent hex values (`#A3402A` light / `#D9633F` dark) are good final choices | Common Pitfalls (Pitfall 1), Code Examples | Medium — the WCAG contrast math behind them is sound (computed by hand against the documented W3C formula), but the specific hue/saturation/lightness was chosen by this researcher, not validated against a live rendered swatch comparison or with the user. CONTEXT.md explicitly delegates "exact hue" to planning/execution, so these are offered as a starting point that already clears the contrast bar and avoids the worst of the Pitfall-1 collision, not as a locked decision. |
 | A3 | Atkinson Hyperlegible's fontsource package ships enough weight variants to support D-06's "weight refinement within the single font" | Standard Stack (Core table) | Low-Medium — if `@fontsource/atkinson-hyperlegible` 5.2.8 only ships regular + bold (not e.g. a semi-bold 600), any type-scale refinement plan that wants an intermediate weight step would need to fall back to browser-synthesized bold (undesirable) or stay at existing weight steps. Not verified in this research session — quick to check via `ls frontend/node_modules/@fontsource/atkinson-hyperlegible/files` at plan time. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should this phase run `/gsd-ui-phase 12` (UI-SPEC.md design contract) and/or an `impeccable` critique pass before `/gsd-plan-phase` proceeds?**
    - What we know: CLAUDE.md's "impeccable + GSD pairing" convention table names exactly this situation ("Formal design contract for a phase" → `/gsd-ui-phase`) as the fit given ROADMAP.md's "UI hint: yes" for Phase 12.
    - What's unclear: Whether the operator wants that extra formal-spec step for what CONTEXT.md frames as a bounded, mostly-mechanical token evolution (not a from-scratch design), or whether this RESEARCH.md's candidate values + pitfalls are sufficient grounding to go straight to `/gsd-plan-phase`.
    - Recommendation: CONTEXT.md explicitly defers this to the operator ("not re-litigated here... the operator picks the next command") — surfacing it here per the phase brief's instruction, not resolving it.
+   - **Resolved:** Yes — /gsd-ui-phase 12 ran, producing 12-UI-SPEC.md (the locked design contract this phase's plans build from).
 
 2. **Does the final accent hue need a live rendered side-by-side comparison against the `--cat-*`/`--overlay-*` swatches, beyond the hex/HSL math in this document?**
    - What we know: The math-based collision check (Pitfall 1) is a reliable first filter, and this research already ran it against two draft candidates, rejecting the first pair and refining to a second.
    - What's unclear: Whether hex/HSL proximity alone is a sufficient proxy for "will a real user visually confuse these," or whether an actual rendered-in-browser comparison (e.g., a throwaway HTML swatch page, or the `/gsd-sketch` disposable-mockup path CLAUDE.md describes) is warranted before locking, given Chris is a low-vision-adjacent user per PROJECT.md.
    - Recommendation: Include a lightweight visual swatch-comparison step (even a simple static HTML page with all ~11 color tokens rendered as swatches side by side, in both themes) as a plan task before the accent is locked into `index.css` — cheap insurance given how close the math-based near-miss was.
+   - **Resolved:** 12-UI-SPEC.md's Color section locks the final accent hex pair (light #B94927 / dark #DA6F4E) without a separate rendered swatch page — the hex/HSL collision math in this document plus 12-01-PLAN.md's contrast.test.ts (WCAG AA verification against --cat-*/--overlay-* neighbors) was judged sufficient; no swatch-page task was added.
 
 3. **Does react-day-picker v9 expose `--rdp-*` custom properties for corner-radius/shadow that this app should bridge for D-05 consistency?**
    - What we know: The library's documented pattern (already used here for `--rdp-accent-color`/`--rdp-day-width`) is CSS custom properties, and v9's stylesheet almost certainly has *some* radius-related variable given its day-cell/button chrome.
    - What's unclear: The exact variable name(s) and whether bridging them is worth the extra surface area versus leaving the calendar's internal chrome as an intentionally distinct "third-party widget" visual, which is a defensible and common pattern.
    - Recommendation: Not researched further given low priority relative to VISUAL-01/02's core ask (which names "cards/panels/chart containers/filter bar," not third-party widget internals) — flag for a 5-minute check-in at plan time, not a blocking unknown.
+   - **Resolved:** 12-UI-SPEC.md's "Elevation & Surface Treatment" section (Third-party widget scope) decided: leave react-day-picker's internal day-cell/month-nav chrome as-is this phase — only its accent color updates automatically via the existing --rdp-accent-color bridge; no new --rdp-* radius/shadow bridges were added.
 
 ## Environment Availability
 
