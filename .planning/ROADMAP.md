@@ -36,7 +36,7 @@ Full phase goals, dependencies, and plan lists archived in
 - [x] **Phase 8: Manual-Entry Forms** - Accessible forms so caregivers can populate labs/incidents/procedures (completed 2026-08-21)
 - [x] **Phase 9: Multi-Dataset Overlay & Filtering** - Toggle and overlay any combination of BP/pulse/labs/incidents/procedures, by voice or click (gaps found 2026-08-22 — see 09-VERIFICATION.md) (completed 2026-08-22)
 - [x] **Phase 10: Spoken Replies (TTS)** - Dashboard speaks its confirmations aloud, closing the hands-free loop (completed 2026-08-25)
-- [ ] **Phase 11: Full Site Guide** - Accessible, voice-navigable walkthrough of every control, chart, and flow
+- [x] **Phase 11: Full Site Guide** - Accessible, voice-navigable walkthrough of every control, chart, and flow (completed 2026-08-26)
 - [ ] **Phase 12: Visual Refresh** - Modernized theme/typography/spacing/color, accessibility preserved
 
 ## Phase Details
@@ -214,7 +214,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 11-05-PLAN.md — App.tsx wiring + manual verification checkpoint (GUIDE-01, GUIDE-02, GUIDE-03, GUIDE-04)
+- [x] 11-05-PLAN.md — App.tsx wiring + manual verification checkpoint (GUIDE-01, GUIDE-02, GUIDE-03, GUIDE-04)
 
 **UI hint**: yes
 
@@ -262,5 +262,5 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 8. Manual-Entry Forms | v1.1 | 3/3 | Complete    | 2026-08-21 |
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 7/7 | Complete    | 2026-08-22 |
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
-| 11. Full Site Guide | v1.1 | 4/5 | In Progress|  |
+| 11. Full Site Guide | v1.1 | 5/5 | Complete   | 2026-08-26 |
 | 12. Visual Refresh | v1.1 | 0/TBD | Not started | - |
