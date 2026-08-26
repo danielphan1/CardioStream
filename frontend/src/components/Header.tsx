@@ -208,14 +208,26 @@ export function Header() {
               toggles above (icon + text, aria-pressed, >=48px, bordered sky
               surface, never accent-filled). Label stays "Guide" in both
               states — the dedicated Close (X) control inside the overlay
-              already owns that verb (11-UI-SPEC.md Copywriting Contract). */}
+              already owns that verb (11-UI-SPEC.md Copywriting Contract).
+              id is a stable focus-restoration target for GuideOverlay
+              (code review WR-03): App.tsx makes this button `inert` (and
+              browser-blurs it) the instant a click sets guideOpen=true, in
+              the same commit — by the time any effect could run,
+              document.activeElement is already <body>, not this button, so
+              GuideOverlay can't capture "what was focused before" reliably.
+              Restoring to this fixed id on close is the robust alternative:
+              it's always the semantically correct destination (the control
+              that reopens the guide), not a byproduct of a timing race. */}
           <button
+            id="guide-toggle-button"
             type="button"
             onClick={toggleGuide}
             aria-pressed={guideOpen}
             className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
           >
-            <BookOpen aria-hidden="true" size={24} />Guide</button>
+            <BookOpen aria-hidden="true" size={24} />
+            Guide
+          </button>
 
           {/* View toggle (D-06, widened to three states by Phase 8 D-01):
               "Upload" + "Add Record" show together on the dashboard; either

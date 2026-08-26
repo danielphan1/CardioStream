@@ -7,7 +7,8 @@
 // live mic session it drives) must stay fully reachable — including by Tab —
 // while the guide is open (D-03/D-04). Mount point (raising the CommandBar
 // band above this overlay's z-layer) is deferred to Plan 11-05.
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import type { CSSProperties } from "react";
 import { X } from "lucide-react";
 
 import { SIMILAR_PHRASINGS_NOTE, VOICE_COMMAND_CATEGORIES } from "../lib/voiceCommands";
@@ -54,6 +55,7 @@ interface GuideOverlayProps {
 export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
   const open = useGuide((s) => s.open);
   const setOpen = useGuide((s) => s.setOpen);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // Escape-to-close (mirrors LogoutConfirmDialog's Escape branch), but as a
   // window-level listener — there is no local onKeyDown-bearing dialog
@@ -67,7 +69,48 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, setOpen]);
 
+  // Focus management (code review CR-01/WR-03). CR-01: App.tsx makes Header
+  // (and the "Guide" button inside it) `inert` the instant `open` flips
+  // true, in the SAME commit — the browser synchronously blurs that
+  // just-activated button as part of applying `inert`, with nowhere to
+  // land, dropping keyboard/screen-reader focus to `<body>` with no
+  // announcement. That blur is synchronous DOM-mutation behavior, applied
+  // before React runs ANY effect (layout or passive) for this commit —
+  // verified empirically (Claude-in-Chrome), so capturing
+  // `document.activeElement` inside an effect here (the naive fix) always
+  // sees `<body>` already, never the original button. Moving focus
+  // deliberately onto Close fixes this regardless of that race.
+  // WR-03: for the same reason, restoring "whatever was focused before"
+  // isn't reliably capturable — instead restore to the Guide button by its
+  // stable id (Header.tsx), which is also the semantically correct
+  // destination (the control that reopens the guide), mirroring
+  // LogoutConfirmDialog's existing restore-to-trigger pattern in spirit.
+  useEffect(() => {
+    if (open) {
+      closeButtonRef.current?.focus();
+    } else {
+      document.getElementById("guide-toggle-button")?.focus();
+    }
+  }, [open]);
+
   if (!open) return null;
+
+  const sectionScrollStyle: CSSProperties = {
+    // Every jump-target section needs the SAME clearance as the initial
+    // paddingTop below (WR-02): scrollIntoView aligns a target's top edge
+    // to this scroll container's own top (y=0), which is permanently
+    // covered by the sticky Close bar *and*, on Dashboard, by the
+    // screen-fixed CommandBar band above it (see the paddingTop comment) —
+    // that obstruction is present at ANY scroll position, not just the
+    // initial one, so this uses the full clearanceAbove (not minus
+    // CLOSE_BAR_HEIGHT — unlike paddingTop, this isn't stacked after the
+    // Close bar's own normal-flow space; scrollIntoView positions directly
+    // against the container's y=0).
+    scrollMarginTop: Math.max(
+      0,
+      (clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE) + CLEARANCE_BUFFER,
+    ),
+  };
 
   return (
     <div
@@ -77,6 +120,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
     >
       <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-foam)] px-4 py-2 md:px-8">
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={() => setOpen(false)}
           className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-[20px] font-bold text-[var(--color-ink)]"
@@ -137,7 +181,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </ul>
         </nav>
 
-        <section id="command-bar">
+        <section id="command-bar" style={sectionScrollStyle}>
           <h2 className={h2Class}>Command Bar</h2>
           <p className={bodyClass}>
             The Command Bar is the box at the top of the dashboard for typing
@@ -154,7 +198,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="filters">
+        <section id="filters" style={sectionScrollStyle}>
           <h2 className={h2Class}>Filters</h2>
           <p className={bodyClass}>
             Filters narrow down which readings are shown — by date range, by
@@ -170,7 +214,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="charts">
+        <section id="charts" style={sectionScrollStyle}>
           <h2 className={h2Class}>Charts</h2>
           <p className={bodyClass}>
             Four charts are available: Blood Pressure Timeline, Pulse Trend,
@@ -187,7 +231,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="overlay">
+        <section id="overlay" style={sectionScrollStyle}>
           <h2 className={h2Class}>Overlay</h2>
           <p className={bodyClass}>
             The overlay buttons let you show labs, incidents, and procedures
@@ -204,7 +248,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="voice-replies">
+        <section id="voice-replies" style={sectionScrollStyle}>
           <h2 className={h2Class}>Voice Replies</h2>
           <p className={bodyClass}>
             When Voice Replies is on, the dashboard speaks a short
@@ -221,7 +265,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="upload">
+        <section id="upload" style={sectionScrollStyle}>
           <h2 className={h2Class}>Upload</h2>
           <p className={bodyClass}>
             The Upload page lets a caregiver add new blood pressure readings
@@ -233,7 +277,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="add-a-record">
+        <section id="add-a-record" style={sectionScrollStyle}>
           <h2 className={h2Class}>Add a Record</h2>
           <p className={bodyClass}>
             The Add Record page has separate forms for logging a lab result,
@@ -247,7 +291,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           </p>
         </section>
 
-        <section id="what-can-i-say">
+        <section id="what-can-i-say" style={sectionScrollStyle}>
           <h2 className={h2Class}>What Can I Say</h2>
           {VOICE_COMMAND_CATEGORIES.map((c) => (
             <div key={c.id}>
@@ -262,7 +306,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           ))}
         </section>
 
-        <section id="about-this-guide">
+        <section id="about-this-guide" style={sectionScrollStyle}>
           <h2 className={h2Class}>About This Guide</h2>
           <p className={bodyClass}>
             You can reopen this guide any time by clicking the "Guide" button
