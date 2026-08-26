@@ -107,3 +107,7 @@ None - no external service configuration required.
 ---
 *Phase: 11-full-site-guide-instructions-tab*
 *Completed: 2026-08-26*
+
+## Self-Check: PASSED
+
+All claimed files verified present on disk (guide.ts, guide.test.ts, SUMMARY.md) and all 5 commit hashes (f8bb185, 76e2af5, cde8eaa, 2d31b75, c3f9e47) verified present in git log.
