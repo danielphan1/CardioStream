@@ -11,6 +11,7 @@ import type { AppliedFilters, BPCategory, ChartId } from "../api/types";
 import type { DatePreset } from "./dates";
 import { parseDateOnly, presetLabel } from "./dates";
 import { useFilters } from "../store/filters";
+import { useGuide } from "../store/guide";
 import { useSpeech } from "../store/speech";
 
 // The five filter groups FilterBar (plan 03-04) highlights on a D-08 pulse.
@@ -44,6 +45,27 @@ export const useAgentPulse = create<{
 export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   const s = useFilters.getState();
   const touched = new Set<PulseField>();
+
+  // D-07: if Chris issues any OTHER dashboard command while the guide is
+  // open, the command applies normally AND the guide auto-closes, so Chris
+  // sees the result immediately without a separate close command. Explicitly
+  // enumerated (never derived from Object.keys(f)) because FastAPI's
+  // response_model serializes every AppliedFilters key — most `null` — so a
+  // presence check via Object.keys would always be true and break this
+  // logic (T-11-06). A guideOpen-only delta must NOT trip this check; the
+  // explicit guideOpen branch below governs that case on its own.
+  const hasOtherCommand =
+    f.reset === true ||
+    f.activeChart != null ||
+    f.datePreset != null ||
+    (f.customRange?.from != null && f.customRange?.to != null) ||
+    f.amPm != null ||
+    f.bpCategory != null ||
+    (f.overlayDataset != null && f.overlayState != null) ||
+    f.speechEnabled != null;
+  if (hasOtherCommand && useGuide.getState().open) {
+    useGuide.getState().setOpen(false);
+  }
 
   if (f.reset) {
     s.showAllData(); // datePreset/customRange/amPm/bpCategory/overlayDatasets → defaults
@@ -85,6 +107,10 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
     useSpeech.getState().setEnabled(f.speechEnabled === "on");
     // No touched.add(...) — Voice Replies is not one of FilterBar's five
     // highlighted PulseField groups (RESEARCH: no PulseField exists for it).
+  }
+  if (f.guideOpen != null) {
+    useGuide.getState().setOpen(f.guideOpen === "open");
+    // No touched.add(...) — the guide isn't a FilterBar pulse group either.
   }
 
   const fields = [...touched];
