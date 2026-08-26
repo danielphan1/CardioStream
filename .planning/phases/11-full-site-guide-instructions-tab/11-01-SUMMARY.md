@@ -108,3 +108,11 @@ None - no external service configuration required.
 ---
 *Phase: 11-full-site-guide-instructions-tab*
 *Completed: 2026-08-26*
+
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/11-full-site-guide-instructions-tab/11-01-SUMMARY.md`
+- FOUND: commit `d42bb7b` (Task 1)
+- FOUND: commit `76c2fe5` (Task 2)
+- FOUND: commit `27a5aab` (Task 3)
+- FOUND: commit `d10b22b` (docs: SUMMARY.md)
