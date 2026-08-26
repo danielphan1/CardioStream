@@ -114,3 +114,13 @@ None - no external service configuration required.
 ---
 *Phase: 11-full-site-guide-instructions-tab*
 *Completed: 2026-08-26*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/lib/voiceCommands.ts
+- FOUND: frontend/src/lib/voiceCommands.test.ts
+- FOUND: .planning/phases/11-full-site-guide-instructions-tab/11-03-SUMMARY.md
+- FOUND: c79ee45 (test commit)
+- FOUND: bd3ffe1 (feat commit)
+- FOUND: 8d02489 (refactor commit)
+- FOUND: 018ee0c (docs commit)
