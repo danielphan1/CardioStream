@@ -16,6 +16,19 @@
   --text-base: 1.125rem;
   --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI",
     sans-serif;
+
+  /* Named type-scale tokens (D-06) — same rendered sizes already in use
+     today (20px control labels, 24px section headings, 32px display text),
+     formalized as @theme tokens rather than ad-hoc pixel literals. */
+  --text-control: 1.25rem;
+  --text-control--font-weight: 700;
+  --text-control--line-height: 1.25;
+  --text-h2: 1.5rem;
+  --text-h2--font-weight: 700;
+  --text-h2--line-height: 1.25;
+  --text-h1: 2rem;
+  --text-h1--font-weight: 700;
+  --text-h1--line-height: 1.25;
 }
 
 :root {
@@ -23,9 +36,10 @@
   --color-foam: #F2F7F5; /* page background */
   --color-sky: #E2EDF2; /* cards, filter bar surface */
   --color-ink: #14213D; /* ALL text, icons, borders (D-13) */
-  --color-accent: #14213D; /* reserved fills only (UI-SPEC accent list) */
+  --color-accent: #B94927; /* terracotta — replaces navy, D-03 */
   --color-accent-text: #FFFFFF;
   --color-focus: #1D4E89; /* 3px focus-visible ring */
+  --shadow-elevation: 0 4px 10px -2px rgba(20, 33, 61, 0.12), 0 2px 4px -2px rgba(20, 33, 61, 0.08);
 
   /* Chart series */
   --line-systolic: #1D3557;
@@ -55,9 +69,10 @@
   --color-foam: #0B1626;
   --color-sky: #13233A;
   --color-ink: #E8F1EF;
-  --color-accent: #8FC1D4;
+  --color-accent: #DA6F4E;
   --color-accent-text: #0B1626;
   --color-focus: #8FC1D4;
+  --shadow-elevation: 0 4px 10px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 241, 239, 0.06);
 
   --line-systolic: #A8CBEA;
   --line-diastolic: #6FC7C4;
