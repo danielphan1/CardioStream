@@ -149,6 +149,15 @@ class ToggleSpeech(BaseModel):
     state: Literal["on", "off"]
 
 
+class ToggleGuide(BaseModel):
+    """Site guide overlay open/close (D-05), mirrors ToggleSpeech exactly except
+    the vocabulary is open/closed (matching the overlay's own visibility
+    semantics), not on/off: single-valued (never a flip/toggle)."""
+
+    action: Literal["toggle_guide"]
+    state: Literal["open", "closed"]
+
+
 class AgentOutput(BaseModel):
     """The closed union Claude fills via structured outputs (API-04)."""
 
@@ -160,6 +169,7 @@ class AgentOutput(BaseModel):
         | Unintelligible
         | ToggleDataset
         | ToggleSpeech
+        | ToggleGuide
     )
 
     @field_validator("result", mode="before")
@@ -226,6 +236,7 @@ class AppliedFilters(BaseModel):
     overlayDataset: DatasetToken | None = None
     overlayState: Literal["on", "off"] | None = None
     speechEnabled: Literal["on", "off"] | None = None
+    guideOpen: Literal["open", "closed"] | None = None
     reset: bool = False
 
 

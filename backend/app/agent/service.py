@@ -40,6 +40,7 @@ from app.agent.copy import (
     UNCLEAR_MESSAGE,
     medical_refusal,
     toggle_dataset_message,
+    toggle_guide_message,
     toggle_speech_message,
 )
 from app.agent.prompt import SYSTEM_PROMPT, build_messages
@@ -57,6 +58,7 @@ from app.agent.schemas import (
     DataQuestion,
     MedicalRefusal,
     ToggleDataset,
+    ToggleGuide,
     ToggleSpeech,
     Unintelligible,
 )
@@ -243,6 +245,20 @@ def _apply_toggle_speech(cmd: ToggleSpeech) -> AgentReply:
     )
 
 
+def _apply_toggle_guide(cmd: ToggleGuide) -> AgentReply:
+    """Map a ``ToggleGuide`` result to an ``applied`` reply (D-05)."""
+    filters = AppliedFilters(guideOpen=cmd.state)
+    # WR-06: same rationale as _apply_toggle_speech above — composeConfirmation()
+    # has no guideOpen awareness, so this is the only place the open/close
+    # action itself gets confirmed.
+    return AgentReply(
+        kind="applied",
+        filters=filters,
+        message=toggle_guide_message(cmd.state),
+        context=None,
+    )
+
+
 def interpret(
     text: str,
     context: ClarifyContext | None,
@@ -276,6 +292,9 @@ def interpret(
 
         if isinstance(result, ToggleSpeech):
             return _apply_toggle_speech(result)
+
+        if isinstance(result, ToggleGuide):
+            return _apply_toggle_guide(result)
 
         if isinstance(result, DataQuestion):
             filters = AppliedFilters(activeChart=result.chart) if result.chart else AppliedFilters()

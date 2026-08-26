@@ -30,6 +30,7 @@ from app.agent.schemas import (
     DataQuestion,
     MedicalRefusal,
     ToggleDataset,
+    ToggleGuide,
     ToggleSpeech,
     Unintelligible,
 )
@@ -95,6 +96,14 @@ def test_toggle_speech_variant_parses():
     assert out.result.state == "on"
 
 
+def test_toggle_guide_variant_parses():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "toggle_guide", "state": "open"}}
+    )
+    assert isinstance(out.result, ToggleGuide)
+    assert out.result.state == "open"
+
+
 def test_command_with_nested_date_ranges_parse():
     for dr in (
         {"kind": "preset", "preset": "30d"},
@@ -146,6 +155,14 @@ def test_toggle_speech_case_drift_normalizes():
     )
     assert isinstance(out.result, ToggleSpeech)
     assert out.result.state == "off"
+
+
+def test_toggle_guide_case_drift_normalizes():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "Toggle_Guide", "state": "CLOSED"}}
+    )
+    assert isinstance(out.result, ToggleGuide)
+    assert out.result.state == "closed"
 
 
 def test_nested_date_range_case_drift_normalizes():
@@ -274,6 +291,10 @@ def test_system_prompt_enumerates_overlay_dataset_tokens():
 
 def test_system_prompt_enumerates_toggle_speech_token():
     assert "toggle_speech" in SYSTEM_PROMPT
+
+
+def test_system_prompt_enumerates_toggle_guide_token():
+    assert "toggle_guide" in SYSTEM_PROMPT
 
 
 def test_system_prompt_forbids_date_computation():

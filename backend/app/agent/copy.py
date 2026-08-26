@@ -76,6 +76,14 @@ def toggle_speech_message(state: str) -> str:
     return "Voice replies are now on." if state == "on" else "Voice replies are now off."
 
 
+def toggle_guide_message(state: str) -> str:
+    """Compose the D-05 open/close confirmation (WR-06), same rationale as
+    toggle_speech_message above — composeConfirmation() on the frontend has no
+    guide awareness, so this is the only place the open/close action itself
+    gets confirmed."""
+    return "Opening the guide." if state == "open" else "Closing the guide."
+
+
 def toggle_dataset_message(dataset: str, state: str) -> str:
     """Compose the D-03/D-04 overlay-toggle confirmation (WR-06), same rationale
     as toggle_speech_message above."""
