@@ -232,7 +232,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 12-01-PLAN.md — Token foundation: accent replacement, shadow-elevation, type-scale tokens, contrast test (VISUAL-01, VISUAL-02)
+- [x] 12-01-PLAN.md — Token foundation: accent replacement, shadow-elevation, type-scale tokens, contrast test (VISUAL-01, VISUAL-02)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -281,4 +281,4 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 7/7 | Complete    | 2026-08-22 |
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
 | 11. Full Site Guide | v1.1 | 5/5 | Complete    | 2026-08-26 |
-| 12. Visual Refresh | v1.1 | 0/8 | Planned | - |
+| 12. Visual Refresh | v1.1 | 1/8 | In Progress|  |
