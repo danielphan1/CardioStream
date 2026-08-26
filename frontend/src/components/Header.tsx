@@ -13,6 +13,7 @@
 // All colors are index.css tokens — no hex values here.
 import { useEffect, useRef, useState } from "react";
 import {
+  BookOpen,
   ClipboardPlus,
   LogOut,
   Moon,
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../store/auth";
+import { useGuide } from "../store/guide";
 import { useSpeech } from "../store/speech";
 import { useTheme } from "../store/theme";
 import { useView } from "../store/view";
@@ -125,6 +127,8 @@ export function Header() {
   const isDark = theme === "dark";
   const speechEnabled = useSpeech((s) => s.enabled);
   const toggleSpeech = useSpeech((s) => s.toggleEnabled);
+  const guideOpen = useGuide((s) => s.open);
+  const toggleGuide = useGuide((s) => s.toggleOpen);
 
   const view = useView((s) => s.view);
   const go = useView((s) => s.go);
@@ -198,6 +202,20 @@ export function Header() {
             )}
             {speechEnabled ? "Voice Replies: On" : "Voice Replies: Off"}
           </button>
+
+          {/* Guide toggle (D-02, GUIDE-01/02/04) — opens/closes the full-site
+              guide overlay; styled identically to the Theme/Voice Replies
+              toggles above (icon + text, aria-pressed, >=48px, bordered sky
+              surface, never accent-filled). Label stays "Guide" in both
+              states — the dedicated Close (X) control inside the overlay
+              already owns that verb (11-UI-SPEC.md Copywriting Contract). */}
+          <button
+            type="button"
+            onClick={toggleGuide}
+            aria-pressed={guideOpen}
+            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
+          >
+            <BookOpen aria-hidden="true" size={24} />Guide</button>
 
           {/* View toggle (D-06, widened to three states by Phase 8 D-01):
               "Upload" + "Add Record" show together on the dashboard; either
