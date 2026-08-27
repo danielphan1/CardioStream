@@ -236,12 +236,12 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 12-02-PLAN.md — Dashboard hero surfaces: StatsStrip, ChartTooltip, EmptyState, ReadingsTable depth/type-scale (VISUAL-01, VISUAL-02)
-- [ ] 12-03-PLAN.md — Chart deck + filter/overlay controls: ChartDeck, FilterBar, OverlayToggle, OverlayEventsList depth/radius/type-scale (VISUAL-01, VISUAL-02)
-- [ ] 12-04-PLAN.md — App shell: Header, AgentStatusBanner, CommandBar depth/radius/type-scale (VISUAL-01, VISUAL-02)
-- [ ] 12-05-PLAN.md — Caregiver admin screens: UploadPage, AddRecordPage, LoginGate depth/radius/type-scale (VISUAL-01, VISUAL-02)
-- [ ] 12-06-PLAN.md — GuideOverlay + DateRangePicker depth/radius/type-scale (VISUAL-01, VISUAL-02)
-- [ ] 12-07-PLAN.md — Records field-set inputs: SingleDateField, LabFields, IncidentFields, ProcedureFields radius/type-scale (VISUAL-01, VISUAL-02)
+- [x] 12-02-PLAN.md — Dashboard hero surfaces: StatsStrip, ChartTooltip, EmptyState, ReadingsTable depth/type-scale (VISUAL-01, VISUAL-02)
+- [x] 12-03-PLAN.md — Chart deck + filter/overlay controls: ChartDeck, FilterBar, OverlayToggle, OverlayEventsList depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [x] 12-04-PLAN.md — App shell: Header, AgentStatusBanner, CommandBar depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [x] 12-05-PLAN.md — Caregiver admin screens: UploadPage, AddRecordPage, LoginGate depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [x] 12-06-PLAN.md — GuideOverlay + DateRangePicker depth/radius/type-scale (VISUAL-01, VISUAL-02)
+- [x] 12-07-PLAN.md — Records field-set inputs: SingleDateField, LabFields, IncidentFields, ProcedureFields radius/type-scale (VISUAL-01, VISUAL-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -281,4 +281,4 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 7/7 | Complete    | 2026-08-22 |
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
 | 11. Full Site Guide | v1.1 | 5/5 | Complete    | 2026-08-26 |
-| 12. Visual Refresh | v1.1 | 1/8 | In Progress|  |
+| 12. Visual Refresh | v1.1 | 7/8 | In Progress|  |
