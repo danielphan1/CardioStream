@@ -10,18 +10,35 @@ This is also a portfolio project for the builder, demonstrating data engineering
 
 Chris can see and explore his own health data entirely by voice — voice interaction is the primary input method, not a gimmick. Every feature must be operable by voice; mouse/keyboard is the fallback, not the default.
 
-## Current Milestone: v1.1 — Polish & Records
+## Milestone History
 
-**Goal:** Make the shipped MVP more complete and more usable **without needing the paid API** — close the voice loop with spoken replies, let Chris and caregivers mix and match which data they're looking at, surface the health records the schema already anticipates, teach the whole site through a built-in guide, refresh the visuals, and turn the silent agent outage into an honest "unavailable" state.
+<details>
+<summary>✅ v1.0 MVP — SHIPPED 2026-08-05 (Phases 1–5)</summary>
 
-**Target features:**
-- **Spoken replies** — the dashboard reads its confirmation aloud via Web SpeechSynthesis, closing the hands-free loop for Chris.
-- **Multi-dataset filtering & overlay** — toggle any combination of data types (BP, pulse, labs, incidents/hospital stays, procedures) on or off, by voice or click; selected types overlay together on one dashboard view (e.g. hospital-stay markers plotted directly on the BP/pulse timeline) rather than living in separate silos. Includes the manual-entry forms needed to populate labs/incidents/procedures.
-- **Full site guide / instructions tab** — an accessible, voice-navigable help tab explaining every part of the site: what each button/control does, how filtering works, what each chart shows, how upload works, and what Chris can say by voice — for both Chris and his caregivers.
-- **Agent failure made visible** — real agent-availability detection; the UI shows "assistant temporarily unavailable" instead of silently answering "didn't catch that."
-- **Overall visual refresh** — modernize theme, typography, spacing, and color across all screens, with accessibility preserved.
+**Goal:** Replace the Tableau Public prototype with a voice-controlled dashboard: ETL foundation, four-chart dashboard with manual filters, Claude agent via text input, continuous-listening voice capture, caregiver upload + shared-password gate, deployed to Vercel + Railway.
 
-**Explicitly NOT in v1.1:** activating the paid Claude API, and voice/text data-entry via the agent (manual entry forms are in scope; agent-parsed entry like "log a reading of 120 over 80" is not) — both stay deferred (the NL agent is billing-gated from v1.0).
+**Shipped, with one known limitation carried to v2:** the natural-language agent is built and verified in code but inert in production (Anthropic account has $0 credits, every `/agent` call degrades to `unclear`) — billing-only fix, deferred by user decision.
+
+Full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
+
+</details>
+
+<details>
+<summary>✅ v1.1 Polish & Records — SHIPPED 2026-08-27 (Phases 6–12)</summary>
+
+**Goal:** Make the shipped MVP more complete and more usable without needing the paid API — close the voice loop with spoken replies, let Chris and caregivers mix and match which data they're looking at, surface the health records the schema already anticipates, teach the whole site through a built-in guide, refresh the visuals, and turn the silent agent outage into an honest "unavailable" state.
+
+**Shipped:** agent-liveness detection (real "unavailable" state, zero added token cost), labs/incidents/procedures CRUD + accessible manual-entry forms, multi-dataset overlay & filtering (voice + click, with an accessible list twin), spoken replies (TTS) verified on real Chrome/Edge/Safari/iOS hardware, a full-screen voice-navigable site guide with a single-sourced command vocabulary, and a sitewide visual refresh with zero accessibility-floor regression (git-diff-verified, not just self-reported).
+
+**Explicitly NOT in v1.1** (unchanged, still deferred to v2): activating the paid Claude API, and voice/text data-entry via the agent.
+
+Full detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
+
+</details>
+
+## Next Milestone
+
+Not yet scoped. Run `/gsd-new-milestone` to define v2 (or whatever comes next) — candidate scope already acknowledged in Requirements → Deferred below and in ROADMAP.md's v2 placeholder section.
 
 ## Requirements
 
@@ -45,9 +62,9 @@ Chris can see and explore his own health data entirely by voice — voice intera
 - [x] Full site guide / instructions tab — accessible, voice-navigable walkthrough of every control, filter, chart, and upload flow for Chris and caregivers — Validated in Phase 11: Full Site Guide / Instructions Tab (GUIDE-01–04; 4/4 roadmap success criteria; 323 frontend + 260/261 backend tests green (1 pre-existing unrelated env failure); the phase's own mandatory manual-verification checkpoint was performed via Claude-in-Chrome browser automation rather than deferred to the user, and found + fixed two real bugs — a viewport-width-dependent content overlap (replaced a guessed fixed padding with live ResizeObserver measurement) and a Tab-order gap into hidden content (`inert`); code review then found + fixed 1 critical (keyboard focus dropped to `<body>` on open) + 2 related warnings (jump-link scroll clearance, no focus restoration on close) — see `11-REVIEW.md` and `11-VERIFICATION.md`)
 - [x] Overall visual refresh — new warm terracotta/coral-salmon accent (light `#B94927`/dark `#DA6F4E`, replacing navy) applied sitewide via a single CSS token change, added surface depth (`rounded-xl` + theme-aware `shadow-elevation`) on every card/panel/notice surface, and a formalized `text-control`/`text-h2`/`text-h1` type scale at unchanged rendered pixel sizes — Validated in Phase 12: Visual Refresh (VISUAL-01/02; 2/2 roadmap success criteria; 8/8 plans across 3 waves; 329/329 frontend tests green; every D-04-locked clinical/overlay/focus token confirmed byte-identical pre/post; accessibility floor (`min-h-12`/`min-w-12`) confirmed unchanged via pre/post git-diff reconstruction — the plan's own static grep threshold was miscalibrated but the independently-reconstructed count matched exactly; code review clean (0 critical/warning, 2 info); human cross-screen/cross-theme sign-off approved — see `12-REVIEW.md` and `12-VERIFICATION.md`)
 
-### Active (v1.1 — Polish & Records)
+### Active
 
-None — all five v1.1 target features (spoken replies, multi-dataset overlay, full site guide, agent-failure visibility, visual refresh) are validated. v1.1 milestone is complete; see `/gsd-complete-milestone`.
+None — no milestone currently in progress. v1.1 shipped 2026-08-27 (all five target features validated, see Milestone History above). Run `/gsd-new-milestone` to populate this section for the next milestone.
 
 ### Deferred (needs the paid Claude API — future milestone)
 
@@ -111,7 +128,7 @@ Header: "Chris's Health Dashboard" title bar, matching the Tableau prototype sty
 4. Claude returns structured JSON only, e.g. `{"action": "show_chart", "chart": "bp_timeline", "date_range": {"last_n_days": 30}, "am_pm": "AM"}`.
 5. Backend validates the JSON against a Pydantic schema and returns it to the frontend.
 6. Frontend applies the command: switches chart, applies filters, updates view.
-7. Agent responds with a short text confirmation (spoken replies are post-MVP).
+7. Agent responds with a short text confirmation, shown on screen and (as of v1.1 Phase 10) spoken aloud via Web SpeechSynthesis unless muted.
 
 **Database schema (initial):**
 
@@ -130,13 +147,15 @@ readings (
   notes TEXT
 )
 
--- Future tables (create migrations but can stay empty):
+-- Records tables (migrated empty in v1.0; reachable via CRUD API + manual-entry forms as of v1.1 Phases 7-8):
 lab_results (id, date, test_name, result, unit, range_low, range_high, notes)
 incidents (id, datetime, incident_type, duration, notes)
 procedures (id, date, procedure_name, location, outcome, notes)
 ```
 
 Derived fields are computed in the ETL pipeline, not by hand.
+
+**Current codebase state (as of v1.1 close, 2026-08-27):** ~6.9k LOC Python (backend) + ~11k LOC TypeScript/TSX (frontend), 316 commits since v1.0 tag. Backend: FastAPI routers for readings/labs/incidents/procedures/agent/health/auth/upload, all Bearer-gated; Claude agent service with a passive circuit breaker for liveness. Frontend: React 19 + Vite, zustand stores for filters/overlay/speech/guide/agent-status, TanStack Query for server state, Recharts dashboard with overlay markers, GuideOverlay, AddRecordPage forms, a terracotta/coral visual theme with a formalized type scale. 329 frontend + 216+ backend tests green at last phase close.
 
 ## Constraints
 
@@ -152,14 +171,18 @@ Derived fields are computed in the ETL pipeline, not by hand.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Voice-first, not voice-added | Chris cannot use mouse/keyboard reliably; voice is his primary input | — Pending |
-| Web Speech API (browser-native) over cloud STT | No extra service, no audio leaves the browser except to the OS vendor; fits fixed stack | — Pending |
-| Claude returns structured JSON commands only, Pydantic-validated | Never execute raw model output; frontend applies validated commands | — Pending |
-| Shared-password gate at MVP (moved up from post-MVP) | Deployed MVP would otherwise expose real health data publicly | — Pending |
-| Caregiver-initiated continuous listening sessions | Chris can't tap the mic himself; one tap per session, then hands-free | — Pending |
-| Support both Chrome and Safari/iOS voice from the start | Primary device undecided; retrofitting Safari quirks later is costlier | — Pending |
-| Derived fields computed in ETL, stored in DB | Single source of truth for categories; testable; matches existing cleaned CSV | — Pending |
-| Future tables (labs/incidents/procedures) migrated but empty | Don't block MVP, don't repaint schema later | Reachable via CRUD API as of Phase 7 (still empty until Phase 8 forms) |
+| Voice-first, not voice-added | Chris cannot use mouse/keyboard reliably; voice is his primary input | ✓ Good — every v1.1 feature (overlay toggles, mute, guide) shipped with voice parity, not just click |
+| Web Speech API (browser-native) over cloud STT | No extra service, no audio leaves the browser except to the OS vendor; fits fixed stack | ✓ Good — real-device verified on Chrome/Edge + Safari/iOS in both Phase 4 and Phase 10 |
+| Claude returns structured JSON commands only, Pydantic-validated | Never execute raw model output; frontend applies validated commands | ✓ Good — pattern held for 3 new v1.1 commands (ToggleDataset, ToggleSpeech, ToggleGuide), each a closed-union `AgentOutput` member |
+| Shared-password gate at MVP (moved up from post-MVP) | Deployed MVP would otherwise expose real health data publicly | ✓ Good — SEC-03 audit passed; every new v1.1 route (labs/incidents/procedures) Bearer-gated by default |
+| Caregiver-initiated continuous listening sessions | Chris can't tap the mic himself; one tap per session, then hands-free | ✓ Good — 10-minute real-device session verified in Phase 4; Phase 10 added mic pause/resume around TTS playback without breaking the session |
+| Support both Chrome and Safari/iOS voice from the start | Primary device undecided; retrofitting Safari quirks later is costlier | ✓ Good — paid off directly in Phase 10 (TTS gesture-unlock/backgrounding-cancel quirks were a known-shape problem, not a surprise) |
+| Derived fields computed in ETL, stored in DB | Single source of truth for categories; testable; matches existing cleaned CSV | ✓ Good — no derivation logic duplicated in v1.1's new records tables |
+| Future tables (labs/incidents/procedures) migrated but empty | Don't block MVP, don't repaint schema later | ✓ Good — reachable via CRUD API (v1.1 Phase 7) and populated via manual-entry forms (Phase 8) with zero schema changes |
+| Agent inert in prod deferred to v2 rather than funded mid-v1.1 | Billing-only fix, no code change; v1.1 scoped to work entirely without paid API | ✓ Good — v1.1's five features (liveness, records, overlay, TTS, guide, visual refresh) all shipped and were fully verifiable without live model calls |
+| Liveness detection as a passive circuit breaker, no active probe | Zero added Claude API token cost; `/health` must never spend a request | ✓ Good — 0 tokens spent on liveness across the whole milestone; `06-REVIEW.md` flagged a *fetch-timeout* gap (WR-03/WR-04), not a design flaw, tracked as tech debt |
+| Overlay accessibility via `ReferenceLine` + accessible list, not a Scatter series in `accessibilityLayer` | Recharts' `accessibilityLayer` arrow-key nav doesn't cover marker-dense overlay data well; a separate list guarantees full keyboard/screen-reader access | ✓ Good — resolved explicitly in Phase 9 planning (`09-CONTEXT.md`), no rework needed after initial 2-BLOCKER gap closure (which was a staleness/contrast bug, not an architecture problem) |
+| Each new agent command is its own closed-union `AgentOutput` member | Consistent, type-checked dispatch pattern instead of ad-hoc parsing per feature | ✓ Good — repeated 3x (Phases 9/10/11) with zero deviation; kept `interpret()` exhaustive and switch-checked throughout |
 
 ## Evolution
 
@@ -179,6 +202,6 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-27 — Phase 12: Visual Refresh complete — the last phase of v1.1. A single CSS token change (`--color-accent`) replaced the navy accent sitewide with a warm terracotta/coral-salmon pair (light `#B94927`/dark `#DA6F4E`); every named card/panel/notice surface across the dashboard, upload, guide, and all three record forms picked up added depth (`rounded-xl` + a new theme-aware `--shadow-elevation` token) and a formalized `text-control`/`text-h2`/`text-h1` type scale at unchanged rendered sizes. Executed as 8 plans across 3 waves (token foundation → 6 parallel component plans → full regression + manual sign-off); every D-04-locked clinical/overlay/focus token and the `min-h-12`/`min-w-12` accessibility floor were confirmed byte-identical/unchanged via direct pre/post git-diff (not just self-reported test counts). Code review came back clean; the human cross-screen/cross-theme visual sign-off was approved live. VISUAL-01/02 both pass — 2/2 roadmap success criteria.
+*Last updated: 2026-08-27 after v1.1 milestone close.*
 
-**v1.1 — Polish & Records is now fully complete**: all five target features shipped and validated (Phases 6–12: agent-failure visibility, records backend + manual-entry forms, multi-dataset overlay & filtering, spoken replies, full site guide, visual refresh). v1.0 MVP remains shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred to v2). Next: `/gsd-complete-milestone` to close out v1.1 and scope the next milestone.*
+**v1.1 — Polish & Records shipped and archived 2026-08-27** (Phases 6–12, 34 plans, 76 tasks; see [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md) and MILESTONES.md for full detail): agent-failure visibility (liveness detection), records backend + manual-entry forms, multi-dataset overlay & filtering, spoken replies (TTS), full site guide, and a sitewide visual refresh — all five target features validated, zero accessibility-floor regression. v1.0 MVP remains shipped & archived: dashboard, upload, auth gate, and deployment are live and verified private (SEC-03); the natural-language agent is built and verified in code but inert in production pending paid Claude API credits (deferred to v2, unchanged by v1.1). No milestone is currently active — next: `/gsd-new-milestone` to scope v2.*

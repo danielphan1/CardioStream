@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
-status: milestone_complete
-last_updated: 2026-08-27T01:34:18.888Z
-last_activity: 2026-08-27 -- Plan 12-08 (full regression + cross-screen/cross-theme verification) complete
+status: Awaiting next milestone
+last_updated: "2026-08-27T01:43:19.266Z"
+last_activity: 2026-08-27 — Milestone 1.1 completed and archived
 progress:
   total_phases: 7
   completed_phases: 7
   total_plans: 34
   completed_plans: 34
   percent: 100
-stopped_at: Milestone complete (Phase 12 was final phase)
 ---
 
 # Project State
@@ -25,12 +24,10 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 
 ## Current Position
 
-Phase: 12
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-08-27
-
-Progress: [██████████] 100% (34/34 v1.1 plans complete)
+Phase: v1.1 complete (Phases 6–12)
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-08-27 — Milestone v1.1 completed and archived
 
 ## Performance Metrics
 
@@ -49,10 +46,21 @@ Progress: [██████████] 100% (34/34 v1.1 plans complete)
 | 4. Voice Capture | 3 | Complete |
 | 5. Upload, Auth Gate & Deployment | 7 | Complete |
 
-v1.1 metrics reset — no plans executed yet (roadmap-only stage).
+**By Phase (v1.1):**
+
+| Phase | Plans | Status |
+|-------|-------|--------|
+| 6. Agent Availability (Liveness) | 3 | Complete |
+| 7. Records Backend | 2 | Complete |
+| 8. Manual-Entry Forms | 3 | Complete |
+| 9. Multi-Dataset Overlay & Filtering | 7 | Complete |
+| 10. Spoken Replies (TTS) | 6 | Complete |
+| 11. Full Site Guide | 5 | Complete |
+| 12. Visual Refresh | 8 | Complete |
+
+v1.1 totals: 34 plans, 76 tasks, ~22 days (2026-08-05 → 2026-08-27, 316 commits).
 
 *Updated after each plan completion*
-| Phase 12 P08 | 25min | 2 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -101,14 +109,21 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 | verification | 03-VERIFICATION — live-model behavioral eval (`human_needed`) | → v2 (same no-credits blocker) | v1.0 close 2026-08-05 |
 | uat | 03-HUMAN-UAT — 3 agent live-model scenarios | blocked → v2 (no credits) | v1.0 close 2026-08-05 |
 
+Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance, stale status fields only:
+
+| Category | Item | Status | Deferred At |
+|----------|------|--------|-------------|
+| debug_session | `frontend-page-not-loading` (status: `diagnosed`) — Phase 2, 2026-07-15. Goal was `find_root_cause_only`; root cause confirmed (Vite dev server wasn't running, user error) — diagnosis was the deliverable, no fix needed. | resolved, no action | v1.1 close 2026-08-27 |
+| quick_task | `260825-h9l` audit-flagged `missing` — false positive: SUMMARY.md exists and STATE.md's own Quick Tasks table already shows it completed (commit `132438c`, 2026-08-25). Frontmatter simply lacks an explicit `status:` field for the audit tool to read. | resolved, no action | v1.1 close 2026-08-27 |
+| verification | `06-VERIFICATION.md` frontmatter `status: human_needed` — the one human-judgment check ("calm, non-alarming" banner) was completed and passed in `06-HUMAN-UAT.md` (`status: complete`, `result: pass`, 2026-08-25); VERIFICATION.md's own status field was never flipped afterward. | resolved, no action | v1.1 close 2026-08-27 |
+
 ## Session Continuity
 
-Last session: 2026-08-27T01:19:45.760Z
-Stopped at: Phase 12 Plan 08 complete — all 8 Phase 12 plans executed, VISUAL-01/VISUAL-02 verified; awaiting orchestrator phase-goal verification
-Next action: `/gsd-execute-phase 10`
+Last session: 2026-08-27T01:43:19.266Z
+Stopped at: v1.1 Polish & Records milestone closed — all 7 phases (6–12), 34 plans archived
+Next action: `/gsd-new-milestone` to scope the next milestone
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 9` to plan Phase 9 (Multi-Dataset Overlay & Filtering) — research → planning → verification.
-- Manually spot-check CR-01's fix in AddRecordPage (mid-submit type-switch race) — see Blockers/Concerns.
+- Start the next milestone with /gsd-new-milestone

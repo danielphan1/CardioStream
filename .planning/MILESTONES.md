@@ -1,5 +1,24 @@
 # Milestones
 
+## v1.1 Polish & Records (Shipped: 2026-08-27)
+
+**Phases completed:** 7 phases, 34 plans, 76 tasks
+**Timeline:** ~22 days (2026-08-05 → 2026-08-27, 316 commits)
+
+**Key accomplishments:**
+
+- Agent availability made honest: a passive circuit breaker (no active probing, zero added API cost) feeds a new `AgentReply.kind="unavailable"` and `/health.agent_reachable`, with a calm, non-dismissible `AgentStatusBanner` replacing the old silent "didn't catch that" mislabeling of real outages.
+- Records backend: Bearer-gated GET (filtered) + POST (create) routers for labs, incidents, and procedures, mirroring the existing `/readings` pattern — the schema's long-empty future tables became reachable through the API for the first time.
+- Manual-entry forms let a caregiver submit a lab result, incident, or procedure through an accessible form (≥48px targets, no drag/precision input) and see it reflected immediately, no reload — closing the only gap left in populating those tables.
+- Multi-dataset overlay & filtering: Chris and caregivers can toggle any combination of labs/incidents/procedures on or off by voice or click, overlaid directly on the BP Timeline and Pulse Trend via `ReferenceLine` markers, with a full accessible list for keyboard/screen-reader parity — 2 BLOCKER gaps (stale toggle-off data, dark-mode contrast failure) found and closed before ship.
+- Spoken replies close the hands-free loop: the dashboard speaks its on-screen confirmation aloud via Web SpeechSynthesis on real voice/agent commands only, with cancel-before-speak, mic pause/resume around playback, and a persisted mute toggle — signed off on real Chrome/Edge, Safari desktop, and iOS Safari hardware.
+- A full-screen, text-only site guide (`GuideOverlay`) documents every control and centralizes the voice-command vocabulary in one source shared with `CommandBar`, reachable without ever unmounting the live voice session.
+- Sitewide visual refresh — a new terracotta/coral accent, a theme-aware elevation token, and a formalized type scale — applied across every screen via 8 plans in 3 waves, with every accessibility floor (`min-h-12`/`min-w-12`) and clinical/overlay/focus token confirmed byte-identical pre/post via git-diff, not just self-reported test counts.
+
+**Known deferred items at close:** 3 open-artifact-audit items acknowledged as resolved-in-substance (stale status fields, not real open work) — see STATE.md → Deferred Items. Also unresolved from phase code reviews: Phase 6's fetch-timeout/retry-backoff gap (WR-03/WR-04, doesn't block LIVE-01..04 as worded), Phase 8's concurrency-sensitive CR-01 fix pending a manual spot-check, and Phase 10's 6 warning + 2 info review findings — none critical, none blocking, all tracked for future follow-up.
+
+---
+
 ## v1.0 MVP (Shipped: 2026-08-05)
 
 **Phases completed:** 5 phases, 29 plans, 46 tasks
