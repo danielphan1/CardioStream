@@ -100,3 +100,16 @@ None — no external service configuration required, no new dependencies added.
 ---
 *Phase: 12-visual-refresh*
 *Completed: 2026-08-27*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/StatsStrip.tsx
+- FOUND: frontend/src/components/charts/ChartTooltip.tsx
+- FOUND: frontend/src/components/EmptyState.tsx
+- FOUND: frontend/src/components/ReadingsTable.tsx
+- FOUND: frontend/src/App.tsx
+- FOUND: .planning/phases/12-visual-refresh/12-02-SUMMARY.md
+- FOUND commit: dfd85e7 (Task 1)
+- FOUND commit: f55bcd0 (Task 2)
+- FOUND commit: 34b6398 (Task 3)
+- FOUND commit: 727fc16 (SUMMARY.md)
