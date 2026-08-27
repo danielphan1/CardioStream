@@ -117,3 +117,20 @@ export function prefersReducedMotion(): boolean {
   }
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
+
+/** Matches `dot={{ r: 5 }}` in BPTimeline/PulseTrend — diameter = 2*r. */
+const DOT_DIAMETER_PX = 10;
+
+/**
+ * Whether per-point dots would visually overlap at the chart's current
+ * rendered width (BPTimeline/PulseTrend mobile-overplotting fix,
+ * /impeccable critique P1, 2026-08-27). True when the average px-per-point
+ * is tighter than one dot's own diameter. `width` must be the chart's live
+ * container width (from `useElementWidth`), not the viewport width, since
+ * the two diverge inside the `max-w-[1280px]` content column (DESIGN.md
+ * Layout section).
+ */
+export function isDotCrowded(width: number, pointCount: number): boolean {
+  if (width <= 0 || pointCount <= 1) return false;
+  return width / pointCount < DOT_DIAMETER_PX;
+}

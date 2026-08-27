@@ -9,6 +9,7 @@ import {
   categoryBarData,
   formatCategoryLabel,
   groupAmPm,
+  isDotCrowded,
   prefersReducedMotion,
   toTimePoints,
 } from "./chartData";
@@ -189,5 +190,27 @@ describe("prefersReducedMotion", () => {
     } finally {
       window.matchMedia = original;
     }
+  });
+});
+
+describe("isDotCrowded", () => {
+  it("returns false at generous spacing (1000px / 50 points = 20px/point)", () => {
+    expect(isDotCrowded(1000, 50)).toBe(false);
+  });
+
+  it("returns true at the reported mobile case (350px / 130 points ≈ 2.7px/point)", () => {
+    expect(isDotCrowded(350, 130)).toBe(true);
+  });
+
+  it("returns false for a degenerate width of 0", () => {
+    expect(isDotCrowded(0, 50)).toBe(false);
+  });
+
+  it("returns false for a degenerate pointCount of 0", () => {
+    expect(isDotCrowded(1000, 0)).toBe(false);
+  });
+
+  it("returns false for a single point (can't overlap itself)", () => {
+    expect(isDotCrowded(1000, 1)).toBe(false);
   });
 });
