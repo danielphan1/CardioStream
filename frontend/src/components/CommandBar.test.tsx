@@ -326,6 +326,50 @@ describe("CommandBar", () => {
     act(() => useSpeech.setState({ isSpeaking: false }));
     expect(screen.queryByText("Speaking…")).toBeNull();
   });
+
+  it("Cancel on the text path re-enables the input/Send button and shows Cancelled. (impeccable critique P2)", async () => {
+    mockPostAgent.mockReturnValue(new Promise<AgentReply>(() => {}));
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    const cancelButton = await screen.findByRole("button", { name: "Cancel" });
+    fireEvent.click(cancelButton);
+
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Send" })).not.toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "Cancel" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Cancelled.")).toBeInTheDocument();
+  });
+
+  it("drops a stale text-path reply that arrives after Cancel (impeccable critique P2)", async () => {
+    let resolveReply!: (r: AgentReply) => void;
+    mockPostAgent.mockReturnValueOnce(
+      new Promise<AgentReply>((res) => {
+        resolveReply = res;
+      }),
+    );
+    renderBar();
+
+    typeAndSubmit("show my pulse");
+
+    const cancelButton = await screen.findByRole("button", { name: "Cancel" });
+    fireEvent.click(cancelButton);
+
+    await act(async () => {
+      resolveReply(
+        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      );
+    });
+
+    expect(screen.queryByText(/^Showing pulse/)).not.toBeInTheDocument();
+    expect(useFilters.getState().activeChart).toBe("bp_timeline");
+  });
 });
 
 // Voice layer mounted on the SAME bar (D-06): mic button, 3-state indicator
@@ -444,5 +488,38 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
       name: "Type a dashboard command",
     }) as HTMLInputElement;
     expect(input).not.toBeDisabled();
+  });
+
+  it("Cancel on the voice path returns to listening and shows Cancelled — listening again. (impeccable critique P2)", async () => {
+    mockPostAgent.mockReturnValue(new Promise<AgentReply>(() => {}));
+    renderBar();
+    const rec = startSession();
+
+    act(() => rec.emitResult("dashboard show my pulse", true));
+    await screen.findByText("WORKING…");
+
+    const cancelButton = screen.getByRole("button", { name: "Cancel" });
+    fireEvent.click(cancelButton);
+
+    expect(
+      screen.getByText("Cancelled — listening again."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("WORKING…")).not.toBeInTheDocument();
+  });
+
+  it("shows the cat-normal armed fill on the mic button only while a voice session is open (impeccable critique P2)", () => {
+    renderBar();
+
+    const offButton = screen.getByRole("button", {
+      name: "Start voice control",
+    });
+    expect(offButton.className).not.toContain("cat-normal");
+
+    startSession();
+
+    const armedButton = screen.getByRole("button", {
+      name: "Stop voice control",
+    });
+    expect(armedButton.className).toContain("cat-normal");
   });
 });
