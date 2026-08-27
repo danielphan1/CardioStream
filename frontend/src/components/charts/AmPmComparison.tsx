@@ -118,7 +118,7 @@ export default function AmPmComparison({
   }
 
   return (
-    <div className="flex h-full w-full gap-6">
+    <div className="flex h-full w-full gap-8">
       <div className="flex h-full flex-1 flex-col">
         <p
           className="m-0 text-center"

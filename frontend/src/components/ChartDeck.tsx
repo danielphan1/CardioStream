@@ -133,11 +133,11 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
   const data: ChartDeckProps = { readings, stats, overlayEvents };
 
   return (
-    <section aria-label="Charts" className="flex flex-col gap-6">
+    <section aria-label="Charts" className="flex flex-col gap-8">
       {/* Hero slot — parent supplies the fixed height (Pitfall 2). Keyed on
           the active chart so a rotation remounts (and fades) only the hero. */}
       <div>
-        <h2 className="text-2xl leading-tight font-bold text-[var(--color-ink)]">
+        <h2 className="text-h2 leading-tight font-bold text-[var(--color-ink)]">
           {active.title}
         </h2>
         <div key={active.id} className="h-[420px]">
@@ -148,16 +148,16 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
       {/* Mini row — the other three charts, 3-across ≥768px, stacked below.
           Unaffected minis keep their keys (no remount, no fade); only the
           former hero mounts fresh and fades in. */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-3">
         {minis.map((entry) => (
           <button
             key={entry.id}
             type="button"
             aria-label={`Show ${entry.ariaName} chart`}
             onClick={() => setActiveChart(entry.id)}
-            className="min-h-12 rounded-lg bg-[var(--color-sky)] p-4 text-left"
+            className="min-h-12 rounded-xl bg-[var(--color-sky)] p-4 text-left shadow-[var(--shadow-elevation)]"
           >
-            <span className="block text-[20px] font-bold text-[var(--color-ink)]">
+            <span className="block text-control font-bold text-[var(--color-ink)]">
               {entry.title}
             </span>
             {/* Pitfall 8: the button handles activation — the chart is a

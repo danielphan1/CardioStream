@@ -105,7 +105,7 @@ export function OverlayEventsList({
 
   return (
     <section aria-label="Overlaid events">
-      <h2 className="mb-4 text-2xl leading-tight font-bold text-[var(--color-ink)]">
+      <h2 className="mb-4 text-h2 leading-tight font-bold text-[var(--color-ink)]">
         Overlaid events
       </h2>
       {errorNotes.map((msg) => (
@@ -118,7 +118,7 @@ export function OverlayEventsList({
           <p className="text-[18px] text-[var(--color-ink)]">{emptyMessage}</p>
         )
       ) : (
-        <section className="rounded-lg bg-[var(--color-sky)] p-6">
+        <section className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
           <table className="w-full text-left">
             <caption className="sr-only">Overlaid events</caption>
             <thead>
@@ -152,7 +152,7 @@ export function OverlayEventsList({
             <button
               type="button"
               onClick={() => setVisible((v) => v + PAGE_SIZE)}
-              className="mt-4 min-h-12 w-full rounded-lg bg-[var(--color-accent)] px-6 text-xl font-bold text-[var(--color-accent-text)]"
+              className="mt-4 min-h-12 w-full rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
             >
               Show 20 more
             </button>

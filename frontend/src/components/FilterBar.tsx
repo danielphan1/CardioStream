@@ -23,9 +23,9 @@ type FilterBarProps = {
 // Shared control styling contract (UI-SPEC accent rules): inactive = sky
 // card with ink text + 2px ink border; active = reserved navy accent fill.
 const inactiveClass =
-  "min-h-12 rounded-lg px-4 text-[20px] font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
+  "min-h-12 rounded-xl px-4 text-control font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
 const activeClass =
-  "min-h-12 rounded-lg px-4 text-[20px] font-bold bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+  "min-h-12 rounded-xl px-4 text-control font-bold bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 const DAY_PRESETS: { key: Exclude<DatePreset, "custom">; label: string }[] = [
   { key: "7d", label: "7 days" },
