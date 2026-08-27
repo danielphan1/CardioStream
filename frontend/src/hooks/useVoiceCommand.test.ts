@@ -270,6 +270,48 @@ describe("useVoiceCommand stop/pause supersede (D-05, WR-01)", () => {
   });
 });
 
+describe("useVoiceCommand cancel (impeccable critique P2)", () => {
+  it("cancel() during an in-flight command supersedes the pending reply and returns to listening (not off)", async () => {
+    let resolveReply!: (r: AgentReply) => void;
+    mockPostAgent.mockReturnValueOnce(
+      new Promise<AgentReply>((res) => {
+        resolveReply = res;
+      }),
+    );
+    const { result } = renderVoice();
+    act(() => result.current.start());
+    const rec = FakeRecognition.instances[0];
+
+    // Command submitted → "working", request still in flight.
+    act(() => rec.emitResult("dashboard show pulse trend", true));
+    expect(result.current.state).toBe("working");
+
+    // Caregiver taps Cancel while the reply is still round-tripping.
+    act(() => result.current.cancel());
+    expect(result.current.state).toBe("listening"); // NOT "off" — recognizer keeps running
+
+    // The late reply lands AFTER cancel — the seq guard must drop it: the
+    // store stays untouched and the Cancelled message must not be overwritten.
+    await act(async () => {
+      resolveReply(
+        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      );
+    });
+    expect(useFilters.getState().activeChart).toBe("bp_timeline"); // unchanged post-cancel
+    expect(result.current.message).toBe("Cancelled — listening again."); // not overwritten
+  });
+
+  it("cancel() is a no-op when not working", () => {
+    const { result } = renderVoice();
+    act(() => result.current.start());
+
+    act(() => result.current.cancel());
+
+    expect(result.current.state).toBe("listening");
+    expect(result.current.message).toBe("");
+  });
+});
+
 describe("useVoiceCommand restart resilience (D-12/D-13/D-14, Pitfall 2/5)", () => {
   it("recoverable error + onend restarts the recognizer after backoff (D-12)", () => {
     vi.useFakeTimers();
