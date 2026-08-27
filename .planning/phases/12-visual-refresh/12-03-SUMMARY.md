@@ -97,3 +97,15 @@ None.
 ---
 *Phase: 12-visual-refresh*
 *Completed: 2026-08-27*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/OverlayEventsList.tsx
+- FOUND: frontend/src/components/ChartDeck.tsx
+- FOUND: frontend/src/components/charts/AmPmComparison.tsx
+- FOUND: frontend/src/components/FilterBar.tsx
+- FOUND: frontend/src/components/OverlayToggle.tsx
+- FOUND: .planning/phases/12-visual-refresh/12-03-SUMMARY.md
+- FOUND: commit 1cad4b8 (Task 1)
+- FOUND: commit 99d58a4 (Task 2)
+- FOUND: commit 1444d40 (SUMMARY.md)
