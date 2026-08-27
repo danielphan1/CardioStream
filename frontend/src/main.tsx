@@ -8,6 +8,7 @@ import './index.css'
 import App from './App.tsx'
 import { useTheme } from './store/theme'
 import { useSpeech } from './store/speech'
+import { useFilters } from './store/filters'
 
 const queryClient = new QueryClient()
 
@@ -16,6 +17,9 @@ useTheme.getState().initTheme()
 // Apply persisted spoken-replies mute preference (or the safe on-by-default)
 // before first paint (D-03, TTS-02)
 useSpeech.getState().initSpeech()
+// Restore the persisted filter/overlay session before first paint (impeccable
+// P1, 2026-08-27 re-critique) — survives a Safari/iOS involuntary reload
+useFilters.getState().initFilters()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

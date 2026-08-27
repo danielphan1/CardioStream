@@ -187,8 +187,12 @@ describe("store↔command 1:1 mapping — no unreachable action, no dead field",
 
     // Bind STORE_ACTIONS to the actual store: any function-typed key on the store
     // state is a mutating action. Adding one without a command path fails here.
+    // `initFilters` (impeccable P1, 2026-08-27 re-critique — localStorage
+    // bootstrap) is deliberately excluded: it's a bootstrap-only action
+    // mirroring store/theme.ts's initTheme / store/speech.ts's initSpeech,
+    // never voice-reachable, so it's not part of the AppliedFilters surface.
     const actualActions = Object.entries(useFilters.getState())
-      .filter(([, value]) => typeof value === "function")
+      .filter(([key, value]) => typeof value === "function" && key !== "initFilters")
       .map(([key]) => key)
       .sort();
     expect(actualActions).toEqual([...STORE_ACTIONS].sort());
