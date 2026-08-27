@@ -40,8 +40,8 @@ Requirements for the v1.1 milestone. Each maps to a roadmap phase. Continues REQ
 
 ### Visual Refresh (VISUAL)
 
-- [ ] **VISUAL-01**: Modernized theme, typography, spacing, and color applied consistently across all screens (scope refined by a dedicated research/planning pass at that phase)
-- [ ] **VISUAL-02**: Existing accessibility floors (≥48px targets, ≥18px body text, high contrast, keyboard nav) are preserved or improved, never regressed
+- [x] **VISUAL-01**: Modernized theme, typography, spacing, and color applied consistently across all screens (scope refined by a dedicated research/planning pass at that phase)
+- [x] **VISUAL-02**: Existing accessibility floors (≥48px targets, ≥18px body text, high contrast, keyboard nav) are preserved or improved, never regressed
 
 ## v2 Requirements (Deferred)
 
@@ -100,8 +100,8 @@ Explicitly excluded. Documented to prevent scope creep.
 | GUIDE-02 | Phase 11: Full Site Guide / Instructions Tab | Complete |
 | GUIDE-03 | Phase 11: Full Site Guide / Instructions Tab | Complete |
 | GUIDE-04 | Phase 11: Full Site Guide / Instructions Tab | Complete |
-| VISUAL-01 | Phase 12: Visual Refresh | Pending |
-| VISUAL-02 | Phase 12: Visual Refresh | Pending |
+| VISUAL-01 | Phase 12: Visual Refresh | Complete |
+| VISUAL-02 | Phase 12: Visual Refresh | Complete |
 
 **Coverage:**
 - v1.1 requirements: 21 total
