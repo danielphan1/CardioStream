@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-27T19:21:10.000Z"
-last_activity: 2026-08-27 - Completed quick task 260827-3j8: Fix impeccable P2 findings (mic-armed styling + Cancel affordance)
+last_updated: "2026-08-27T20:22:09.000Z"
+last_activity: 2026-08-27 - Completed quick task 260827-i2w: Layout pass grouping the dashboard into 3 semantic clusters (impeccable layout audit)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-27 - Completed quick task 260827-3j8: Fix impeccable P2 findings (mic-armed styling + Cancel affordance)
+Last activity: 2026-08-27 - Completed quick task 260827-i2w: Layout pass grouping the dashboard into 3 semantic clusters (impeccable layout audit)
 
 ## Performance Metrics
 
@@ -101,6 +101,7 @@ None yet.
 | 260827-25p | Fix BP Timeline band-label collision and mobile dot-overplotting (P1 findings from the impeccable critique) | 2026-08-27 | b50e1b0 | Verified | [260827-25p-fix-bp-timeline-band-label-collision-and](./quick/260827-25p-fix-bp-timeline-band-label-collision-and/) |
 | 260827-2v2 | Fix ReadingsTable Category column clipping on mobile (P1 finding from the impeccable critique) via a reflow to a stacked card layout below 640px | 2026-08-27 | f102d45 | Verified | [260827-2v2-fix-readingstable-category-column-clippi](./quick/260827-2v2-fix-readingstable-category-column-clippi/) |
 | 260827-3j8 | Fix mic-armed styling and add a Cancel affordance for text/voice command round-trips (P2 findings from the impeccable critique) | 2026-08-27 | 31f1b77 | | [260827-3j8-fix-both-p2-findings-from-the-impeccable](./quick/260827-3j8-fix-both-p2-findings-from-the-impeccable/) |
+| 260827-i2w | Layout pass on the CardioStream dashboard: group FilterBar+OverlayToggle, StatsStrip+charts, and ReadingsTable+OverlayEventsList into 3 semantic clusters, promoting `<main>`'s gap to DESIGN.md's unused 2xl (48px) token between them (impeccable layout audit) | 2026-08-27 | d171603 | Verified | [260827-i2w-layout-pass-on-the-cardiostream-dashboar](./quick/260827-i2w-layout-pass-on-the-cardiostream-dashboar/) |
 
 ## Deferred Items
 
@@ -123,8 +124,8 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-08-27T19:21:10.000Z
-Stopped at: Resumed session; completed quick task 260827-3j8 (mic-armed styling + Cancel affordance, both P2 findings from the 2026-08-27 impeccable critique) that had been planned but not yet executed
+Last session: 2026-08-27T20:22:09.000Z
+Stopped at: Completed quick task 260827-i2w — impeccable `/impeccable layout` pass grouping App.tsx's Dashboard into 3 semantic clusters (controls / visualizations / detail-records), promoting DESIGN.md's unused 2xl (48px) token to real use as the major-section-break rhythm. Live squint-test + tab-order spot-check both passed; mobile/tablet viewport glance and the loading/error chartRegion branches are non-blocking residual checks (see 260827-i2w-VERIFICATION.md).
 Next action: `/gsd-new-milestone` to scope the next milestone
 Resume file: None
 
