@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-27T21:19:35.000Z"
-last_activity: 2026-08-27 - Completed quick task 260827-j8l: Clarify voice-outage messaging, drop doomed-retry copy across both OFFLINE_COPY sites (impeccable critique P0)
+last_updated: "2026-08-27T21:45:13.000Z"
+last_activity: 2026-08-27 - Completed quick task 260827-jzp: Persist filter/overlay session to localStorage against reload data loss (impeccable critique P1)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-27 - Completed quick task 260827-j8l: Clarify voice-outage messaging, drop doomed-retry copy across both OFFLINE_COPY sites (impeccable critique P0)
+Last activity: 2026-08-27 - Completed quick task 260827-jzp: Persist filter/overlay session to localStorage against reload data loss (impeccable critique P1)
 
 ## Performance Metrics
 
@@ -103,6 +103,7 @@ None yet.
 | 260827-3j8 | Fix mic-armed styling and add a Cancel affordance for text/voice command round-trips (P2 findings from the impeccable critique) | 2026-08-27 | 31f1b77 | | [260827-3j8-fix-both-p2-findings-from-the-impeccable](./quick/260827-3j8-fix-both-p2-findings-from-the-impeccable/) |
 | 260827-i2w | Layout pass on the CardioStream dashboard: group FilterBar+OverlayToggle, StatsStrip+charts, and ReadingsTable+OverlayEventsList into 3 semantic clusters, promoting `<main>`'s gap to DESIGN.md's unused 2xl (48px) token between them (impeccable layout audit) | 2026-08-27 | d171603 | Verified | [260827-i2w-layout-pass-on-the-cardiostream-dashboar](./quick/260827-i2w-layout-pass-on-the-cardiostream-dashboar/) |
 | 260827-j8l | Clarify voice-outage messaging (impeccable critique P0, re-critique): rewrote AGENT_UNAVAILABLE_BANNER_COPY and both independently-declared OFFLINE_COPY sites (CommandBar.tsx + useVoiceCommand.ts) to drop transience/doomed-retry framing, and made CommandBar reactively suppress the vocabulary-teaching rotating placeholder while the agent is unavailable | 2026-08-27 | e00638b | Verified | [260827-j8l-clarify-voice-outage-messaging-on-the-ca](./quick/260827-j8l-clarify-voice-outage-messaging-on-the-ca/) |
+| 260827-jzp | Harden filter/overlay session against reload data loss (impeccable critique P1): added localStorage persistence to store/filters.ts mirroring the codebase's existing hand-rolled pattern (theme.ts/speech.ts/auth.ts, not zustand persist middleware) — shape-only type guard, initFilters() wired into main.tsx, all 7 mutating setters persist | 2026-08-27 | cfba4f3 | Verified | [260827-jzp-harden-cardiostream-filter-overlay-sessi](./quick/260827-jzp-harden-cardiostream-filter-overlay-sessi/) |
 
 ## Deferred Items
 
@@ -125,9 +126,9 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-08-27T21:19:35.000Z
-Stopped at: Completed quick task 260827-j8l (impeccable critique P0 fix). Mid-sequence executing the user's full scoped plan from the 2026-08-27 re-critique (score 35/40): step 1/4 (clarify, P0) done; step 2/4 (harden filters-store persistence, P1) next; step 3/4 (harden OverlayToggle dimming, P2) and step 4/4 (polish pass) still queued.
-Next action: Continue the scoped critique-fix sequence — /impeccable harden on frontend/src/store/filters.ts (zustand persist middleware, P1)
+Last session: 2026-08-27T21:45:13.000Z
+Stopped at: Completed quick task 260827-jzp (impeccable critique P1 fix). Mid-sequence executing the user's full scoped plan from the 2026-08-27 re-critique (score 35/40): step 1/4 (clarify, P0) and step 2/4 (harden filters persistence, P1) done; step 3/4 (harden OverlayToggle dimming, P2) next; step 4/4 (polish pass) still queued.
+Next action: Continue the scoped critique-fix sequence — /impeccable harden on frontend/src/components/OverlayToggle.tsx (drop opacity-60 dimming, DESIGN.md's dashed-border-only disabled-state rule, P2)
 Resume file: None
 
 ## Operator Next Steps
