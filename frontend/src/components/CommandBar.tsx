@@ -253,7 +253,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             type="button"
             onClick={onMicClick}
             aria-label={sessionOpen ? "Stop voice control" : "Start voice control"}
-            className="flex min-h-12 min-w-12 items-center justify-center rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] text-[var(--color-ink)]"
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] text-[var(--color-ink)]"
           >
             {voiceState === "paused" ? (
               <MicOff aria-hidden="true" className="h-6 w-6" />
@@ -269,12 +269,12 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           disabled={anyWorking}
           aria-label="Type a dashboard command"
           placeholder={placeholder}
-          className="min-h-12 flex-grow rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-4 text-[18px] text-[var(--color-ink)] disabled:opacity-70"
+          className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-4 text-[18px] text-[var(--color-ink)] disabled:opacity-70"
         />
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-lg bg-[var(--color-accent)] px-6 text-xl font-bold text-[var(--color-accent-text)] disabled:opacity-70"
+          className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)] disabled:opacity-70"
         >
           Send
         </button>
