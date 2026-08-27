@@ -19,8 +19,8 @@ type LabFieldsProps = {
 };
 
 const inputClass =
-  "min-h-12 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
-const labelClass = "flex flex-col gap-1 text-[20px] font-bold text-[var(--color-ink)]";
+  "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
+const labelClass = "flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]";
 
 /** Empty (or whitespace-only) string is valid (field untouched/optional); otherwise must parse
  * as a finite number (Pitfall 3 guard — never let a non-empty-but-non-numeric value silently

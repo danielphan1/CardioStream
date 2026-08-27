@@ -27,14 +27,14 @@ const rdpSizing = {
 } as React.CSSProperties;
 
 const inputClass =
-  "min-h-12 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
+  "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
 
 export function SingleDateField({ label, value, onChange }: SingleDateFieldProps) {
   const valid = isValidDateText(value);
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-[20px] font-bold text-[var(--color-ink)]">
+      <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
         {label}
         <input
           type="text"
