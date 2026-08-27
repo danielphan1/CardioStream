@@ -85,7 +85,7 @@ export function UploadPage() {
   return (
     <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-foam)] px-4 py-8 md:px-8 xl:px-16">
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold leading-tight text-[var(--color-ink)]">
+        <h2 className="text-h2 leading-tight text-[var(--color-ink)]">
           Add new readings
         </h2>
         <p className="text-lg text-[var(--color-ink)]">
@@ -98,7 +98,7 @@ export function UploadPage() {
           label is the large accent affordance (≥48px); the native OS button it
           triggers is browser-sized and exempt from the 48px floor. */}
       <div className="flex flex-col gap-2">
-        <label className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-lg bg-[var(--color-accent)] px-6 text-[20px] font-bold text-[var(--color-accent-text)]">
+        <label className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-accent)] px-6 text-control text-[var(--color-accent-text)]">
           <FileUp aria-hidden="true" size={24} />
           Choose a file
           <input
@@ -123,7 +123,7 @@ export function UploadPage() {
         <section
           role="status"
           aria-label="Upload result"
-          className="flex flex-col gap-4 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)]"
+          className="flex flex-col gap-4 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
         >
           <div className="flex items-start gap-2">
             <CheckCircle2 aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
@@ -142,7 +142,7 @@ export function UploadPage() {
                 type="button"
                 aria-expanded={showRejects}
                 onClick={() => setShowRejects((v) => !v)}
-                className="flex w-fit items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+                className="flex w-fit items-center gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-control text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
               >
                 <ChevronDown
                   aria-hidden="true"
@@ -171,7 +171,7 @@ export function UploadPage() {
         <section
           role="alert"
           aria-label="Upload notice"
-          className="flex items-start gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-lg text-[var(--color-ink)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-lg text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
         >
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           {state.kind === "not-omron" ? (
