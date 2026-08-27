@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-27T05:46:03Z",
+  "title": "Design System: CardioStream",
+  "extensions": {
+    "colorMeta": {
+      "foam": { "role": "neutral", "displayName": "Foam", "canonical": "#F2F7F5", "dark": "#0B1626", "tonalRamp": ["#090c0b", "#222625", "#3f4341", "#5e6261", "#7f8382", "#a2a6a4", "#c6cac8", "#ebf0ee"] },
+      "sky": { "role": "neutral", "displayName": "Sky", "canonical": "#E2EDF2", "dark": "#13233A", "tonalRamp": ["#060c10", "#1e272a", "#3b4448", "#5a6367", "#7a8489", "#9da7ac", "#c0cbd0", "#e6f1f6"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#14213D", "dark": "#E8F1EF", "tonalRamp": ["#020922", "#172440", "#334260", "#516182", "#7182a5", "#93a5c9", "#b7caef", "#dcefff"] },
+      "terracotta": { "role": "primary", "displayName": "Terracotta", "canonical": "#B94927", "dark": "#DA6F4E", "tonalRamp": ["#340000", "#5a0000", "#7f0b00", "#a53712", "#cc5b39", "#f47e5c", "#ffa37f", "#ffc8a4"] },
+      "terracotta-text": { "role": "primary", "displayName": "Terracotta Text", "canonical": "#FFFFFF", "dark": "#0B1626" },
+      "focus": { "role": "utility", "displayName": "Focus", "canonical": "#1D4E89", "dark": "#8FC1D4", "tonalRamp": ["#000138", "#002259", "#0f417b", "#31629f", "#5284c4", "#74a8ea", "#98cdff", "#bcf2ff"] },
+      "line-systolic": { "role": "chart", "displayName": "Systolic Line", "canonical": "#1D3557", "dark": "#A8CBEA", "note": "locked chart-series color, not a synthesized ramp — light/dark are the two real theme values" },
+      "line-diastolic": { "role": "chart", "displayName": "Diastolic Line", "canonical": "#26707D", "dark": "#6FC7C4", "note": "locked chart-series color" },
+      "ref-bradycardia": { "role": "chart", "displayName": "Bradycardia Reference", "canonical": "#4A6B8A", "dark": "#8FB3D1", "note": "locked; 60bpm threshold line" },
+      "cat-hypotension": { "role": "data", "displayName": "Hypotension", "canonical": "#4A6B8A", "dark": "#8FB3D1", "note": "locked AHA clinical category" },
+      "cat-normal": { "role": "data", "displayName": "Normal", "canonical": "#2F7D5C", "dark": "#63C68F", "note": "locked AHA clinical category; also reused as the Command Bar's 'listening' color" },
+      "cat-elevated": { "role": "data", "displayName": "Elevated", "canonical": "#8F6A00", "dark": "#E0B84E", "note": "locked AHA clinical category" },
+      "cat-stage1": { "role": "data", "displayName": "Stage 1", "canonical": "#B34700", "dark": "#EE9B57", "note": "locked AHA clinical category" },
+      "cat-stage2": { "role": "data", "displayName": "Stage 2", "canonical": "#B3261E", "dark": "#EF7B70", "note": "locked AHA clinical category" },
+      "cat-crisis": { "role": "data", "displayName": "Hypertensive Crisis", "canonical": "#7F1D1D", "dark": "#F2564D", "note": "locked AHA clinical category" },
+      "cat-chip-text": { "role": "data", "displayName": "Clinical Chip Text", "canonical": "#FFFFFF", "dark": "#0B1626" },
+      "overlay-labs": { "role": "data", "displayName": "Labs Overlay", "canonical": "#6A3FA0", "dark": "#C9A6EA", "note": "locked overlay-dataset marker" },
+      "overlay-incidents": { "role": "data", "displayName": "Incidents Overlay", "canonical": "#A32672", "dark": "#F0A8D0", "note": "locked overlay-dataset marker" },
+      "overlay-procedures": { "role": "data", "displayName": "Procedures Overlay", "canonical": "#5C6B1E", "dark": "#C9D48A", "note": "locked overlay-dataset marker" },
+      "overlay-chip-text": { "role": "data", "displayName": "Overlay Chip Text", "canonical": "#FFFFFF", "dark": "#0B1626" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "App title and hero stat values (StatsStrip avg tiles, reading count) only." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings — dialog titles, empty-state heading, field-set legends." },
+      "label": { "displayName": "Label", "purpose": "Every button, toggle, filter chip, and form label. The most-used named size in the codebase." },
+      "body": { "displayName": "Body", "purpose": "Running copy, table cells, helper/error text. Also the 18px accessibility floor — never go smaller." }
+    },
+    "shadows": [
+      { "name": "elevation", "value": "0 4px 10px -2px rgba(20, 33, 61, 0.12), 0 2px 4px -2px rgba(20, 33, 61, 0.08)", "valueDark": "0 4px 10px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 241, 239, 0.06)", "purpose": "The only shadow in the system. Marks card-like 'island' surfaces (stat tiles, dialogs, tooltips, banners, overlay-toggle buttons); the full-width command/filter bands stay flat." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only accent-filled surface in the app — submit actions, 'Show all data', 'Apply', 'Send', 'Log out' confirm.",
+      "html": "<button type=\"button\" class=\"ds-btn-primary\">Show all data</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px; border: none; border-radius: 12px; background: var(--color-accent); color: var(--color-accent-text); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-primary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; } /* no :hover treatment — the system deliberately has none; every interaction is tap/click, not hover */"
+    },
+    {
+      "name": "Secondary / Filter Toggle Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Inactive-vs-pressed filter/toggle control (FilterBar, OverlayToggle). Pressed state reuses the Primary button's accent fill.",
+      "html": "<div style=\"display:flex;gap:8px;flex-wrap:wrap\"><button type=\"button\" class=\"ds-btn-secondary\" aria-pressed=\"false\">7 days</button><button type=\"button\" class=\"ds-btn-secondary\" aria-pressed=\"true\">30 days</button></div>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-sky); color: var(--color-ink); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-secondary[aria-pressed='true'] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-text); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Header Chrome Button",
+      "kind": "button",
+      "refersTo": "button-chrome",
+      "description": "Header utility controls (theme, Voice Replies, Guide, Upload, Log out) — icon + text, never accent-filled even when pressed, at the smaller 8px radius that quietly distinguishes them from primary app surfaces.",
+      "html": "<button type=\"button\" class=\"ds-btn-chrome\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/></svg>Guide</button>",
+      "css": ".ds-btn-chrome { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border-radius: 8px; border: 2px solid var(--color-ink); background: var(--color-sky); color: var(--color-ink); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-chrome:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; } /* stays sky/ink even when aria-pressed='true' — chrome controls are never accent-filled, that fill is reserved for primary/filter actions */"
+    },
+    {
+      "name": "Icon-Only Mic Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "The one icon-only control in the app (Command Bar mic toggle) — justified by a real aria-label that swaps with state.",
+      "html": "<button type=\"button\" class=\"ds-btn-icon\" aria-label=\"Start voice control\"><svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 19v3\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><rect x=\"9\" y=\"2\" width=\"6\" height=\"13\" rx=\"3\"/></svg></button>",
+      "css": ".ds-btn-icon { display: inline-flex; align-items: center; justify-content: center; height: 48px; width: 48px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-foam); color: var(--color-ink); cursor: pointer; } .ds-btn-icon:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Manual-entry form field (LabFields, DateRangePicker, CommandBar). Foam fill so it reads as a distinct well against the Sky card it usually sits inside.",
+      "html": "<label class=\"ds-field-label\">Test name<input type=\"text\" class=\"ds-input\" placeholder=\"e.g. A1C, Cholesterol panel\"></label>",
+      "css": ".ds-field-label { display: flex; flex-direction: column; gap: 4px; font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; color: var(--color-ink); } .ds-input { min-height: 48px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-foam); color: var(--color-ink); padding: 0 12px; font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.125rem; font-weight: 400; } .ds-input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Clinical Category Chip",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Pill-shaped, always solid-colored (even inactive) since the color itself is clinical information, not decoration. Example shown: Normal.",
+      "html": "<span class=\"ds-chip-category\">Normal</span>",
+      "css": ".ds-chip-category { display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border-radius: 9999px; background: var(--cat-normal); color: var(--cat-chip-text); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; } /* an active/selected chip additionally gets box-shadow: 0 0 0 3px var(--color-ink) — a ring, not an outline, so :focus-visible's own outline stays independently visible */"
+    },
+    {
+      "name": "Stat Tile Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "The Elevation token's canonical use — a Sky card floating on the flat Foam page, showing a Display-size hero number.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-label\">Systolic</p><p class=\"ds-card-value\">128</p><p class=\"ds-card-detail\">min 104 &middot; max 151</p></div>",
+      "css": ".ds-card { border-radius: 12px; background: var(--color-sky); color: var(--color-ink); padding: 24px; box-shadow: var(--shadow-elevation); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; } .ds-card-label { margin: 0; font-size: 1.25rem; font-weight: 700; line-height: 1.25; } .ds-card-value { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.25; } .ds-card-detail { margin: 0; font-size: 1.125rem; font-weight: 400; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Airy Nautical",
+    "overview": "CardioStream is a two-tone sea-and-sky surface — Foam and Sky in the light theme, deepening to near-black water in Night Sea — with a single warm signal color, Terracotta, allowed to interrupt it. That restraint is not incidental: the system's own locked decisions state that warmth comes from the accent color alone, never from typographic voice or editorial copy, which is explicitly rejected as a source of personality here. The dashboard's job is to be read correctly and operated confidently by someone who cannot point a mouse or grip a stylus — legibility and calm outrank charm at every choice point.\n\nThe nautical motif (a sailboat mark, a wave-curve divider under the header) is confirmed decorative-only: it never sits behind data, and it is never the thing a user has to interpret. What the system does ask the eye to interpret — the six-step clinical color scale, the three overlay-dataset hues, the reserved Terracotta — is treated as information, not decoration, and is locked accordingly.",
+    "keyCharacteristics": [
+      "One reserved accent (Terracotta) carries all of the system's visual warmth and marks every primary action and pressed/active state; nothing else is ever accent-filled.",
+      "A dedicated focus color, distinct from the accent, so a keyboard or switch-access focus ring never blends into an accent-filled control.",
+      "Six locked clinical BP-category colors and three locked overlay-dataset colors that encode medical/data meaning and are never adjusted for taste.",
+      "Flat, edge-to-edge full-width bands (header, command bar, filter bar) at zero elevation, punctuated by discrete elevated 'islands' — stat tiles, dialogs, tooltips — that alone use the system's one ambient shadow.",
+      "Every state change reads as a word + icon + color triad, never color alone; all motion is gated behind motion-safe:/motion-reduce: pairs."
+    ],
+    "rules": [
+      { "name": "The Single Source Rule", "body": "Every color used anywhere in the app is a CSS custom property declared once, for both themes, in index.css. Components consume var(--...) and never hardcode a hex value or invent a new one inline.", "section": "colors" },
+      { "name": "The One Signal Rule", "body": "Terracotta is the only color allowed to mean \"act here\" or \"this is active.\" A control that isn't a primary action or a pressed state stays Ink-on-Sky, no matter how important it feels.", "section": "colors" },
+      { "name": "The Data-Is-Locked Rule", "body": "Clinical, overlay, and chart-series colors are medical/data identity, not palette decoration. A redesign may touch Foam, Sky, Ink, Terracotta, or Focus; it does not touch these three families without a deliberate, documented decision.", "section": "colors" },
+      { "name": "The 18px Floor Rule", "body": "No text in the product renders below 18px. This is a hard accessibility floor (--text-base), not a starting point to shrink from on dense screens.", "section": "typography" },
+      { "name": "The Two-Weight Rule", "body": "Only 400 and 700 are used, matching the two static font files actually shipped. Never introduce an intermediate weight — the browser would fake it.", "section": "typography" },
+      { "name": "The No-Off-Screen Rule", "body": "Interactive rows wrap (flex-wrap) rather than scroll or clip. A caregiver using a phone one-handed never has to scroll sideways to find a control.", "section": "layout" },
+      { "name": "The Flat-Sea Rule", "body": "Command and filter surfaces never cast a shadow — only discrete card-like 'islands' do. If a new surface is a control band spanning the full width, it stays flat; if it's a self-contained card or dialog, it gets the one elevation token.", "section": "elevation" },
+      { "name": "The Dashed-Border Rule", "body": "A disabled or not-yet-valid action gets a 2px dashed Ink border, not a lowered-opacity solid one. The border style itself carries the \"not ready\" meaning.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep Terracotta to its reserved list — primary actions and pressed/active states only.",
+      "Do pair every state change with a word and/or icon, never color alone.",
+      "Do hold every interactive target to 48×48px minimum, unless it's one of the six explicitly documented discreet header-utility controls.",
+      "Do gate any new motion behind motion-safe:/motion-reduce: pairs, with a static fallback (a ring, not a spin) for the reduced-motion case.",
+      "Do reach for xl (12px) radius on any new card, dialog, button, or input; reserve lg (8px) for header-chrome-style secondary controls and full for data-bearing chips only.",
+      "Do treat a disabled action with a dashed border, not a dimmed one."
+    ],
+    "donts": [
+      "Don't touch the six clinical BP-category colors, the three overlay-dataset colors, or the chart-line colors for aesthetic reasons — they are locked medical/data identity.",
+      "Don't add a hover-only, drag, or precise-pointing interaction anywhere — the primary user cannot reliably operate a pointer.",
+      "Don't introduce a third font weight — only 400 and 700 ship as static files for Atkinson Hyperlegible; a synthesized weight is a regression, not an enhancement.",
+      "Don't let the Focus ring and Terracotta accent collapse into the same color again — they were deliberately separated in dark mode so a focused control and a pressed control are never visually confused.",
+      "Don't hardcode a hex value in a component. Every color is a var(--...) custom property declared once in index.css for both themes."
+    ]
+  }
+}
