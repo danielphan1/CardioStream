@@ -55,12 +55,12 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
   }
 
   const inputClass =
-    "min-h-12 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
+    "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-4">
-        <label className="flex flex-col gap-1 text-[20px] font-bold text-[var(--color-ink)]">
+        <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
           From
           <input
             type="text"
@@ -77,7 +77,7 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
             </span>
           )}
         </label>
-        <label className="flex flex-col gap-1 text-[20px] font-bold text-[var(--color-ink)]">
+        <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
           To
           <input
             type="text"
@@ -111,8 +111,8 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
         aria-disabled={!canApply}
         className={
           canApply
-            ? "min-h-12 self-start rounded-lg bg-[var(--color-accent)] px-6 text-[20px] font-bold text-[var(--color-accent-text)]"
-            : "min-h-12 cursor-not-allowed self-start rounded-lg border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-[20px] font-bold text-[var(--color-ink)]"
+            ? "min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
+            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)]"
         }
       >
         Apply
