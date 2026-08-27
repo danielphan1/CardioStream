@@ -10,4 +10,4 @@
 // paraphrased or merged with one another — see 06-UI-SPEC.md's "Precedent
 // for a third, independently-authored string" note.
 export const AGENT_UNAVAILABLE_BANNER_COPY =
-  "Assistant unavailable right now — the buttons below still work.";
+  "Voice and text commands aren't working right now. Filters, charts, and uploads below still work by tap.";

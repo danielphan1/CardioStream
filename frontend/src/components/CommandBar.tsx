@@ -51,7 +51,7 @@ type Status = "idle" | "working" | "confirmed" | "clarify" | "error";
 const RATE_LIMIT_COPY =
   "One moment — a lot of commands at once. Try again in a few seconds.";
 const OFFLINE_COPY =
-  "Couldn't reach the assistant. The buttons below still work. Try: 'show my pulse'.";
+  "Couldn't reach the assistant — use the filters and buttons below instead.";
 // D-14 hard-failure fallback: shown when voice enters the fatal paused state
 // (mic denied/revoked, no hardware, restart-loop exhausted). The hook's
 // voiceMessage (PAUSED_COPY in useVoiceCommand.ts) is the single source of
@@ -87,6 +87,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     cancel: cancelVoice,
   } = useVoiceCommand({ latestReading });
   const isSpeaking = useSpeech((s) => s.isSpeaking);
+  const unavailable = useAgentStatus((s) => s.unavailable);
 
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -209,7 +210,13 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   // uses as its "listening" indicator (ringClass, lineGreen), extended to the
   // control itself so armed-vs-off is visible on the button, not just the bar.
   const micArmed = voiceState === "listening" || voiceState === "triggered";
-  const placeholder = `Try: "${EXAMPLES[exampleIdx]}"`;
+  // impeccable critique P0 re-pass (2026-08-27): PRODUCT.md documents the
+  // production agent as permanently unreachable (no API credits) — stop
+  // teaching voice/text vocabulary for a channel that cannot work while
+  // unavailable is true; the rotating example returns unchanged once reachable.
+  const placeholder = unavailable
+    ? "Voice and text commands aren't available"
+    : `Try: "${EXAMPLES[exampleIdx]}"`;
 
   // The whole bar transforms to signal state (D-06): the existing accent ring is
   // retained for WORKING; armed/listening adds a green ring with a motion-safe

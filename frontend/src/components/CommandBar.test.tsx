@@ -256,14 +256,35 @@ describe("CommandBar", () => {
     expect(screen.queryByText(/429/)).not.toBeInTheDocument();
   });
 
-  it("maps a network failure to offline copy with an example command (VOICE-07)", async () => {
+  it("maps a network failure to fixed offline copy, no doomed retry example (VOICE-07)", async () => {
     mockPostAgent.mockRejectedValue(new ApiError(0, "/agent"));
     renderBar();
 
     typeAndSubmit("show my pulse");
 
-    const region = await screen.findByText(/Couldn't reach the assistant/);
-    expect(region.textContent).toContain("show my pulse");
+    const region = await screen.findByText(
+      "Couldn't reach the assistant — use the filters and buttons below instead.",
+    );
+    expect(region.textContent).not.toMatch(/Try:/);
+  });
+
+  it("shows the rotating example placeholder when the agent is available", () => {
+    renderBar();
+
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input.placeholder).toBe('Try: "show my pulse"');
+  });
+
+  it("shows a static unavailable placeholder when useAgentStatus.unavailable is true, no rotating example", () => {
+    useAgentStatus.setState({ unavailable: true });
+    renderBar();
+
+    const input = screen.getByRole("textbox", {
+      name: "Type a dashboard command",
+    }) as HTMLInputElement;
+    expect(input.placeholder).toBe("Voice and text commands aren't available");
   });
 
   it("exposes accessible names and a polite live region", async () => {

@@ -47,7 +47,7 @@ export type VoiceState =
 const RATE_LIMIT_COPY =
   "One moment — a lot of commands at once. Try again in a few seconds.";
 const OFFLINE_COPY =
-  "Couldn't reach the assistant. The buttons below still work. Try: 'show my pulse'.";
+  "Couldn't reach the assistant — use the filters and buttons below instead.";
 // D-14 fatal fallback: a mic-permission/hardware error closes the session until a
 // fresh start(). Fixed friendly copy only — the raw recognizer error NEVER renders.
 const PAUSED_COPY =
