@@ -15,12 +15,19 @@
 //     D-16 stats-bar pointer appended when present
 //   - D-12 clarify replies store a one-turn context resent with the next submit
 //   - VOICE-07 429/network/unclear render fixed friendly copy — never a raw error
+//   - impeccable critique P2 (2026-08-27): the mic button fills with the
+//     established cat-normal/cat-chip-text "listening" color while armed
+//     (listening/triggered), so armed-vs-off reads from the control itself,
+//     not just the surrounding bar; a visible, always-enabled Cancel button
+//     appears alongside the Working…/WORKING… indicator so a stuck round-trip
+//     never locks the bar with no way out (text path re-enables immediately,
+//     voice path returns to listening)
 //
 // State machine + clarify context live in local useState (PATTERNS: like
 // FilterBar's customOpen), NOT the zustand store, which stays the pure command
 // schema. Only server-composed AppliedFilters reach the store (T-03-16/17).
 import { Mic, MicOff, Volume2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ApiError } from "../api/client";
 import type { AgentReply, ClarifyContext } from "../api/types";
@@ -77,6 +84,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     message: voiceMessage,
     start,
     stop,
+    cancel: cancelVoice,
   } = useVoiceCommand({ latestReading });
   const isSpeaking = useSpeech((s) => s.isSpeaking);
 
@@ -87,6 +95,10 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     null,
   );
   const [exampleIdx, setExampleIdx] = useState(0);
+  // impeccable critique P2 (2026-08-27): mirrors useVoiceCommand's own seqRef
+  // pattern for the text path — bumped only by Cancel, never by submit, since
+  // the text input is already disabled={anyWorking} during a round-trip.
+  const cancelSeqRef = useRef(0);
 
   // Rotate the placeholder only while the box is idle and empty (D-02): a
   // ~6s interval, cleared on unmount and whenever the user starts typing or a
@@ -114,7 +126,8 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     useSpeech.getState().speak(msg); // TTS-01: speak the exact echoed confirmation
   }
 
-  function onSuccess(reply: AgentReply) {
+  function onSuccess(reply: AgentReply, capturedSeq: number) {
+    if (capturedSeq !== cancelSeqRef.current) return; // superseded by Cancel — drop this stale reply
     // D-07: report every real /agent reply to the shared liveness store —
     // instant-clear for any reachable kind, instant-set for "unavailable" —
     // before the per-kind branching below (store's own comparison decides).
@@ -156,7 +169,8 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     }
   }
 
-  function onError(err: unknown) {
+  function onError(err: unknown, capturedSeq: number) {
+    if (capturedSeq !== cancelSeqRef.current) return; // superseded by Cancel — drop this stale error
     // VOICE-07: fixed local copy for every failure; error.message never renders.
     const rateLimited = err instanceof ApiError && err.status === 429;
     setMessage(rateLimited ? RATE_LIMIT_COPY : OFFLINE_COPY);
@@ -170,7 +184,14 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     if (trimmed === "") return; // trimmed-empty → no-op (D-04)
     // D-03: keep text visible, lock the controls, show the Working… state.
     setStatus("working");
-    mutate({ text: trimmed, context: clarifyContext }, { onSuccess, onError });
+    const capturedSeq = cancelSeqRef.current;
+    mutate(
+      { text: trimmed, context: clarifyContext },
+      {
+        onSuccess: (reply) => onSuccess(reply, capturedSeq),
+        onError: (err) => onError(err, capturedSeq),
+      },
+    );
   }
 
   const working = status === "working";
@@ -183,6 +204,11 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     voiceState === "triggered" ||
     voiceState === "working" ||
     voiceState === "speaking";
+  // impeccable critique P2 (2026-08-27): armed = listening or triggered — the
+  // mic button gets the SAME cat-normal/cat-chip-text fill this bar already
+  // uses as its "listening" indicator (ringClass, lineGreen), extended to the
+  // control itself so armed-vs-off is visible on the button, not just the bar.
+  const micArmed = voiceState === "listening" || voiceState === "triggered";
   const placeholder = `Try: "${EXAMPLES[exampleIdx]}"`;
 
   // The whole bar transforms to signal state (D-06): the existing accent ring is
@@ -228,6 +254,21 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     lineGlyph = MARKER[status] !== "" ? "marker" : null;
   }
 
+  // impeccable critique P2 (2026-08-27): gives up on a stuck round-trip
+  // instead of locking the bar until it resolves; a stale reply that arrives
+  // after this is dropped by the seq guards added to onSuccess/onError above,
+  // or by the voice hook's own seq guard inside its cancel().
+  function onCancel() {
+    if (working) {
+      cancelSeqRef.current++;
+      setStatus("idle");
+      setMessage("Cancelled.");
+    }
+    if (voiceWorking) {
+      cancelVoice();
+    }
+  }
+
   function onMicClick() {
     if (sessionOpen) stop();
     else {
@@ -253,7 +294,11 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             type="button"
             onClick={onMicClick}
             aria-label={sessionOpen ? "Stop voice control" : "Start voice control"}
-            className="flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] text-[var(--color-ink)]"
+            className={
+              micArmed
+                ? "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--cat-normal)] bg-[var(--cat-normal)] text-[var(--cat-chip-text)]"
+                : "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] text-[var(--color-ink)]"
+            }
           >
             {voiceState === "paused" ? (
               <MicOff aria-hidden="true" className="h-6 w-6" />
@@ -283,15 +328,28 @@ export function CommandBar({ latestReading }: CommandBarProps) {
       {/* Working… indicator (D-03/D-11) — spinner + ≥18px WORD, shown while a text
           OR voice command round-trips. The spin is motion-safe with a static ring
           glyph fallback under prefers-reduced-motion (D-09). The voice path shows
-          the WORKING… word so the state reads by word, not color alone (D-07). */}
+          the WORKING… word so the state reads by word, not color alone (D-07).
+          impeccable critique P2 (2026-08-27): a visible, always-enabled Cancel
+          button sits alongside it — the round-trip previously locked every
+          control with no way out; Cancel re-enables the text path immediately
+          or returns the voice session to "listening" (never "off"). */}
       {anyWorking && (
-        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-ink)]">
-          <span
-            aria-hidden="true"
-            className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-ink)] border-t-transparent motion-safe:animate-spin"
-          />
-          {voiceWorking ? "WORKING…" : "Working…"}
-        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <p className="flex items-center gap-2 text-[18px] font-bold text-[var(--color-ink)]">
+            <span
+              aria-hidden="true"
+              className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-ink)] border-t-transparent motion-safe:animate-spin"
+            />
+            {voiceWorking ? "WORKING…" : "Working…"}
+          </p>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)]"
+          >
+            Cancel
+          </button>
+        </div>
       )}
 
       {/* Speaking… indicator (D-05) — a third, independent conditional block.
