@@ -88,11 +88,11 @@ function LogoutConfirmDialog({
         aria-labelledby="logout-title"
         aria-describedby="logout-body"
         onKeyDown={handleKeyDown}
-        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)]"
+        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
       >
         <h2
           id="logout-title"
-          className="text-2xl font-bold leading-tight text-[var(--color-ink)]"
+          className="text-h2 font-bold leading-tight text-[var(--color-ink)]"
         >
           Log out?
         </h2>
@@ -104,14 +104,14 @@ function LogoutConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-[20px] font-bold text-[var(--color-ink)]"
+            className="min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)]"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="min-h-12 rounded-lg bg-[var(--color-accent)] px-6 text-[20px] font-bold text-[var(--color-accent-text)]"
+            className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
           >
             Log out
           </button>
@@ -160,7 +160,7 @@ export function Header() {
             size={32}
             className="shrink-0 text-[var(--color-ink)]"
           />
-          <h1 className="text-[32px] font-bold leading-tight text-[var(--color-ink)]">
+          <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
             Chris's Health Dashboard
           </h1>
         </div>
