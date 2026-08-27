@@ -25,9 +25,9 @@ const NOTE_COPY =
 // the ACTIVE fill is per-dataset (inline style), not a shared accent class,
 // per 09-UI-SPEC.md's Marker & Icon Contract.
 const inactiveClass =
-  "min-h-12 flex items-center gap-2 rounded-lg px-4 text-[20px] font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
+  "min-h-12 flex items-center gap-2 rounded-xl px-4 text-control font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)] shadow-[var(--shadow-elevation)]";
 const activeClass =
-  "min-h-12 flex items-center gap-2 rounded-lg px-4 text-[20px] font-bold border-2";
+  "min-h-12 flex items-center gap-2 rounded-xl px-4 text-control font-bold border-2 shadow-[var(--shadow-elevation)]";
 
 export function OverlayToggle() {
   const overlayDatasets = useFilters((s) => s.overlayDatasets);
@@ -57,7 +57,7 @@ export function OverlayToggle() {
   return (
     <section className="bg-[var(--color-sky)] p-4">
       <div className="flex flex-wrap items-center gap-4">
-        <span className="text-[20px] font-bold text-[var(--color-ink)]">
+        <span className="text-control font-bold text-[var(--color-ink)]">
           Overlay:
         </span>
         <div
