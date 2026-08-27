@@ -37,7 +37,7 @@ Full phase goals, dependencies, and plan lists archived in
 - [x] **Phase 9: Multi-Dataset Overlay & Filtering** - Toggle and overlay any combination of BP/pulse/labs/incidents/procedures, by voice or click (gaps found 2026-08-22 — see 09-VERIFICATION.md) (completed 2026-08-22)
 - [x] **Phase 10: Spoken Replies (TTS)** - Dashboard speaks its confirmations aloud, closing the hands-free loop (completed 2026-08-25)
 - [x] **Phase 11: Full Site Guide** - Accessible, voice-navigable walkthrough of every control, chart, and flow (completed 2026-08-26)
-- [ ] **Phase 12: Visual Refresh** - Modernized theme/typography/spacing/color, accessibility preserved
+- [x] **Phase 12: Visual Refresh** - Modernized theme/typography/spacing/color, accessibility preserved (completed 2026-08-27)
 
 ## Phase Details
 
@@ -245,7 +245,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 12-08-PLAN.md — Full regression + cross-screen/cross-theme manual verification checkpoint (VISUAL-01, VISUAL-02)
+- [x] 12-08-PLAN.md — Full regression + cross-screen/cross-theme manual verification checkpoint (VISUAL-01, VISUAL-02)
 
 **UI hint**: yes
 
@@ -281,4 +281,4 @@ Phases execute in numeric order: 6 → 7 → 8 → 9 → 10 → 11 → 12
 | 9. Multi-Dataset Overlay & Filtering | v1.1 | 7/7 | Complete    | 2026-08-22 |
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
 | 11. Full Site Guide | v1.1 | 5/5 | Complete    | 2026-08-26 |
-| 12. Visual Refresh | v1.1 | 7/8 | In Progress|  |
+| 12. Visual Refresh | v1.1 | 8/8 | Complete   | 2026-08-27 |

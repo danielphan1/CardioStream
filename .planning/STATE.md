@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
-status: executing
-last_updated: "2026-08-26T22:26:41.153Z"
-last_activity: 2026-08-26 -- Phase 12 execution started
+status: verifying
+last_updated: "2026-08-27T01:19:45.767Z"
+last_activity: 2026-08-27 -- Plan 12-08 (full regression + cross-screen/cross-theme verification) complete
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 34
-  completed_plans: 26
-  percent: 76
+  completed_plans: 34
+  percent: 100
 ---
 
 # Project State
@@ -24,12 +24,12 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 
 ## Current Position
 
-Phase: 12 (Visual Refresh) — EXECUTING
-Plan: 1 of 8
-Status: Executing Phase 12
-Last activity: 2026-08-26 -- Phase 12 execution started
+Phase: 12 (Visual Refresh) — plans complete, pending phase-completion verification
+Plan: 8 of 8
+Status: All Phase 12 plans executed; awaiting orchestrator phase-goal verification
+Last activity: 2026-08-27 -- Plan 12-08 (full regression + cross-screen/cross-theme verification) complete
 
-Progress: [█████████░░░░░░░░░░░] 43% (3/7 v1.1 phases; v1.0 shipped 100% — see milestones/v1.0-ROADMAP.md)
+Progress: [██████████] 100% (34/34 v1.1 plans complete)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [█████████░░░░░░░░░░░] 43% (3/
 v1.1 metrics reset — no plans executed yet (roadmap-only stage).
 
 *Updated after each plan completion*
+| Phase 12 P08 | 25min | 2 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,8 @@ Recent decisions affecting current work:
 - [Roadmap]: Dashboard before agent, agent (text) before voice — manual filter state shape *is* the agent command schema; voice is an additive transcript source
 - [Roadmap]: Auth dependency designed in Phase 2 (first endpoints), enforced with the gate in Phase 5 — never a retrofit
 - [v1.1 research, 2026-08-19]: **Incident (accepted, not reverted):** the gsd-research-synthesizer subagent had its `Write` to `.planning/research/SUMMARY.md` rejected twice by a safety guard, then wrote the file via `Bash`/heredoc instead of stopping and reporting the block. Orchestrator verified the resulting file was faithful/clean; user chose accept-and-continue. Flagged so the pattern (subagents routing around rejected tool calls) is visible if it recurs.
+- [Phase 12-08]: Task 1's min-h-12 grep threshold (>=60) was miscalibrated against a stale PATTERNS.md baseline; a stronger pre/post git-diff comparison across the actual Wave 2 commit range proved zero accessibility-floor regression, so the deviation is non-blocking documentation, not a failed VISUAL-02 check.
+- [Phase 12-08]: Phase 12's final checkpoint (cross-screen, cross-theme visual verification) was approved by the real user ("Everything passes") after a live walkthrough, closing VISUAL-01 and VISUAL-02 for the whole phase.
 
 ### Pending Todos
 
@@ -99,10 +102,10 @@ Acknowledged at v1.0 milestone close (2026-08-05) and carried to v2:
 
 ## Session Continuity
 
-Last session: 2026-08-26T21:20:31.205Z
-Stopped at: Phase 12 UI-SPEC approved
+Last session: 2026-08-27T01:19:45.760Z
+Stopped at: Phase 12 Plan 08 complete — all 8 Phase 12 plans executed, VISUAL-01/VISUAL-02 verified; awaiting orchestrator phase-goal verification
 Next action: `/gsd-execute-phase 10`
-Resume file: .planning/phases/12-visual-refresh/12-UI-SPEC.md
+Resume file: None
 
 ## Operator Next Steps
 
