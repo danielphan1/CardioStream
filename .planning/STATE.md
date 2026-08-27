@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-27T08:52:00.000Z"
-last_activity: 2026-08-27 - Completed quick task 260827-25p: Fix BP Timeline band-label collision and mobile dot-overplotting (impeccable critique P1)
+last_updated: "2026-08-27T09:20:00.000Z"
+last_activity: 2026-08-27 - Completed quick task 260827-2v2: Fix ReadingsTable Category column clipping on mobile via card-layout reflow (impeccable critique P1)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-27 - Completed quick task 260827-25p: Fix BP Timeline band-label collision and mobile dot-overplotting (impeccable critique P1)
+Last activity: 2026-08-27 - Completed quick task 260827-2v2: Fix ReadingsTable Category column clipping on mobile via card-layout reflow (impeccable critique P1)
 
 ## Performance Metrics
 
@@ -99,6 +99,7 @@ None yet.
 | 260825-h9l | Document CLAUDE.md convention pairing impeccable skill with GSD workflow for frontend design work | 2026-08-25 | 132438c | | [260825-h9l-document-claude-md-convention-pairing-im](./quick/260825-h9l-document-claude-md-convention-pairing-im/) |
 | 260826-vns | Write DESIGN.md and .impeccable/design.json from impeccable document command output | 2026-08-27 | f5ff4bf | | [260826-vns-write-design-md-and-impeccable-design-js](./quick/260826-vns-write-design-md-and-impeccable-design-js/) |
 | 260827-25p | Fix BP Timeline band-label collision and mobile dot-overplotting (P1 findings from the impeccable critique) | 2026-08-27 | b50e1b0 | Verified | [260827-25p-fix-bp-timeline-band-label-collision-and](./quick/260827-25p-fix-bp-timeline-band-label-collision-and/) |
+| 260827-2v2 | Fix ReadingsTable Category column clipping on mobile (P1 finding from the impeccable critique) via a reflow to a stacked card layout below 640px | 2026-08-27 | f102d45 | Verified | [260827-2v2-fix-readingstable-category-column-clippi](./quick/260827-2v2-fix-readingstable-category-column-clippi/) |
 
 ## Deferred Items
 
