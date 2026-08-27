@@ -73,12 +73,12 @@ function useClearanceHeight(
  *  first load keepPreviousData keeps charts on screen (no spinner). */
 function ChartSkeleton() {
   return (
-    <div aria-busy="true" className="flex flex-col gap-6">
-      <div className="h-[420px] animate-pulse rounded-lg bg-[var(--color-sky)]" />
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="h-36 animate-pulse rounded-lg bg-[var(--color-sky)]" />
-        <div className="h-36 animate-pulse rounded-lg bg-[var(--color-sky)]" />
-        <div className="h-36 animate-pulse rounded-lg bg-[var(--color-sky)]" />
+    <div aria-busy="true" className="flex flex-col gap-8">
+      <div className="h-[420px] animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
       </div>
     </div>
   );
@@ -151,9 +151,9 @@ function Dashboard() {
     chartRegion = (
       <section
         aria-label="Data unavailable"
-        className="flex flex-col items-center gap-4 rounded-lg bg-[var(--color-sky)] p-8 text-center"
+        className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-sky)] p-8 text-center shadow-[var(--shadow-elevation)]"
       >
-        <h2 className="text-2xl leading-tight font-bold">
+        <h2 className="text-h2 leading-tight font-bold">
           Couldn't load the readings
         </h2>
         <p className="text-lg">
@@ -166,7 +166,7 @@ function Dashboard() {
             void readings.refetch();
             void stats.refetch();
           }}
-          className="min-h-12 rounded-lg bg-[var(--color-accent)] px-6 text-xl font-bold text-[var(--color-accent-text)]"
+          className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
         >
           Try again
         </button>
@@ -231,7 +231,7 @@ function Dashboard() {
         <StatsStrip stats={stats.data} isLoading={stats.isPending} />
         {chartRegion}
         <section aria-label="Readings table">
-          <h2 className="mb-4 text-2xl leading-tight font-bold text-[var(--color-ink)]">
+          <h2 className="mb-4 text-h2 leading-tight font-bold text-[var(--color-ink)]">
             Readings
           </h2>
           <ReadingsTable readings={readings.data ?? []} />

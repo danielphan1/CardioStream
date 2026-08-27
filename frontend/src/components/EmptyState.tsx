@@ -42,11 +42,11 @@ export function EmptyState({
   return (
     <section
       aria-label="No matching readings"
-      className="flex flex-col items-center gap-4 rounded-lg bg-[var(--color-sky)] p-8 text-center"
+      className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-sky)] p-8 text-center shadow-[var(--shadow-elevation)]"
     >
       {/* Subtle nautical touch (D-16) — decorative only. */}
       <Sailboat aria-hidden="true" className="h-10 w-10" />
-      <h2 className="text-2xl leading-tight font-bold">
+      <h2 className="text-h2 leading-tight font-bold">
         No readings match these filters
       </h2>
       <p className="text-lg">
@@ -55,7 +55,7 @@ export function EmptyState({
       <button
         type="button"
         onClick={showAllData}
-        className="min-h-12 rounded-lg bg-[var(--color-accent)] px-6 text-xl font-bold text-[var(--color-accent-text)]"
+        className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
       >
         Show all data
       </button>
