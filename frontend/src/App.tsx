@@ -219,36 +219,45 @@ function Dashboard() {
         </div>
       </section>
       <GuideOverlay clearanceAbove={guideClearance} />
-      {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); 32px vertical
-          rhythm between sections; single column (UI-SPEC responsive).
+      {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); single column
+          (UI-SPEC responsive). Content is grouped into 3 wrapper clusters —
+          controls (FilterBar+OverlayToggle), visualizations (StatsStrip+chart
+          region), and detail-records (ReadingsTable+OverlayEventsList) —
+          gap-4/gap-8 rhythm within a cluster, gap-12 (48px) between clusters.
           inert while the guide is open — see Header's comment above. */}
       <main
         inert={guideOpen}
-        className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 py-8 md:px-8 xl:px-16"
+        className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 py-8 md:px-8 xl:px-16"
       >
-        <FilterBar latestReading={latestReading} />
-        <OverlayToggle />
-        <StatsStrip stats={stats.data} isLoading={stats.isPending} />
-        {chartRegion}
-        <section aria-label="Readings table">
-          <h2 className="mb-4 text-h2 leading-tight font-bold text-[var(--color-ink)]">
-            Readings
-          </h2>
-          <ReadingsTable readings={readings.data ?? []} />
-        </section>
-        <OverlayEventsList
-          labs={{ enabled: overlayDatasets.labs, events: labsEvents, isError: labs.isError }}
-          incidents={{
-            enabled: overlayDatasets.incidents,
-            events: incidentsEvents,
-            isError: incidents.isError,
-          }}
-          procedures={{
-            enabled: overlayDatasets.procedures,
-            events: proceduresEvents,
-            isError: procedures.isError,
-          }}
-        />
+        <div className="flex flex-col gap-4">
+          <FilterBar latestReading={latestReading} />
+          <OverlayToggle />
+        </div>
+        <div className="flex flex-col gap-8">
+          <StatsStrip stats={stats.data} isLoading={stats.isPending} />
+          {chartRegion}
+        </div>
+        <div className="flex flex-col gap-8">
+          <section aria-label="Readings table">
+            <h2 className="mb-4 text-h2 leading-tight font-bold text-[var(--color-ink)]">
+              Readings
+            </h2>
+            <ReadingsTable readings={readings.data ?? []} />
+          </section>
+          <OverlayEventsList
+            labs={{ enabled: overlayDatasets.labs, events: labsEvents, isError: labs.isError }}
+            incidents={{
+              enabled: overlayDatasets.incidents,
+              events: incidentsEvents,
+              isError: incidents.isError,
+            }}
+            procedures={{
+              enabled: overlayDatasets.procedures,
+              events: proceduresEvents,
+              isError: procedures.isError,
+            }}
+          />
+        </div>
       </main>
     </div>
   );
