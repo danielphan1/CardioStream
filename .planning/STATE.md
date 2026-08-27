@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-27T20:22:09.000Z"
-last_activity: 2026-08-27 - Completed quick task 260827-i2w: Layout pass grouping the dashboard into 3 semantic clusters (impeccable layout audit)
+last_updated: "2026-08-27T21:19:35.000Z"
+last_activity: 2026-08-27 - Completed quick task 260827-j8l: Clarify voice-outage messaging, drop doomed-retry copy across both OFFLINE_COPY sites (impeccable critique P0)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-27 - Completed quick task 260827-i2w: Layout pass grouping the dashboard into 3 semantic clusters (impeccable layout audit)
+Last activity: 2026-08-27 - Completed quick task 260827-j8l: Clarify voice-outage messaging, drop doomed-retry copy across both OFFLINE_COPY sites (impeccable critique P0)
 
 ## Performance Metrics
 
@@ -102,6 +102,7 @@ None yet.
 | 260827-2v2 | Fix ReadingsTable Category column clipping on mobile (P1 finding from the impeccable critique) via a reflow to a stacked card layout below 640px | 2026-08-27 | f102d45 | Verified | [260827-2v2-fix-readingstable-category-column-clippi](./quick/260827-2v2-fix-readingstable-category-column-clippi/) |
 | 260827-3j8 | Fix mic-armed styling and add a Cancel affordance for text/voice command round-trips (P2 findings from the impeccable critique) | 2026-08-27 | 31f1b77 | | [260827-3j8-fix-both-p2-findings-from-the-impeccable](./quick/260827-3j8-fix-both-p2-findings-from-the-impeccable/) |
 | 260827-i2w | Layout pass on the CardioStream dashboard: group FilterBar+OverlayToggle, StatsStrip+charts, and ReadingsTable+OverlayEventsList into 3 semantic clusters, promoting `<main>`'s gap to DESIGN.md's unused 2xl (48px) token between them (impeccable layout audit) | 2026-08-27 | d171603 | Verified | [260827-i2w-layout-pass-on-the-cardiostream-dashboar](./quick/260827-i2w-layout-pass-on-the-cardiostream-dashboar/) |
+| 260827-j8l | Clarify voice-outage messaging (impeccable critique P0, re-critique): rewrote AGENT_UNAVAILABLE_BANNER_COPY and both independently-declared OFFLINE_COPY sites (CommandBar.tsx + useVoiceCommand.ts) to drop transience/doomed-retry framing, and made CommandBar reactively suppress the vocabulary-teaching rotating placeholder while the agent is unavailable | 2026-08-27 | e00638b | Verified | [260827-j8l-clarify-voice-outage-messaging-on-the-ca](./quick/260827-j8l-clarify-voice-outage-messaging-on-the-ca/) |
 
 ## Deferred Items
 
@@ -124,9 +125,9 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-08-27T20:22:09.000Z
-Stopped at: Completed quick task 260827-i2w — impeccable `/impeccable layout` pass grouping App.tsx's Dashboard into 3 semantic clusters (controls / visualizations / detail-records), promoting DESIGN.md's unused 2xl (48px) token to real use as the major-section-break rhythm. Live squint-test + tab-order spot-check both passed; mobile/tablet viewport glance and the loading/error chartRegion branches are non-blocking residual checks (see 260827-i2w-VERIFICATION.md).
-Next action: `/gsd-new-milestone` to scope the next milestone
+Last session: 2026-08-27T21:19:35.000Z
+Stopped at: Completed quick task 260827-j8l (impeccable critique P0 fix). Mid-sequence executing the user's full scoped plan from the 2026-08-27 re-critique (score 35/40): step 1/4 (clarify, P0) done; step 2/4 (harden filters-store persistence, P1) next; step 3/4 (harden OverlayToggle dimming, P2) and step 4/4 (polish pass) still queued.
+Next action: Continue the scoped critique-fix sequence — /impeccable harden on frontend/src/store/filters.ts (zustand persist middleware, P1)
 Resume file: None
 
 ## Operator Next Steps
