@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-27T09:20:00.000Z"
-last_activity: 2026-08-27 - Completed quick task 260827-2v2: Fix ReadingsTable Category column clipping on mobile via card-layout reflow (impeccable critique P1)
+last_updated: "2026-08-27T19:21:10.000Z"
+last_activity: 2026-08-27 - Completed quick task 260827-3j8: Fix impeccable P2 findings (mic-armed styling + Cancel affordance)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-27 - Completed quick task 260827-2v2: Fix ReadingsTable Category column clipping on mobile via card-layout reflow (impeccable critique P1)
+Last activity: 2026-08-27 - Completed quick task 260827-3j8: Fix impeccable P2 findings (mic-armed styling + Cancel affordance)
 
 ## Performance Metrics
 
@@ -100,6 +100,7 @@ None yet.
 | 260826-vns | Write DESIGN.md and .impeccable/design.json from impeccable document command output | 2026-08-27 | f5ff4bf | | [260826-vns-write-design-md-and-impeccable-design-js](./quick/260826-vns-write-design-md-and-impeccable-design-js/) |
 | 260827-25p | Fix BP Timeline band-label collision and mobile dot-overplotting (P1 findings from the impeccable critique) | 2026-08-27 | b50e1b0 | Verified | [260827-25p-fix-bp-timeline-band-label-collision-and](./quick/260827-25p-fix-bp-timeline-band-label-collision-and/) |
 | 260827-2v2 | Fix ReadingsTable Category column clipping on mobile (P1 finding from the impeccable critique) via a reflow to a stacked card layout below 640px | 2026-08-27 | f102d45 | Verified | [260827-2v2-fix-readingstable-category-column-clippi](./quick/260827-2v2-fix-readingstable-category-column-clippi/) |
+| 260827-3j8 | Fix mic-armed styling and add a Cancel affordance for text/voice command round-trips (P2 findings from the impeccable critique) | 2026-08-27 | 31f1b77 | | [260827-3j8-fix-both-p2-findings-from-the-impeccable](./quick/260827-3j8-fix-both-p2-findings-from-the-impeccable/) |
 
 ## Deferred Items
 
@@ -122,8 +123,8 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-08-27T01:43:19.266Z
-Stopped at: v1.1 Polish & Records milestone closed — all 7 phases (6–12), 34 plans archived
+Last session: 2026-08-27T19:21:10.000Z
+Stopped at: Resumed session; completed quick task 260827-3j8 (mic-armed styling + Cancel affordance, both P2 findings from the 2026-08-27 impeccable critique) that had been planned but not yet executed
 Next action: `/gsd-new-milestone` to scope the next milestone
 Resume file: None
 
