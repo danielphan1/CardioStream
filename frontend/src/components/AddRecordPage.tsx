@@ -52,9 +52,9 @@ const TYPE_OPTIONS: { key: RecordType; label: string }[] = [
 // Type-switcher styling — mirrors FilterBar's exact inactiveClass/activeClass
 // constants verbatim (D-02, UI-SPEC "AddRecordPage.tsx layout").
 const inactiveClass =
-  "min-h-12 rounded-lg px-4 text-[20px] font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
+  "min-h-12 rounded-xl px-4 text-control bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
 const activeClass =
-  "min-h-12 rounded-lg px-4 text-[20px] font-bold bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+  "min-h-12 rounded-xl px-4 text-control bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 export function AddRecordPage() {
   const [recordType, setRecordType] = useState<RecordType>("lab");
@@ -142,7 +142,7 @@ export function AddRecordPage() {
   return (
     <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-foam)] px-4 py-8 md:px-8 xl:px-16">
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold leading-tight text-[var(--color-ink)]">
+        <h2 className="text-h2 leading-tight text-[var(--color-ink)]">
           Add a record
         </h2>
         <p className="text-lg text-[var(--color-ink)]">
@@ -186,8 +186,8 @@ export function AddRecordPage() {
         aria-busy={isSubmitting}
         className={
           canSubmit
-            ? "min-h-12 self-start rounded-lg bg-[var(--color-accent)] px-6 text-[20px] font-bold text-[var(--color-accent-text)]"
-            : "min-h-12 cursor-not-allowed self-start rounded-lg border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-[20px] font-bold text-[var(--color-ink)]"
+            ? "min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-control text-[var(--color-accent-text)]"
+            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control text-[var(--color-ink)]"
         }
       >
         {isSubmitting ? "Saving…" : SUBMIT_LABEL[recordType]}
@@ -197,7 +197,7 @@ export function AddRecordPage() {
         <section
           role="status"
           aria-label="Add record result"
-          className="flex items-start gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
         >
           <CheckCircle2 aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           <p className="text-lg text-[var(--color-ink)]">
@@ -210,7 +210,7 @@ export function AddRecordPage() {
         <section
           role="alert"
           aria-label="Add record notice"
-          className="flex items-start gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-lg text-[var(--color-ink)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-lg text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
         >
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           <p>

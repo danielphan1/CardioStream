@@ -49,7 +49,7 @@ export function LoginGate() {
       <form
         onSubmit={handleSubmit}
         aria-label="Sign in"
-        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 md:p-8"
+        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 md:p-8 shadow-[var(--shadow-elevation)]"
       >
         <div className="flex flex-col items-center gap-2 text-center">
           <Sailboat
@@ -57,10 +57,10 @@ export function LoginGate() {
             size={40}
             className="text-[var(--color-ink)]"
           />
-          <h1 className="text-[32px] font-bold leading-tight text-[var(--color-ink)]">
+          <h1 className="text-h1 leading-tight text-[var(--color-ink)]">
             Chris's Health Dashboard
           </h1>
-          <h2 className="text-2xl font-bold leading-tight text-[var(--color-ink)]">
+          <h2 className="text-h2 leading-tight text-[var(--color-ink)]">
             Enter the password to continue
           </h2>
         </div>
@@ -68,7 +68,7 @@ export function LoginGate() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="login-password"
-            className="text-[20px] font-bold text-[var(--color-ink)]"
+            className="text-control text-[var(--color-ink)]"
           >
             Password
           </label>
@@ -81,7 +81,7 @@ export function LoginGate() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="min-h-12 w-full rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-4 text-lg text-[var(--color-ink)]"
+            className="min-h-12 w-full rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-4 text-lg text-[var(--color-ink)]"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function LoginGate() {
         {rejected && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-4 text-lg text-[var(--color-ink)]"
+            className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-4 text-lg text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
           >
             <TriangleAlert
               aria-hidden="true"
@@ -108,7 +108,7 @@ export function LoginGate() {
         <button
           type="submit"
           disabled={password.trim() === "" || submitting}
-          className="min-h-12 rounded-lg bg-[var(--color-accent)] px-6 text-[20px] font-bold text-[var(--color-accent-text)] disabled:opacity-50"
+          className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control text-[var(--color-accent-text)] disabled:opacity-50"
         >
           Enter
         </button>
