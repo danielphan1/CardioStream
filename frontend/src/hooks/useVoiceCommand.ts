@@ -62,6 +62,7 @@ export type UseVoiceCommand = {
   message: string;
   start: () => void;
   stop: () => void;
+  cancel: () => void;
 };
 
 export function useVoiceCommand({
@@ -257,6 +258,21 @@ export function useVoiceCommand({
     recRef.current?.abort();
   }
 
+  // impeccable critique P2, 2026-08-27: a user-control-and-freedom escape hatch
+  // for a stuck round-trip. Only acts while "working" — supersedes the pending
+  // reply via the SAME seq guard stop() uses (handleSuccess/handleError's
+  // capturedSeq !== seqRef.current check), so a late reply/error is silently
+  // dropped. Unlike stop(), the live recognizer session is left exactly as-is
+  // (no abort(), no armedRef/clearRestartTimer touch) — it returns to
+  // "listening", not "off".
+  function cancel() {
+    if (state !== "working") return;
+    seqRef.current++;
+    setInterim("");
+    setMessage("Cancelled — listening again.");
+    setVoiceState("listening");
+  }
+
   // TTS-04: pause the mic while the dashboard speaks, resume right after — ONLY
   // when a voice session is genuinely open (armedRef gate, Pitfall 3). Never
   // touches armedRef itself, so D-13's explicit-stop-only invariant holds.
@@ -309,5 +325,5 @@ export function useVoiceCommand({
     };
   }, []);
 
-  return { supported, state, interim, message, start, stop };
+  return { supported, state, interim, message, start, stop, cancel };
 }
