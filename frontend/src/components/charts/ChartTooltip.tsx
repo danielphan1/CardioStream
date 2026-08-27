@@ -68,7 +68,7 @@ export default function ChartTooltip({
     <div
       role="dialog"
       aria-label={`Reading details, ${fmtTooltipTitle(reading.datetime)}`}
-      className="flex flex-col gap-2 rounded-lg p-4 shadow-lg"
+      className="flex flex-col gap-2 rounded-xl p-4 shadow-[var(--shadow-elevation)]"
       style={{
         background: "var(--color-sky)",
         color: "var(--color-ink)",

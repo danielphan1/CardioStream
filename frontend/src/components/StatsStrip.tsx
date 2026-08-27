@@ -32,9 +32,9 @@ function VitalTile({
   // count === 0 → VitalStats is null → em dash for ALL THREE values
   // (never 0, never blank — D-22 null contract).
   return (
-    <div className="rounded-lg bg-[var(--color-sky)] p-6">
-      <p className="text-xl leading-tight font-bold">{label}</p>
-      <p className="text-[2rem] leading-tight font-bold">
+    <div className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
+      <p className="text-control leading-tight font-bold">{label}</p>
+      <p className="text-h1 leading-tight font-bold">
         {vital !== null ? vital.avg : "—"}
       </p>
       <p className="text-lg">
@@ -49,7 +49,7 @@ function VitalTile({
 /** Skeleton tile for the initial-load state (UI-SPEC loading contract). */
 function SkeletonTile() {
   return (
-    <div className="animate-pulse rounded-lg bg-[var(--color-sky)] p-6">
+    <div className="animate-pulse rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
       <div className="h-6 w-24 rounded bg-[var(--color-foam)]" />
       <div className="mt-2 h-9 w-16 rounded bg-[var(--color-foam)]" />
       <div className="mt-2 h-5 w-32 rounded bg-[var(--color-foam)]" />
@@ -87,9 +87,9 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
         <VitalTile label="Systolic" vital={stats.systolic} />
         <VitalTile label="Diastolic" vital={stats.diastolic} />
         <VitalTile label="Pulse" vital={stats.pulse} />
-        <div className="rounded-lg bg-[var(--color-sky)] p-6">
-          <p className="text-xl leading-tight font-bold">Readings</p>
-          <p className="text-[2rem] leading-tight font-bold">{stats.count}</p>
+        <div className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
+          <p className="text-control leading-tight font-bold">Readings</p>
+          <p className="text-h1 leading-tight font-bold">{stats.count}</p>
         </div>
       </div>
 
