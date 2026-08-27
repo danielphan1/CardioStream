@@ -27,11 +27,12 @@ import {
 } from "recharts";
 
 import type { BPCategory, Reading } from "../../api/types";
-import { prefersReducedMotion, toTimePoints } from "../../lib/chartData";
+import { isDotCrowded, prefersReducedMotion, toTimePoints } from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
 import type { OverlayEvent } from "../../lib/overlayEvents";
 import { OVERLAY_META } from "../../lib/overlayMeta";
 import { categoryColor } from "../../lib/palette";
+import { useElementWidth } from "../../hooks/useElementWidth";
 
 import ChartTooltip from "./ChartTooltip";
 
@@ -46,6 +47,14 @@ export type BPTimelineProps = {
  * UI-SPEC: bands are ambient decorative tint, explicitly EXEMPT from the
  * contrast floors — the authoritative category lives in the tooltip and
  * chip. Carry this rationale so verification does not flag 14px/low-tint.
+ *
+ * Elevated and Stage 1 are deliberately excluded from ever rendering this
+ * label (below): those two bands span only 10 of the [40, 220] domain
+ * units (~22px tall at hero height) — too thin for a 14px inline label
+ * without colliding with a neighboring band's label (/impeccable critique
+ * P1, 2026-08-27). The Y-axis ticks already mark every boundary
+ * (40/90/120/130/140/180/220) numerically, and the tooltip/chip remain the
+ * authoritative category source per D-08.
  */
 function bandLabel(cat: BPCategory) {
   return {
@@ -94,12 +103,15 @@ export default function BPTimeline({
   const lastIndex = points.length - 1;
   const [dismissed, setDismissed] = useState(false);
   const animate = prefersReducedMotion() === false;
+  const { ref, width } = useElementWidth<HTMLDivElement>();
+  const crowded = isDotCrowded(width, points.length);
 
   return (
     // Click or arrow-key move onto a (new) point re-shows the tooltip;
     // Close/Escape set dismissed (D-09 persistence contract). The keydown
     // bubbles up from Recharts' focusable accessibilityLayer chart.
     <div
+      ref={ref}
       className="h-full w-full"
       onKeyDown={
         hero
@@ -139,14 +151,14 @@ export default function BPTimeline({
           y2={130}
           fill={categoryColor("Elevated")}
           className="chart-band"
-          label={hero ? bandLabel("Elevated") : undefined}
+          label={undefined}
         />
         <ReferenceArea
           y1={130}
           y2={140}
           fill={categoryColor("Stage 1")}
           className="chart-band"
-          label={hero ? bandLabel("Stage 1") : undefined}
+          label={undefined}
         />
         <ReferenceArea
           y1={140}
@@ -194,7 +206,7 @@ export default function BPTimeline({
           dataKey="systolic"
           stroke="var(--line-systolic)"
           strokeWidth={3}
-          dot={{ r: 5 }}
+          dot={crowded ? false : { r: 5 }}
           activeDot={{ r: 10 }}
           isAnimationActive={animate}
         >
@@ -208,7 +220,7 @@ export default function BPTimeline({
           dataKey="diastolic"
           stroke="var(--line-diastolic)"
           strokeWidth={3}
-          dot={{ r: 5 }}
+          dot={crowded ? false : { r: 5 }}
           activeDot={{ r: 10 }}
           isAnimationActive={animate}
         >

@@ -24,10 +24,11 @@ import {
 } from "recharts";
 
 import type { Reading } from "../../api/types";
-import { prefersReducedMotion, toTimePoints } from "../../lib/chartData";
+import { isDotCrowded, prefersReducedMotion, toTimePoints } from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
 import type { OverlayEvent } from "../../lib/overlayEvents";
 import { OVERLAY_META } from "../../lib/overlayMeta";
+import { useElementWidth } from "../../hooks/useElementWidth";
 
 import ChartTooltip from "./ChartTooltip";
 
@@ -46,11 +47,14 @@ export default function PulseTrend({
   const points = toTimePoints(readings);
   const [dismissed, setDismissed] = useState(false);
   const animate = prefersReducedMotion() === false;
+  const { ref, width } = useElementWidth<HTMLDivElement>();
+  const crowded = isDotCrowded(width, points.length);
 
   return (
     // Click or arrow-key move re-shows the tooltip; Close/Escape dismisses
     // (D-09) — same local-state pattern as BPTimeline.
     <div
+      ref={ref}
       className="h-full w-full"
       onKeyDown={
         hero
@@ -116,7 +120,7 @@ export default function PulseTrend({
             dataKey="pulse"
             stroke="var(--line-systolic)"
             strokeWidth={3}
-            dot={{ r: 5 }}
+            dot={crowded ? false : { r: 5 }}
             activeDot={{ r: 10 }}
             isAnimationActive={animate}
           />
