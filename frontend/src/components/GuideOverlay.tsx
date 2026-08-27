@@ -26,7 +26,7 @@ const SECTIONS = [
   { id: "about-this-guide", label: "About This Guide" },
 ];
 
-const h2Class = "text-2xl leading-tight font-bold text-[var(--color-ink)]";
+const h2Class = "text-h2 leading-tight font-bold text-[var(--color-ink)]";
 const bodyClass = "text-lg text-[var(--color-ink)]";
 
 // See the paddingTop comment below for what these mean and why they exist.
@@ -123,7 +123,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           ref={closeButtonRef}
           type="button"
           onClick={() => setOpen(false)}
-          className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-[20px] font-bold text-[var(--color-ink)]"
+          className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
         >
           <X aria-hidden="true" size={24} />
           Close
@@ -159,12 +159,12 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           ),
         }}
       >
-        <h1 className="text-[32px] font-bold leading-tight text-[var(--color-ink)]">
+        <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
           Site Guide
         </h1>
 
         <nav aria-label="Jump to a section">
-          <p className="text-[20px] font-bold text-[var(--color-ink)]">
+          <p className="text-control font-bold text-[var(--color-ink)]">
             Jump to a section
           </p>
           <ul className="mt-2 flex flex-wrap gap-2">
@@ -172,7 +172,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="flex min-h-12 items-center rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
+                  className="flex min-h-12 items-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
                 >
                   {s.label}
                 </a>
@@ -295,7 +295,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           <h2 className={h2Class}>What Can I Say</h2>
           {VOICE_COMMAND_CATEGORIES.map((c) => (
             <div key={c.id}>
-              <h3 className="text-[20px] font-bold text-[var(--color-ink)]">
+              <h3 className="text-control font-bold text-[var(--color-ink)]">
                 {c.label}
               </h3>
               <p className="text-lg font-bold text-[var(--color-ink)]">
