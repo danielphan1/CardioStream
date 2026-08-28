@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-28 - Completed quick task 260828-25o: Committed pending impeccable housekeeping (PRODUCT.md, critique report, .gitignore, live config)
+Last activity: 2026-08-28 - Completed quick task 260828-2l6: Fixed BP Timeline band-label/line collision with a solid chip backing (impeccable critique P3)
 
 ## Performance Metrics
 
@@ -106,6 +106,7 @@ None yet.
 | 260827-jzp | Harden filter/overlay session against reload data loss (impeccable critique P1): added localStorage persistence to store/filters.ts mirroring the codebase's existing hand-rolled pattern (theme.ts/speech.ts/auth.ts, not zustand persist middleware) — shape-only type guard, initFilters() wired into main.tsx, all 7 mutating setters persist | 2026-08-27 | cfba4f3 | Verified | [260827-jzp-harden-cardiostream-filter-overlay-sessi](./quick/260827-jzp-harden-cardiostream-filter-overlay-sessi/) |
 | 260827-kir | Harden OverlayToggle.tsx against a disabled-state visual/functional mismatch (impeccable critique P2): removed the conditional opacity-60 dimming on the always-clickable overlay button group, restoring compliance with DESIGN.md's dashed-border-only disabled-state rule | 2026-08-28 | 60deeee | Verified | [260827-kir-harden-overlaytoggle-tsx-against-a-disab](./quick/260827-kir-harden-overlaytoggle-tsx-against-a-disab/) |
 | 260828-25o | Commit pending impeccable housekeeping: frontend/.gitignore's impeccable-live-ignore block, PRODUCT.md, the 2026-08-27 App.tsx critique report, and frontend/.impeccable/live/config.json — excluding the machine-local frontend/.impeccable/live/roots.json | 2026-08-28 | 9bf3a9d, 7073e86 | | [260828-25o-commit-pending-impeccable-housekeeping-f](./quick/260828-25o-commit-pending-impeccable-housekeeping-f/) |
+| 260828-2l6 | Fix BP Timeline band-label/line collision (impeccable critique P3): replaced the 4 remaining bare-text band labels (Hypotension, Normal, Stage 2, Hypertensive Crisis) with a solid category-color chip so the label fully occludes any plotted line behind it, reusing existing categoryColor()/CHIP_TEXT tokens | 2026-08-28 | 852e0a9 | | [260828-2l6-fix-p3-finding-from-impeccable-critique-](./quick/260828-2l6-fix-p3-finding-from-impeccable-critique-/) |
 
 ## Deferred Items
 
