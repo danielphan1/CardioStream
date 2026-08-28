@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-27T21:45:13.000Z"
-last_activity: 2026-08-27 - Completed quick task 260827-jzp: Persist filter/overlay session to localStorage against reload data loss (impeccable critique P1)
+last_updated: "2026-08-28T00:15:41.000Z"
+last_activity: 2026-08-28 - Completed quick task 260827-kir: Removed OverlayToggle's opacity-60 disabled-state mismatch (impeccable critique P2)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-27 - Completed quick task 260827-jzp: Persist filter/overlay session to localStorage against reload data loss (impeccable critique P1)
+Last activity: 2026-08-28 - Completed quick task 260827-kir: Removed OverlayToggle's opacity-60 disabled-state mismatch (impeccable critique P2)
 
 ## Performance Metrics
 
@@ -104,6 +104,7 @@ None yet.
 | 260827-i2w | Layout pass on the CardioStream dashboard: group FilterBar+OverlayToggle, StatsStrip+charts, and ReadingsTable+OverlayEventsList into 3 semantic clusters, promoting `<main>`'s gap to DESIGN.md's unused 2xl (48px) token between them (impeccable layout audit) | 2026-08-27 | d171603 | Verified | [260827-i2w-layout-pass-on-the-cardiostream-dashboar](./quick/260827-i2w-layout-pass-on-the-cardiostream-dashboar/) |
 | 260827-j8l | Clarify voice-outage messaging (impeccable critique P0, re-critique): rewrote AGENT_UNAVAILABLE_BANNER_COPY and both independently-declared OFFLINE_COPY sites (CommandBar.tsx + useVoiceCommand.ts) to drop transience/doomed-retry framing, and made CommandBar reactively suppress the vocabulary-teaching rotating placeholder while the agent is unavailable | 2026-08-27 | e00638b | Verified | [260827-j8l-clarify-voice-outage-messaging-on-the-ca](./quick/260827-j8l-clarify-voice-outage-messaging-on-the-ca/) |
 | 260827-jzp | Harden filter/overlay session against reload data loss (impeccable critique P1): added localStorage persistence to store/filters.ts mirroring the codebase's existing hand-rolled pattern (theme.ts/speech.ts/auth.ts, not zustand persist middleware) — shape-only type guard, initFilters() wired into main.tsx, all 7 mutating setters persist | 2026-08-27 | cfba4f3 | Verified | [260827-jzp-harden-cardiostream-filter-overlay-sessi](./quick/260827-jzp-harden-cardiostream-filter-overlay-sessi/) |
+| 260827-kir | Harden OverlayToggle.tsx against a disabled-state visual/functional mismatch (impeccable critique P2): removed the conditional opacity-60 dimming on the always-clickable overlay button group, restoring compliance with DESIGN.md's dashed-border-only disabled-state rule | 2026-08-28 | 60deeee | Verified | [260827-kir-harden-overlaytoggle-tsx-against-a-disab](./quick/260827-kir-harden-overlaytoggle-tsx-against-a-disab/) |
 
 ## Deferred Items
 
@@ -126,9 +127,9 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-08-27T21:45:13.000Z
-Stopped at: Completed quick task 260827-jzp (impeccable critique P1 fix). Mid-sequence executing the user's full scoped plan from the 2026-08-27 re-critique (score 35/40): step 1/4 (clarify, P0) and step 2/4 (harden filters persistence, P1) done; step 3/4 (harden OverlayToggle dimming, P2) next; step 4/4 (polish pass) still queued.
-Next action: Continue the scoped critique-fix sequence — /impeccable harden on frontend/src/components/OverlayToggle.tsx (drop opacity-60 dimming, DESIGN.md's dashed-border-only disabled-state rule, P2)
+Last session: 2026-08-28T00:15:41.000Z
+Stopped at: Completed quick task 260827-kir (impeccable critique P2 fix). Mid-sequence executing the user's full scoped plan from the 2026-08-27 re-critique (score 35/40): step 1/4 (clarify, P0), step 2/4 (harden filters persistence, P1), and step 3/4 (harden OverlayToggle dimming, P2) all done; step 4/4 (polish pass) is the last remaining step.
+Next action: Continue the scoped critique-fix sequence — /impeccable polish as the final pass over the three fixes (clarify, filters persistence, OverlayToggle)
 Resume file: None
 
 ## Operator Next Steps
