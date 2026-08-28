@@ -10,15 +10,21 @@
  *   12-hour gap; visual spacing verified at the 02-07 checkpoint (A3).
  * - Hero: click-persistent tooltip (D-09) + line-end labels (D-07/A4).
  *   Mini: accessibilityLayer off, no Tooltip, axes/labels hidden (Pitfall 8).
- * - Band-label chips (four of six bands) render via a custom SVG label
- *   content function at Recharts' zIndex=2000 label layer — always above
- *   the zIndex=400 Line layer — so the chip's own solid background fully
- *   occludes any line crossing behind it (impeccable P3, 2026-08-28).
+ * - Band-label chips (four of six bands) each render as two sibling
+ *   ReferenceAreas sharing the same y1/y2: one for the background tint
+ *   (default zIndex 100, unlabeled), one invisible and label-only with an
+ *   explicit zIndex (500, `DefaultZIndexes.axis`) so the chip paints above
+ *   the Line layer (400) — a ReferenceArea's own `label` prop is never
+ *   promoted to Recharts' 2000 label layer (that only applies to a real
+ *   `<Label>`/`<LabelList>` chart child), so the label needs its own
+ *   explicit zIndex to outrank Line's 400 (impeccable P1, 2026-08-28,
+ *   correcting the wrong assumption in the P3 fix this replaces).
  *
  * Parent supplies the fixed height (hero h-[420px], mini h-36 — Pitfall 2).
  */
 import { useState } from "react";
 import {
+  DefaultZIndexes,
   Line,
   LineChart,
   ReferenceArea,
@@ -64,13 +70,17 @@ const CHIP_OFFSET = 6;
 /**
  * Hero-only band-label chip (D-08): a solid category-color pill rendered
  * behind its own text so the label fully occludes any line segment drawn
- * behind it. Recharts' `label` zIndex layer (2000) already paints above the
- * `Line` zIndex layer (400, `recharts/zIndex/DefaultZIndexes`) — the old
- * bare-text label was already drawn on top of the lines, but a bare `<text>`
- * glyph's transparent inter-glyph gaps still visually read as "the line
- * cuts through the word" even when technically on top. An opaque rect
- * behind the text fully occludes whatever line segment is directly behind
- * it instead (/impeccable critique P3, 2026-08-28).
+ * behind it. This chip is rendered by a second, invisible, label-only
+ * ReferenceArea sharing its band's y1/y2 with an explicit `zIndex` prop set
+ * to `DefaultZIndexes.axis` (500) — a ReferenceArea's own `label` prop
+ * is never promoted to Recharts' 2000 label layer (that only applies to a
+ * real `<Label>`/`<LabelList>` chart child), so without an explicit zIndex
+ * above Line's 400 the chip paints in the same 100 layer as the band tints
+ * and gets crossed by the plotted lines. A bare `<text>` glyph's transparent
+ * inter-glyph gaps also visually read as "the line cuts through the word"
+ * even when technically on top, so an opaque rect behind the text fully
+ * occludes whatever's directly behind it (/impeccable critique P3,
+ * 2026-08-28; zIndex mechanism corrected P1, 2026-08-28).
  *
  * The chip reuses the same `categoryColor(cat)`/`CHIP_TEXT` pair FilterBar
  * and StatsStrip already use for this category's own chip — not an
@@ -190,6 +200,14 @@ export default function BPTimeline({
           y2={90}
           fill={categoryColor("Hypotension")}
           className="chart-band"
+          label={undefined}
+        />
+        <ReferenceArea
+          y1={40}
+          y2={90}
+          fill="transparent"
+          stroke="none"
+          zIndex={DefaultZIndexes.axis}
           label={hero ? makeBandLabelChip("Hypotension") : undefined}
         />
         <ReferenceArea
@@ -197,6 +215,14 @@ export default function BPTimeline({
           y2={120}
           fill={categoryColor("Normal")}
           className="chart-band"
+          label={undefined}
+        />
+        <ReferenceArea
+          y1={90}
+          y2={120}
+          fill="transparent"
+          stroke="none"
+          zIndex={DefaultZIndexes.axis}
           label={hero ? makeBandLabelChip("Normal") : undefined}
         />
         <ReferenceArea
@@ -218,6 +244,14 @@ export default function BPTimeline({
           y2={180}
           fill={categoryColor("Stage 2")}
           className="chart-band"
+          label={undefined}
+        />
+        <ReferenceArea
+          y1={140}
+          y2={180}
+          fill="transparent"
+          stroke="none"
+          zIndex={DefaultZIndexes.axis}
           label={hero ? makeBandLabelChip("Stage 2") : undefined}
         />
         <ReferenceArea
@@ -225,6 +259,14 @@ export default function BPTimeline({
           y2={220}
           fill={categoryColor("Hypertensive Crisis")}
           className="chart-band"
+          label={undefined}
+        />
+        <ReferenceArea
+          y1={180}
+          y2={220}
+          fill="transparent"
+          stroke="none"
+          zIndex={DefaultZIndexes.axis}
           label={hero ? makeBandLabelChip("Hypertensive Crisis") : undefined}
         />
         {/* Real time axis (Pitfall 5) — proportional gaps, verify at 02-07 (A3). */}
