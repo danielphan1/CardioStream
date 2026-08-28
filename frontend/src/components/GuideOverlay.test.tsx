@@ -97,4 +97,31 @@ describe("GuideOverlay", () => {
       expect(screen.getByText(`"${c.example}"`)).toBeInTheDocument();
     }
   });
+
+  it("sets the region's inline top style from clearanceAbove, or the default fallback", () => {
+    useGuide.setState({ open: true });
+    const { container, unmount } = render(
+      <GuideOverlay clearanceAbove={300} />,
+    );
+    const region = container.querySelector('[role="region"]');
+    expect(region).not.toBeNull();
+    expect((region as HTMLElement).style.top).toBe("300px");
+    unmount();
+
+    const { container: container2 } = render(<GuideOverlay />);
+    const region2 = container2.querySelector('[role="region"]');
+    expect(region2).not.toBeNull();
+    expect((region2 as HTMLElement).style.top).toBe("261px");
+  });
+
+  it("constrains the region to fixed inset-x-0 bottom-0, never inset-0", () => {
+    useGuide.setState({ open: true });
+    const { container } = render(<GuideOverlay />);
+    const region = container.querySelector('[role="region"]');
+    expect(region).not.toBeNull();
+    const className = (region as HTMLElement).className;
+    expect(className).not.toMatch(/\binset-0\b/);
+    expect(className).toMatch(/\binset-x-0\b/);
+    expect(className).toMatch(/\bbottom-0\b/);
+  });
 });
