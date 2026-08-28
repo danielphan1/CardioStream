@@ -130,6 +130,22 @@ describe("doesn't-apply-here indicator (OVERLAY-05)", () => {
   });
 });
 
+describe("no-dimming behavior (never actually disabled, so never visually dimmed)", () => {
+  it("does not dim the button group when overlayApplies is false (bp_categories)", () => {
+    useFilters.setState({ activeChart: "bp_categories" });
+    render(<OverlayToggle />);
+    const group = screen.getByRole("group", { name: "Overlay events" });
+    expect(group.className).not.toContain("opacity-60");
+  });
+
+  it("does not dim the button group when overlayApplies is true (bp_timeline)", () => {
+    useFilters.setState({ activeChart: "bp_timeline" });
+    render(<OverlayToggle />);
+    const group = screen.getByRole("group", { name: "Overlay events" });
+    expect(group.className).not.toContain("opacity-60");
+  });
+});
+
 describe("overlay-state sentence", () => {
   it('shows "No overlays selected" when all 3 are off', () => {
     render(<OverlayToggle />);
