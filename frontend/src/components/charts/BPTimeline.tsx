@@ -10,6 +10,10 @@
  *   12-hour gap; visual spacing verified at the 02-07 checkpoint (A3).
  * - Hero: click-persistent tooltip (D-09) + line-end labels (D-07/A4).
  *   Mini: accessibilityLayer off, no Tooltip, axes/labels hidden (Pitfall 8).
+ * - Band-label chips (four of six bands) render via a custom SVG label
+ *   content function at Recharts' zIndex=2000 label layer — always above
+ *   the zIndex=400 Line layer — so the chip's own solid background fully
+ *   occludes any line crossing behind it (impeccable P3, 2026-08-28).
  *
  * Parent supplies the fixed height (hero h-[420px], mini h-36 — Pitfall 2).
  */
@@ -27,11 +31,16 @@ import {
 } from "recharts";
 
 import type { BPCategory, Reading } from "../../api/types";
-import { isDotCrowded, prefersReducedMotion, toTimePoints } from "../../lib/chartData";
+import {
+  estimateChipWidth,
+  isDotCrowded,
+  prefersReducedMotion,
+  toTimePoints,
+} from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
 import type { OverlayEvent } from "../../lib/overlayEvents";
 import { OVERLAY_META } from "../../lib/overlayMeta";
-import { categoryColor } from "../../lib/palette";
+import { categoryColor, CHIP_TEXT } from "../../lib/palette";
 import { useElementWidth } from "../../hooks/useElementWidth";
 
 import ChartTooltip from "./ChartTooltip";
@@ -42,26 +51,70 @@ export type BPTimelineProps = {
   overlayEvents?: OverlayEvent[];
 };
 
+type BandLabelChipProps = {
+  viewBox?: { x?: number; y?: number; width?: number; height?: number };
+};
+
+/** Band-label chip glyph metrics (D-08 hero-only band identification). */
+const CHIP_FONT_SIZE = 14;
+const CHIP_PAD_X = 6;
+const CHIP_PAD_Y = 3;
+const CHIP_OFFSET = 6;
+
 /**
- * Hero-only 14px band edge label in the category's SOLID color (D-08).
- * UI-SPEC: bands are ambient decorative tint, explicitly EXEMPT from the
- * contrast floors — the authoritative category lives in the tooltip and
- * chip. Carry this rationale so verification does not flag 14px/low-tint.
+ * Hero-only band-label chip (D-08): a solid category-color pill rendered
+ * behind its own text so the label fully occludes any line segment drawn
+ * behind it. Recharts' `label` zIndex layer (2000) already paints above the
+ * `Line` zIndex layer (400, `recharts/zIndex/DefaultZIndexes`) — the old
+ * bare-text label was already drawn on top of the lines, but a bare `<text>`
+ * glyph's transparent inter-glyph gaps still visually read as "the line
+ * cuts through the word" even when technically on top. An opaque rect
+ * behind the text fully occludes whatever line segment is directly behind
+ * it instead (/impeccable critique P3, 2026-08-28).
  *
- * Elevated and Stage 1 are deliberately excluded from ever rendering this
- * label (below): those two bands span only 10 of the [40, 220] domain
- * units (~22px tall at hero height) — too thin for a 14px inline label
- * without colliding with a neighboring band's label (/impeccable critique
- * P1, 2026-08-27). The Y-axis ticks already mark every boundary
- * (40/90/120/130/140/180/220) numerically, and the tooltip/chip remain the
- * authoritative category source per D-08.
+ * The chip reuses the same `categoryColor(cat)`/`CHIP_TEXT` pair FilterBar
+ * and StatsStrip already use for this category's own chip — not an
+ * invented treatment.
+ *
+ * Elevated and Stage 1 are deliberately excluded from ever rendering a
+ * chip: those two bands span only 10 of the [40, 220] domain units (~22px
+ * tall at hero height) — too thin to hold even a chip without visually
+ * dominating the band (/impeccable critique P1, 2026-08-27). The Y-axis
+ * ticks already mark every boundary (40/90/120/130/140/180/220)
+ * numerically, and the tooltip/chip remain the authoritative category
+ * source per D-08.
  */
-function bandLabel(cat: BPCategory) {
-  return {
-    value: cat,
-    position: "insideTopLeft" as const,
-    fontSize: 14,
-    fill: categoryColor(cat),
+function makeBandLabelChip(cat: BPCategory) {
+  return function BandLabelChip({ viewBox }: BandLabelChipProps) {
+    if (viewBox?.x === undefined || viewBox?.y === undefined) return null;
+    const textWidth = estimateChipWidth(cat, CHIP_FONT_SIZE);
+    const chipWidth = textWidth + CHIP_PAD_X * 2;
+    const chipHeight = CHIP_FONT_SIZE + CHIP_PAD_Y * 2;
+    const x = viewBox.x + CHIP_OFFSET;
+    const y = viewBox.y + CHIP_OFFSET;
+    return (
+      <g>
+        <rect
+          x={x}
+          y={y}
+          width={chipWidth}
+          height={chipHeight}
+          rx={chipHeight / 2}
+          fill={categoryColor(cat)}
+        />
+        <text
+          x={x + chipWidth / 2}
+          y={y + chipHeight / 2}
+          fontSize={CHIP_FONT_SIZE}
+          fontWeight={700}
+          fill={CHIP_TEXT}
+          textAnchor="middle"
+          dominantBaseline="middle"
+        >
+          {cat}
+        </text>
+      </g>
+    );
   };
 }
 
@@ -137,14 +190,14 @@ export default function BPTimeline({
           y2={90}
           fill={categoryColor("Hypotension")}
           className="chart-band"
-          label={hero ? bandLabel("Hypotension") : undefined}
+          label={hero ? makeBandLabelChip("Hypotension") : undefined}
         />
         <ReferenceArea
           y1={90}
           y2={120}
           fill={categoryColor("Normal")}
           className="chart-band"
-          label={hero ? bandLabel("Normal") : undefined}
+          label={hero ? makeBandLabelChip("Normal") : undefined}
         />
         <ReferenceArea
           y1={120}
@@ -165,14 +218,14 @@ export default function BPTimeline({
           y2={180}
           fill={categoryColor("Stage 2")}
           className="chart-band"
-          label={hero ? bandLabel("Stage 2") : undefined}
+          label={hero ? makeBandLabelChip("Stage 2") : undefined}
         />
         <ReferenceArea
           y1={180}
           y2={220}
           fill={categoryColor("Hypertensive Crisis")}
           className="chart-band"
-          label={hero ? bandLabel("Hypertensive Crisis") : undefined}
+          label={hero ? makeBandLabelChip("Hypertensive Crisis") : undefined}
         />
         {/* Real time axis (Pitfall 5) — proportional gaps, verify at 02-07 (A3). */}
         <XAxis
