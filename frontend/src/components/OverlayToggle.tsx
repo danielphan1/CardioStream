@@ -63,7 +63,7 @@ export function OverlayToggle() {
         <div
           role="group"
           aria-label="Overlay events"
-          className={`flex flex-wrap gap-2${overlayApplies ? "" : " opacity-60"}${pulseClass}`}
+          className={`flex flex-wrap gap-2${pulseClass}`}
         >
           {OVERLAY_ORDER.map((key) => {
             const { label, Icon, color } = OVERLAY_META[key];
