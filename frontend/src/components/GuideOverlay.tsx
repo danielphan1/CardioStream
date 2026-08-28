@@ -29,14 +29,19 @@ const SECTIONS = [
 const h2Class = "text-h2 leading-tight font-bold text-[var(--color-ink)]";
 const bodyClass = "text-lg text-[var(--color-ink)]";
 
-// See the paddingTop comment below for what these mean and why they exist.
+// See the `top` style comment below for what these mean and why they exist.
+// CLOSE_BAR_HEIGHT (64px = py-2 + the close button's min-h-12, both fixed
+// regardless of viewport) is the sticky Close bar's own normal-flow height
+// inside this now-clearance-constrained container.
 const CLOSE_BAR_HEIGHT = 64;
+// Desktop-shaped fallback for the (should-be-unreachable) case a caller
+// doesn't measure and pass a real clearanceAbove — used as this container's
+// own `top` offset when that happens.
 const DEFAULT_CLEARANCE_ABOVE = 261;
-// Small breathing-room buffer on top of the exact measured value: the
-// caller's ResizeObserver-based measurement settles a moment after the
-// obstruction's real height changes (e.g. AgentStatusBanner mounting
-// async), so a mid-settle read can be a few px stale — this keeps that
-// briefly-stale state from reading as a touching/overlapping seam.
+// Small breathing-room buffer: reused both for the sticky Close bar's own
+// scrollMarginTop cushion and, on the initial-content padding, to cover the
+// brief settle-lag window between a resize and the caller's ResizeObserver
+// measurement catching up (e.g. AgentStatusBanner mounting async).
 const CLEARANCE_BUFFER = 12;
 
 interface GuideOverlayProps {
@@ -47,8 +52,12 @@ interface GuideOverlayProps {
    *  than guessed here, because that height varies continuously with
    *  viewport width (the Header and CommandBar both wrap to more rows on
    *  narrow screens) and can't be captured by a single fixed padding value.
-   *  Falls back to a static estimate only for the (should-be-unreachable)
-   *  case a caller doesn't measure and pass one. */
+   *  Consumed as this overlay's own scrollable container's CSS `top` offset
+   *  (see the `top` style comment below) — not as internal padding — so the
+   *  container's own coordinate space starts below the obstruction and can
+   *  never scroll content behind it. Falls back to a static estimate only
+   *  for the (should-be-unreachable) case a caller doesn't measure and pass
+   *  one. */
   clearanceAbove?: number;
 }
 
@@ -96,27 +105,24 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
   if (!open) return null;
 
   const sectionScrollStyle: CSSProperties = {
-    // Every jump-target section needs the SAME clearance as the initial
-    // paddingTop below (WR-02): scrollIntoView aligns a target's top edge
-    // to this scroll container's own top (y=0), which is permanently
-    // covered by the sticky Close bar *and*, on Dashboard, by the
-    // screen-fixed CommandBar band above it (see the paddingTop comment) —
-    // that obstruction is present at ANY scroll position, not just the
-    // initial one, so this uses the full clearanceAbove (not minus
-    // CLOSE_BAR_HEIGHT — unlike paddingTop, this isn't stacked after the
-    // Close bar's own normal-flow space; scrollIntoView positions directly
-    // against the container's y=0).
-    scrollMarginTop: Math.max(
-      0,
-      (clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE) + CLEARANCE_BUFFER,
-    ),
+    // Every jump-target section (WR-02) needs clearance from the sticky
+    // Close bar ONLY: scrollIntoView aligns a target's top edge to this
+    // scroll container's own top (y=0), and the Close bar is the only thing
+    // that stays visibly pinned within this container's own coordinate
+    // space (the screen-fixed CommandBar band lives entirely above this
+    // container's `top` offset now — see the `top` style below — so it's no
+    // longer part of what scrollIntoView needs to clear here). CLOSE_BAR_HEIGHT
+    // is the Close bar's own normal-flow height; CLEARANCE_BUFFER is a small
+    // breathing-room cushion.
+    scrollMarginTop: Math.max(0, CLOSE_BAR_HEIGHT + CLEARANCE_BUFFER),
   };
 
   return (
     <div
       role="region"
       aria-label="Site guide"
-      className="fixed inset-0 z-50 overflow-y-auto bg-[var(--color-foam)]"
+      className="fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-foam)]"
+      style={{ top: clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE }}
     >
       <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-foam)] px-4 py-2 md:px-8">
         <button
@@ -130,34 +136,27 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
         </button>
       </div>
 
-      {/* paddingTop clears whatever sits above this overlay and stays
-          visible while it's open (Header + the pinned CommandBar band on
-          Dashboard, or just Header on Upload/Add Record) — Plan 11-05's
-          manual verification checkpoint found that a fixed Tailwind
-          padding class can't do this correctly: the CommandBar section
-          can't actually reach `sticky` top:0 while the guide is open,
-          because this overlay is `fixed inset-0` and captures scroll — so
-          the outer page's scroll position never advances past 0, leaving
-          CommandBar pinned at its natural in-flow position *below* the
-          (now-hidden) site header, not at the very top. Worse, that
-          combined header+CommandBar height varies continuously with
-          viewport width (both wrap to more rows on narrow screens), so
-          any single fixed px guess is wrong at some width. `clearanceAbove`
-          is the caller's real ResizeObserver measurement of that height;
-          CLOSE_BAR_HEIGHT (64px = py-2 + the close button's min-h-12,
-          both fixed regardless of viewport) is what the sticky Close-bar
-          above already covers via normal flow, so only the remainder needs
-          padding. DEFAULT_CLEARANCE_ABOVE is a desktop-shaped fallback for
-          the (should-be-unreachable) case a caller doesn't measure and
-          pass one. CLEARANCE_BUFFER covers the brief settle-lag window. */}
+      {/* This overlay's outer [role="region"] element (above) is `fixed
+          inset-x-0 bottom-0` with its own `top` set to `clearanceAbove` —
+          i.e. its scrollable coordinate space starts BELOW whatever sits
+          above it and stays visible while it's open (Header + the pinned
+          CommandBar band on Dashboard, or just Header on Upload/Add
+          Record), rather than spanning the full viewport and being padded
+          down internally. That structural constraint is what makes text
+          clipping behind the band impossible at any scroll position — the
+          old approach (`fixed inset-0` + this div's `paddingTop`) only
+          fixed the initial-mount position; ordinary continued scrolling
+          could still carry already-passed content back into the same
+          on-screen rectangle the band occupies, because the guide's own
+          scrollable viewport spanned that same full-viewport space the
+          band paints over. With the container already starting at
+          `clearanceAbove`, this div only needs a small fixed breathing-room
+          gap below the sticky Close bar (which already reserves its own
+          CLOSE_BAR_HEIGHT via normal flow at the top of this now-shorter
+          container) — CLEARANCE_BUFFER is reused here for that role. */}
       <div
         className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pb-16 md:px-8 xl:px-16"
-        style={{
-          paddingTop: Math.max(
-            0,
-            (clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE) - CLOSE_BAR_HEIGHT + CLEARANCE_BUFFER,
-          ),
-        }}
+        style={{ paddingTop: CLEARANCE_BUFFER }}
       >
         <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
           Site Guide
