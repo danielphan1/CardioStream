@@ -118,202 +118,225 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
   };
 
   return (
-    <div
-      role="region"
-      aria-label="Site guide"
-      className="fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-foam)]"
-      style={{ top: clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE }}
-    >
-      <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-foam)] px-4 py-2 md:px-8">
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={() => setOpen(false)}
-          className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
-        >
-          <X aria-hidden="true" size={24} />
-          Close
-        </button>
-      </div>
-
-      {/* This overlay's outer [role="region"] element (above) is `fixed
-          inset-x-0 bottom-0` with its own `top` set to `clearanceAbove` —
-          i.e. its scrollable coordinate space starts BELOW whatever sits
-          above it and stays visible while it's open (Header + the pinned
-          CommandBar band on Dashboard, or just Header on Upload/Add
-          Record), rather than spanning the full viewport and being padded
-          down internally. That structural constraint is what makes text
-          clipping behind the band impossible at any scroll position — the
-          old approach (`fixed inset-0` + this div's `paddingTop`) only
-          fixed the initial-mount position; ordinary continued scrolling
-          could still carry already-passed content back into the same
-          on-screen rectangle the band occupies, because the guide's own
-          scrollable viewport spanned that same full-viewport space the
-          band paints over. With the container already starting at
-          `clearanceAbove`, this div only needs a small fixed breathing-room
-          gap below the sticky Close bar (which already reserves its own
-          CLOSE_BAR_HEIGHT via normal flow at the top of this now-shorter
-          container) — CLEARANCE_BUFFER is reused here for that role. */}
+    <>
+      {/* Plain, always-`fixed inset-0` decorative backdrop — a SEPARATE
+          element from the scrollable region below. It guarantees
+          unconditional full-viewport opaque coverage (Header, the
+          CommandBar band's un-stuck in-flow position, and any gap between
+          the band's stuck rectangle and the region's own `top` offset)
+          regardless of `clearanceAbove`'s accuracy or the band's current
+          stuck/unstuck state. The region's own box (below) is no longer
+          relied on as the app's sole source of backdrop opacity — see that
+          element's comment for why splitting these two responsibilities
+          fixes a real dashboard-content bleed-through regression. `z-40`
+          keeps this below the CommandBar band's `z-[60]` (App.tsx,
+          untouched) and below the region's own `z-50`, though the two never
+          spatially overlap where it matters (the band always renders above
+          this backdrop wherever it currently sits). */}
+      <div aria-hidden="true" className="fixed inset-0 z-40 bg-[var(--color-foam)]" />
       <div
-        className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pb-16 md:px-8 xl:px-16"
-        style={{ paddingTop: CLEARANCE_BUFFER }}
+        role="region"
+        aria-label="Site guide"
+        className="fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-foam)]"
+        style={{ top: clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE }}
       >
-        <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
-          Site Guide
-        </h1>
+        <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-foam)] px-4 py-2 md:px-8">
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+          >
+            <X aria-hidden="true" size={24} />
+            Close
+          </button>
+        </div>
 
-        <nav aria-label="Jump to a section">
-          <p className="text-control font-bold text-[var(--color-ink)]">
-            Jump to a section
-          </p>
-          <ul className="mt-2 flex flex-wrap gap-2">
-            {SECTIONS.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  className="flex min-h-12 items-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
-                >
-                  {s.label}
-                </a>
-              </li>
+        {/* A separate `fixed inset-0` backdrop element (above, in the JSX,
+            outside this region) now provides unconditional full-viewport
+            opaque coverage independently of this region's own `top` offset
+            — so this region's box no longer needs to (and must not be
+            relied on to) serve as the app's only opaque backdrop.
+
+            This overlay's outer [role="region"] element (above) is `fixed
+            inset-x-0 bottom-0` with its own `top` set to `clearanceAbove` —
+            i.e. its scrollable coordinate space starts BELOW whatever sits
+            above it and stays visible while it's open (Header + the pinned
+            CommandBar band on Dashboard, or just Header on Upload/Add
+            Record), rather than spanning the full viewport and being padded
+            down internally. That structural constraint is what makes text
+            clipping behind the band impossible at any scroll position — the
+            old approach (`fixed inset-0` + this div's `paddingTop`) only
+            fixed the initial-mount position; ordinary continued scrolling
+            could still carry already-passed content back into the same
+            on-screen rectangle the band occupies, because the guide's own
+            scrollable viewport spanned that same full-viewport space the
+            band paints over. With the container already starting at
+            `clearanceAbove`, this div only needs a small fixed breathing-room
+            gap below the sticky Close bar (which already reserves its own
+            CLOSE_BAR_HEIGHT via normal flow at the top of this now-shorter
+            container) — CLEARANCE_BUFFER is reused here for that role. */}
+        <div
+          className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pb-16 md:px-8 xl:px-16"
+          style={{ paddingTop: CLEARANCE_BUFFER }}
+        >
+          <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
+            Site Guide
+          </h1>
+
+          <nav aria-label="Jump to a section">
+            <p className="text-control font-bold text-[var(--color-ink)]">
+              Jump to a section
+            </p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {SECTIONS.map((s) => (
+                <li key={s.id}>
+                  <a
+                    href={`#${s.id}`}
+                    className="flex min-h-12 items-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+                  >
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <section id="command-bar" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Command Bar</h2>
+            <p className={bodyClass}>
+              The Command Bar is the box at the top of the dashboard for typing
+              or speaking a request, like "show my pulse for the last 30 days."
+              It's always visible so you can ask for a new view any time.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Type into the text box, then click Send
+              (or press Enter on a keyboard).
+            </p>
+            <p className={bodyClass}>
+              <strong>By voice:</strong> Tap the microphone button, then speak
+              your request out loud.
+            </p>
+          </section>
+
+          <section id="filters" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Filters</h2>
+            <p className={bodyClass}>
+              Filters narrow down which readings are shown — by date range, by
+              morning (AM) or evening (PM), or by blood pressure category.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Tap a filter chip (like "Last 30 Days"
+              or "Mornings") to turn it on or off.
+            </p>
+            <p className={bodyClass}>
+              <strong>By voice:</strong> Say a filter phrase, like "last 30
+              days, mornings only" or "show stage 2 readings."
+            </p>
+          </section>
+
+          <section id="charts" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Charts</h2>
+            <p className={bodyClass}>
+              Four charts are available: Blood Pressure Timeline, Pulse Trend,
+              Blood Pressure Categories, and AM vs PM. The chart-picker cards
+              switch which one is shown on the dashboard.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Tap a chart-picker card to switch to
+              that chart.
+            </p>
+            <p className={bodyClass}>
+              <strong>By voice:</strong> Say a chart's name, like "show my
+              pulse" or "show blood pressure."
+            </p>
+          </section>
+
+          <section id="overlay" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Overlay</h2>
+            <p className={bodyClass}>
+              The overlay buttons let you show labs, incidents, and procedures
+              plotted right on top of the Blood Pressure or Pulse charts, so you
+              can see how they relate to a reading.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Tap a Labs, Incidents, or Procedures
+              button to show or hide that data on the chart.
+            </p>
+            <p className={bodyClass}>
+              <strong>By voice:</strong> Say something like "show incidents" or
+              "hide labs."
+            </p>
+          </section>
+
+          <section id="voice-replies" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Voice Replies</h2>
+            <p className={bodyClass}>
+              When Voice Replies is on, the dashboard speaks a short
+              confirmation out loud after a voice or typed command is applied,
+              so you don't have to look at the screen to know it worked.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Tap the "Voice Replies" button in the
+              header to turn spoken confirmations on or off.
+            </p>
+            <p className={bodyClass}>
+              <strong>By voice:</strong> Say "mute the voice replies" or "turn
+              on voice replies."
+            </p>
+          </section>
+
+          <section id="upload" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Upload</h2>
+            <p className={bodyClass}>
+              The Upload page lets a caregiver add new blood pressure readings
+              from an OMRON monitor's exported file.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Tap the "Upload" button in the header,
+              then choose the exported file to add its readings.
+            </p>
+          </section>
+
+          <section id="add-a-record" style={sectionScrollStyle}>
+            <h2 className={h2Class}>Add a Record</h2>
+            <p className={bodyClass}>
+              The Add Record page has separate forms for logging a lab result,
+              an incident (like passing out or a hospital stay), or a
+              procedure.
+            </p>
+            <p className={bodyClass}>
+              <strong>By click:</strong> Tap the "Add Record" button in the
+              header, choose Lab, Incident, or Procedure, then fill in and
+              submit the form.
+            </p>
+          </section>
+
+          <section id="what-can-i-say" style={sectionScrollStyle}>
+            <h2 className={h2Class}>What Can I Say</h2>
+            {VOICE_COMMAND_CATEGORIES.map((c) => (
+              <div key={c.id}>
+                <h3 className="text-control font-bold text-[var(--color-ink)]">
+                  {c.label}
+                </h3>
+                <p className="text-lg font-bold text-[var(--color-ink)]">
+                  "{c.example}"
+                </p>
+                <p className={bodyClass}>{SIMILAR_PHRASINGS_NOTE}</p>
+              </div>
             ))}
-          </ul>
-        </nav>
+          </section>
 
-        <section id="command-bar" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Command Bar</h2>
-          <p className={bodyClass}>
-            The Command Bar is the box at the top of the dashboard for typing
-            or speaking a request, like "show my pulse for the last 30 days."
-            It's always visible so you can ask for a new view any time.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Type into the text box, then click Send
-            (or press Enter on a keyboard).
-          </p>
-          <p className={bodyClass}>
-            <strong>By voice:</strong> Tap the microphone button, then speak
-            your request out loud.
-          </p>
-        </section>
-
-        <section id="filters" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Filters</h2>
-          <p className={bodyClass}>
-            Filters narrow down which readings are shown — by date range, by
-            morning (AM) or evening (PM), or by blood pressure category.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Tap a filter chip (like "Last 30 Days"
-            or "Mornings") to turn it on or off.
-          </p>
-          <p className={bodyClass}>
-            <strong>By voice:</strong> Say a filter phrase, like "last 30
-            days, mornings only" or "show stage 2 readings."
-          </p>
-        </section>
-
-        <section id="charts" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Charts</h2>
-          <p className={bodyClass}>
-            Four charts are available: Blood Pressure Timeline, Pulse Trend,
-            Blood Pressure Categories, and AM vs PM. The chart-picker cards
-            switch which one is shown on the dashboard.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Tap a chart-picker card to switch to
-            that chart.
-          </p>
-          <p className={bodyClass}>
-            <strong>By voice:</strong> Say a chart's name, like "show my
-            pulse" or "show blood pressure."
-          </p>
-        </section>
-
-        <section id="overlay" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Overlay</h2>
-          <p className={bodyClass}>
-            The overlay buttons let you show labs, incidents, and procedures
-            plotted right on top of the Blood Pressure or Pulse charts, so you
-            can see how they relate to a reading.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Tap a Labs, Incidents, or Procedures
-            button to show or hide that data on the chart.
-          </p>
-          <p className={bodyClass}>
-            <strong>By voice:</strong> Say something like "show incidents" or
-            "hide labs."
-          </p>
-        </section>
-
-        <section id="voice-replies" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Voice Replies</h2>
-          <p className={bodyClass}>
-            When Voice Replies is on, the dashboard speaks a short
-            confirmation out loud after a voice or typed command is applied,
-            so you don't have to look at the screen to know it worked.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Tap the "Voice Replies" button in the
-            header to turn spoken confirmations on or off.
-          </p>
-          <p className={bodyClass}>
-            <strong>By voice:</strong> Say "mute the voice replies" or "turn
-            on voice replies."
-          </p>
-        </section>
-
-        <section id="upload" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Upload</h2>
-          <p className={bodyClass}>
-            The Upload page lets a caregiver add new blood pressure readings
-            from an OMRON monitor's exported file.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Tap the "Upload" button in the header,
-            then choose the exported file to add its readings.
-          </p>
-        </section>
-
-        <section id="add-a-record" style={sectionScrollStyle}>
-          <h2 className={h2Class}>Add a Record</h2>
-          <p className={bodyClass}>
-            The Add Record page has separate forms for logging a lab result,
-            an incident (like passing out or a hospital stay), or a
-            procedure.
-          </p>
-          <p className={bodyClass}>
-            <strong>By click:</strong> Tap the "Add Record" button in the
-            header, choose Lab, Incident, or Procedure, then fill in and
-            submit the form.
-          </p>
-        </section>
-
-        <section id="what-can-i-say" style={sectionScrollStyle}>
-          <h2 className={h2Class}>What Can I Say</h2>
-          {VOICE_COMMAND_CATEGORIES.map((c) => (
-            <div key={c.id}>
-              <h3 className="text-control font-bold text-[var(--color-ink)]">
-                {c.label}
-              </h3>
-              <p className="text-lg font-bold text-[var(--color-ink)]">
-                "{c.example}"
-              </p>
-              <p className={bodyClass}>{SIMILAR_PHRASINGS_NOTE}</p>
-            </div>
-          ))}
-        </section>
-
-        <section id="about-this-guide" style={sectionScrollStyle}>
-          <h2 className={h2Class}>About This Guide</h2>
-          <p className={bodyClass}>
-            You can reopen this guide any time by clicking the "Guide" button
-            in the header. Close it with the Close button above or by
-            pressing Escape.
-          </p>
-        </section>
+          <section id="about-this-guide" style={sectionScrollStyle}>
+            <h2 className={h2Class}>About This Guide</h2>
+            <p className={bodyClass}>
+              You can reopen this guide any time by clicking the "Guide" button
+              in the header. Close it with the Close button above or by
+              pressing Escape.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

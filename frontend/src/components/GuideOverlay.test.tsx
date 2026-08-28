@@ -124,4 +124,27 @@ describe("GuideOverlay", () => {
     expect(className).toMatch(/\binset-x-0\b/);
     expect(className).toMatch(/\bbottom-0\b/);
   });
+
+  it("renders a full-viewport aria-hidden backdrop distinct from the Close icon", () => {
+    useGuide.setState({ open: true });
+    const { container } = render(<GuideOverlay />);
+    const backdrop = container.querySelector('div[aria-hidden="true"]');
+    expect(backdrop).not.toBeNull();
+    const className = (backdrop as HTMLElement).className;
+    expect(className).toMatch(/\bfixed\b/);
+    expect(className).toMatch(/\binset-0\b/);
+    expect(className).not.toMatch(/\binset-x-0\b/);
+    expect(className).not.toMatch(/\bbottom-0\b/);
+  });
+
+  it("backdrop is decorative (no role) and a distinct DOM node from the region", () => {
+    useGuide.setState({ open: true });
+    const { container } = render(<GuideOverlay />);
+    const backdrop = container.querySelector('div[aria-hidden="true"]');
+    const region = container.querySelector('[role="region"]');
+    expect(backdrop).not.toBeNull();
+    expect(region).not.toBeNull();
+    expect(backdrop?.getAttribute("role")).toBeNull();
+    expect(backdrop === region).toBe(false);
+  });
 });
