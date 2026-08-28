@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import type { Reading, StatsSummary } from "../api/types";
 import {
   categoryBarData,
+  estimateChipWidth,
   formatCategoryLabel,
   groupAmPm,
   isDotCrowded,
@@ -212,5 +213,19 @@ describe("isDotCrowded", () => {
 
   it("returns false for a single point (can't overlap itself)", () => {
     expect(isDotCrowded(1000, 1)).toBe(false);
+  });
+});
+
+describe("estimateChipWidth", () => {
+  it("estimates a real mid-length band name: Normal (6 chars x 14 x 0.62, rounded)", () => {
+    expect(estimateChipWidth("Normal", 14)).toBe(52);
+  });
+
+  it("estimates the longest real band name: Hypertensive Crisis (19 chars, worst case)", () => {
+    expect(estimateChipWidth("Hypertensive Crisis", 14)).toBe(165);
+  });
+
+  it("returns 0 for the degenerate empty string", () => {
+    expect(estimateChipWidth("", 14)).toBe(0);
   });
 });

@@ -134,3 +134,23 @@ export function isDotCrowded(width: number, pointCount: number): boolean {
   if (width <= 0 || pointCount <= 1) return false;
   return width / pointCount < DOT_DIAMETER_PX;
 }
+
+/**
+ * Average glyph width as a fraction of font-size for the bold 14px Atkinson
+ * Hyperlegible band-label chip text — deliberately generous so the estimate
+ * errs toward a slightly wider chip rather than one that clips its own
+ * label.
+ */
+const CHIP_CHAR_WIDTH_FACTOR = 0.62;
+
+/**
+ * Sizes the solid background rect behind a BP Timeline band-label chip so
+ * the chip fully covers its own text (BPTimeline.tsx's `makeBandLabelChip`,
+ * /impeccable critique P3, 2026-08-28). SVG offers no synchronous
+ * string-width query without an actual DOM measurement pass, so this is a
+ * same-order-of-magnitude estimate for a decorative chip, not pixel-exact
+ * text metrics.
+ */
+export function estimateChipWidth(text: string, fontSize: number): number {
+  return Math.round(text.length * fontSize * CHIP_CHAR_WIDTH_FACTOR);
+}
