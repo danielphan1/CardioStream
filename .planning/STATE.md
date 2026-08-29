@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-28T00:15:41.000Z"
-last_activity: 2026-08-28 - Completed quick task 260827-kir: Removed OverlayToggle's opacity-60 disabled-state mismatch (impeccable critique P2)
+last_updated: "2026-08-28T23:20:00.000Z"
+last_activity: 2026-08-28 - Completed quick task 260828-ly8: Closed 4 motion-language gaps from an impeccable animate survey (GuideOverlay fade, ChartTooltip entrance, DateRangePicker reveal, AddRecordPage tab-swap transition)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: v1.1 complete (Phases 6–12)
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-08-28 - Completed quick task 260828-kza: Corrected the 260828-kbq GuideOverlay backdrop bleed-through regression (impeccable critique P0) — live-verified via elementFromPoint sweep, zero bleed-through and zero clipping regressions
+Last activity: 2026-08-28 - Completed quick task 260828-ly8: Closed 4 motion-language gaps from an impeccable animate survey (GuideOverlay fade, ChartTooltip entrance, DateRangePicker reveal, AddRecordPage tab-swap transition) — all live-verified individually and via a final independent spot-check
 
 ## Performance Metrics
 
@@ -110,6 +110,7 @@ None yet.
 | 260828-4nj | Correct the 260828-2l6 chip fix (impeccable critique P1, re-critique): the chip rendered in Recharts' `zIndex-layer_100` (same as ReferenceArea's own layer), one layer *below* Line's `zIndex-layer_400`, so lines painted over the chip instead of the reverse. Split each labeled band into a background-tint ReferenceArea (unchanged, zIndex 100) + an invisible label-host ReferenceArea (`zIndex={DefaultZIndexes.axis}`, 500) carrying the chip — verified live via DOM zIndex-layer inspection + screenshot, not assumption | 2026-08-28 | 68ab665 | Verified | [260828-4nj-fix-bp-timeline-band-label-chip-z-order-](./quick/260828-4nj-fix-bp-timeline-band-label-chip-z-order-/) |
 | 260828-kbq | Fix GuideOverlay sticky-band text-clipping bug (impeccable critique P0, re-critique): the guide's scrollable region was `fixed inset-0` with only a computed paddingTop offset, so ordinary scrolling still passed content underneath the fixed CommandBar+banner band (z-60 above the guide's z-50) — changed the region to `fixed inset-x-0 bottom-0` starting at `top: clearanceAbove`, so scrolled content can never occupy the band's screen rectangle. Clipping fix confirmed correct via elementFromPoint sampling, but this change also removed the region's own full-viewport backdrop coverage — see 260828-kza | 2026-08-28 | a32c78c | Fixed clipping; introduced a backdrop regression — resolved by 260828-kza | [260828-kbq-fix-guideoverlay-sticky-band-text-clippi](./quick/260828-kbq-fix-guideoverlay-sticky-band-text-clippi/) |
 | 260828-kza | Correct the 260828-kbq GuideOverlay backdrop bleed-through regression (impeccable critique P0): split GuideOverlay's outer JSX into two siblings — a new, plain, always-`fixed inset-0` `aria-hidden="true"` backdrop restoring unconditional full-viewport opaque coverage, plus the existing `fixed inset-x-0 bottom-0` scrollable region (unchanged from kbq's clipping-safety fix). Live-verified via elementFromPoint sweep at two viewport widths and both an unstuck-band and a stuck-band window-scroll state: zero bleed-through, zero clipping regressions | 2026-08-28 | beef896 | Verified | [260828-kza-correct-guideoverlay-backdrop-bleed-thro](./quick/260828-kza-correct-guideoverlay-backdrop-bleed-thro/) |
+| 260828-ly8 | Close 4 motion-language gaps (impeccable animate survey): GuideOverlay open/close fade, ChartTooltip opacity+scale entrance (also caught and fixed a real pre-existing bug: the Close button was unclickable via real mouse input due to Recharts' `pointer-events: none`, and a second bug where the click bubbled into the chart's own onClick and undid the dismiss), DateRangePicker reveal fade-in, and AddRecordPage's Lab/Incident/Procedure field-swap transition (mirrors ChartDeck's proven FadeSwap pattern) — all reuse the app's existing motion-safe/motion-reduce-gated ≤250ms opacity/transform idiom, no new material. Ran as 4 independent plans in one parallel wave; all 4 live-verified individually plus a final independent spot-check of all four surfaces against the real dev server | 2026-08-28 | 9f54eff, c940aa6, b460dbc, 5495650 | Verified | [260828-ly8-close-4-motion-language-gaps-impeccable-](./quick/260828-ly8-close-4-motion-language-gaps-impeccable-/) |
 
 ## Deferred Items
 
