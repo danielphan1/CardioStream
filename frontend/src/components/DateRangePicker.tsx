@@ -3,7 +3,7 @@
 // All string↔Date conversion goes through parseDateOnly/formatDateParam —
 // never the Date constructor on a date-only string (RESEARCH Pitfall 1:
 // UTC-midnight parsing causes an off-by-one day in negative-offset zones).
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
@@ -30,6 +30,25 @@ const rdpSizing = {
 export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
   const [fromText, setFromText] = useState(from ?? "");
   const [toText, setToText] = useState(to ?? "");
+
+  // Entrance fade (impeccable animate survey gap #3): FilterBar's
+  // `{customOpen && <DateRangePicker .../>}` conditional always mounts a
+  // fresh instance, so `shown` starts false on every open with no key or
+  // reset effect needed. Double rAF mirrors ChartDeck.tsx's `FadeSwap` —
+  // guarantees the initial opacity-0 paints before the toggle to
+  // opacity-100 so the transition actually runs. No exit animation: the
+  // panel unmounts instantly on close, unchanged from before this fix.
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setShown(true));
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, []);
 
   const fromValid = isValidDateText(fromText);
   const toValid = isValidDateText(toText);
@@ -58,7 +77,9 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
     "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
 
   return (
-    <div className="flex flex-col gap-4">
+    <div
+      className={`flex flex-col gap-4 transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`}
+    >
       <div className="flex flex-wrap gap-4">
         <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
           From
