@@ -77,10 +77,21 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 ### Phase 13: Visual Redesign — Nautical Minimalist Theme
 
 **Goal:** Every screen gets a completely new visual identity — a clean, minimalist nautical/ocean world replacing today's design system outright — with zero regression to existing functionality or the accessibility floor.
-**Requirements**: TBD (no active REQUIREMENTS.md yet — between milestones; see `13-CONTEXT.md` for the locked scope/decisions instead)
+**Requirements**: TBD (no active REQUIREMENTS.md yet — between milestones; decision IDs D-01 through D-09 from `13-CONTEXT.md` are the requirement source instead — see plan `requirements` frontmatter)
 **Depends on:** Phase 12
-**Plans:** 0 plans
+**Plans:** 12 plans in 4 waves
 **UI hint**: yes
 
 Plans:
-- [ ] TBD (run /gsd-ui-phase 13 first — this is a full visual-world replacement — then /gsd-plan-phase 13)
+- [ ] 13-01-PLAN.md — Design tokens (index.css full replacement) + WCAG contrast regression test (wave 1)
+- [ ] 13-02-PLAN.md — Font migration: install/import Inter + Space Grotesk behind a package-legitimacy checkpoint (wave 1)
+- [ ] 13-03-PLAN.md — Header + GuideOverlay re-skin, close the 48px gap on 4 utility buttons (wave 2)
+- [ ] 13-04-PLAN.md — App.tsx + CommandBar re-skin: new dark "feature panel" identity for the Command Bar (wave 2)
+- [ ] 13-05-PLAN.md — FilterBar + OverlayToggle + DateRangePicker re-skin (wave 2)
+- [ ] 13-06-PLAN.md — ReadingsTable + OverlayEventsList re-skin (wave 2)
+- [ ] 13-07-PLAN.md — BPTimeline + ChartTooltip + CategoryBars + AmPmComparison + ChartDeck re-skin (wave 2)
+- [ ] 13-08-PLAN.md — UploadPage + AgentStatusBanner re-skin (wave 2)
+- [ ] 13-09-PLAN.md — AddRecordPage + records/* field-sets re-skin (wave 2)
+- [ ] 13-10-PLAN.md — EmptyState + LoginGate re-skin (wave 2)
+- [ ] 13-11-PLAN.md — New StatsSparkline component + StatsStrip rewired to icon+value+sparkline+status-pill card language (wave 3)
+- [ ] 13-12-PLAN.md — Full-site automated regression sweep + human cross-screen/cross-theme checkpoint (wave 4)
