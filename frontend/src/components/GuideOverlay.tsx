@@ -1,13 +1,14 @@
 // Site guide overlay (D-01..D-13; 11-UI-SPEC.md's "Overlay stacking/layering",
 // "Guide close control", "Table of contents", and "Per-section fixed format"
 // sections are the authoritative, binding markup/class contract for this
-// file). This is an always-mounted LANDMARK REGION that returns `null` when
-// closed — NOT a modal. Unlike `LogoutConfirmDialog` (Header.tsx), it has no
+// file). This is an always-mounted LANDMARK REGION that returns `null` once
+// closed AND its exit fade has finished (see FADE_DURATION_MS below) — NOT a
+// modal. Unlike `LogoutConfirmDialog` (Header.tsx), it has no
 // dialog role, no modal attribute, and traps no focus: `CommandBar` (and the
 // live mic session it drives) must stay fully reachable — including by Tab —
 // while the guide is open (D-03/D-04). Mount point (raising the CommandBar
 // band above this overlay's z-layer) is deferred to Plan 11-05.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { X } from "lucide-react";
 
@@ -43,6 +44,11 @@ const DEFAULT_CLEARANCE_ABOVE = 261;
 // brief settle-lag window between a resize and the caller's ResizeObserver
 // measurement catching up (e.g. AgentStatusBanner mounting async).
 const CLEARANCE_BUFFER = 12;
+// Open/close opacity-fade duration in ms. Must stay numerically in sync with
+// the Tailwind `duration-[250ms]` class applied to the backdrop and region
+// below -- one encodes the CSS transition, the other the JS delayed-unmount
+// timeout, and both must agree on the same 250ms fade.
+const FADE_DURATION_MS = 250;
 
 interface GuideOverlayProps {
   /** Real, measured height (px) of whatever sits above this overlay in the
@@ -65,6 +71,44 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
   const open = useGuide((s) => s.open);
   const setOpen = useGuide((s) => s.setOpen);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Entrance/exit fade state (impeccable animate survey gap #1). `shown`
+  // drives the opacity-0/opacity-100 class toggle: on open, a double-rAF
+  // (mirrors ChartDeck.tsx's FadeSwap helper) lets the initial opacity-0
+  // paint land before flipping to opacity-100, so the CSS transition
+  // actually animates instead of snapping straight to full opacity; on
+  // close there's no rAF needed -- the element is already painted at
+  // opacity-100, so a synchronous flip to opacity-0 transitions naturally
+  // on the next render. `mounted` (seeded from `open` so an initially-open
+  // guide renders immediately) gates the early-return below: it flips true
+  // immediately on open, but on close it stays true for FADE_DURATION_MS so
+  // the exit fade has time to play before the DOM node is actually removed.
+  const [shown, setShown] = useState(false);
+  const [mounted, setMounted] = useState(open);
+
+  useEffect(() => {
+    if (!open) {
+      setShown(false);
+      return;
+    }
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setShown(true));
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      return;
+    }
+    const timeout = setTimeout(() => setMounted(false), FADE_DURATION_MS);
+    return () => clearTimeout(timeout);
+  }, [open]);
 
   // Escape-to-close (mirrors LogoutConfirmDialog's Escape branch), but as a
   // window-level listener — there is no local onKeyDown-bearing dialog
@@ -102,7 +146,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
     }
   }, [open]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   const sectionScrollStyle: CSSProperties = {
     // Every jump-target section (WR-02) needs clearance from the sticky
@@ -132,12 +176,24 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           keeps this below the CommandBar band's `z-[60]` (App.tsx,
           untouched) and below the region's own `z-50`, though the two never
           spatially overlap where it matters (the band always renders above
-          this backdrop wherever it currently sits). */}
-      <div aria-hidden="true" className="fixed inset-0 z-40 bg-[var(--color-foam)]" />
+          this backdrop wherever it currently sits). It now fades in/out with
+          `shown` (opacity-0 -> opacity-100 on open, reverse on close) instead
+          of snapping instantly into/out of view — the delayed-unmount effect
+          above keeps this element (and the region below) mounted for
+          FADE_DURATION_MS after `open` goes false so the exit fade has time
+          to play before the DOM node disappears. */}
+      <div
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-[var(--color-foam)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
+          shown ? "opacity-100" : "opacity-0"
+        }`}
+      />
       <div
         role="region"
         aria-label="Site guide"
-        className="fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-foam)]"
+        className={`fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-foam)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
+          shown ? "opacity-100" : "opacity-0"
+        }`}
         style={{ top: clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE }}
       >
         <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-foam)] px-4 py-2 md:px-8">
