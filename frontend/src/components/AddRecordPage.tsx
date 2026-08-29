@@ -13,7 +13,8 @@
 // Error discipline (T-08-04, mirrors UploadPage's D-10/T-05-13): only one
 // fixed, UI-authored sentence per record-type noun ever renders on a rejected
 // mutation — never `err.message`, `err.status`, or a backend 422 detail.
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { CheckCircle2, TriangleAlert } from "lucide-react";
 
 import type { IncidentCreate, LabResultCreate, ProcedureCreate } from "../api/types";
@@ -55,6 +56,39 @@ const inactiveClass =
   "min-h-12 rounded-xl px-4 text-control bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
 const activeClass =
   "min-h-12 rounded-xl px-4 text-control bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+
+/**
+ * Mount-fade wrapper mirroring ChartDeck.tsx's own `FadeSwap` (same
+ * double-rAF `shown` state + 250ms opacity/scale transition, motion-reduce
+ * gated). Kept LOCAL to this file rather than imported/shared — see this
+ * quick task's plan for why. Unlike ChartDeck's version, this wrapper drops
+ * the `h-full w-full` sizing classes: AddRecordPage's field-set block is a
+ * natural-height form section, not a fixed-size chart slot.
+ */
+function FadeSwap({ children }: { children: ReactNode }) {
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setShown(true));
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, []);
+
+  return (
+    <div
+      className={`transition-[opacity,transform] duration-[250ms] ease-in-out motion-reduce:transition-none ${
+        shown ? "scale-100 opacity-100" : "scale-95 opacity-0"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function AddRecordPage() {
   const [recordType, setRecordType] = useState<RecordType>("lab");
@@ -169,15 +203,19 @@ export function AddRecordPage() {
         ))}
       </div>
 
-      {recordType === "lab" && (
-        <LabFields key={fieldsKey} onDraftChange={setDraftBody} />
-      )}
-      {recordType === "incident" && (
-        <IncidentFields key={fieldsKey} onDraftChange={setDraftBody} />
-      )}
-      {recordType === "procedure" && (
-        <ProcedureFields key={fieldsKey} onDraftChange={setDraftBody} />
-      )}
+      <div key={fieldsKey}>
+        <FadeSwap>
+          {recordType === "lab" && (
+            <LabFields onDraftChange={setDraftBody} />
+          )}
+          {recordType === "incident" && (
+            <IncidentFields onDraftChange={setDraftBody} />
+          )}
+          {recordType === "procedure" && (
+            <ProcedureFields onDraftChange={setDraftBody} />
+          )}
+        </FadeSwap>
+      </div>
 
       <button
         type="button"

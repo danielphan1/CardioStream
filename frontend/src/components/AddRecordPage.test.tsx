@@ -7,7 +7,7 @@
 // CommandBar.test.tsx's "the ONLY mock" convention) — real useMutation, real
 // QueryClientProvider, real ApiError class so the error-branch test exercises
 // the true `instanceof` check.
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
@@ -188,5 +188,32 @@ describe("AddRecordPage (Plan 08-03)", () => {
     );
     expect(screen.queryByText(/422/)).not.toBeInTheDocument();
     expect(screen.queryByText(/API request failed/)).not.toBeInTheDocument();
+  });
+
+  it("fades the field-set's FadeSwap wrapper in from opacity-0/scale-95 to opacity-100/scale-100 on initial mount (mirrors ChartDeck.tsx's FadeSwap)", async () => {
+    renderPage();
+
+    const wrapper = screen
+      .getByRole("heading", { name: "Lab result details", level: 3 })
+      .closest("div")!.parentElement!;
+
+    expect(wrapper.className).toMatch(/opacity-0/);
+    expect(wrapper.className).toMatch(/scale-95/);
+
+    await waitFor(() => expect(wrapper.className).toMatch(/opacity-100/));
+    expect(wrapper.className).toMatch(/scale-100/);
+  });
+
+  it("carries the ChartDeck-mirrored transition classes on the FadeSwap wrapper", () => {
+    renderPage();
+
+    const wrapper = screen
+      .getByRole("heading", { name: "Lab result details", level: 3 })
+      .closest("div")!.parentElement!;
+
+    expect(wrapper.className).toMatch(/transition-\[opacity,transform\]/);
+    expect(wrapper.className).toMatch(/duration-\[250ms\]/);
+    expect(wrapper.className).toMatch(/ease-in-out/);
+    expect(wrapper.className).toMatch(/motion-reduce:transition-none/);
   });
 });
