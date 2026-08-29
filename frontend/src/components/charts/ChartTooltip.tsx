@@ -12,7 +12,7 @@
  * from the closed palette map keyed by the six-label union, never from
  * response strings interpolated into styles.
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import type { TimePoint } from "../../lib/chartData";
 import { fmtTooltipTitle } from "../../lib/dates";
@@ -40,6 +40,7 @@ export default function ChartTooltip({
 }: ChartTooltipProps) {
   const reading = payload?.[0]?.payload?.reading;
   const visible = Boolean(active) && !dismissed && reading !== undefined;
+  const [entered, setEntered] = useState(false);
 
   // Escape dismisses while visible (D-09 — hover-free, precision-free path).
   useEffect(() => {
@@ -50,6 +51,29 @@ export default function ChartTooltip({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [visible, onClose]);
+
+  // Opacity+scale-in entrance (impeccable animate survey gap #2), mirroring
+  // ChartDeck.tsx's FadeSwap double-rAF technique: because this component's
+  // own `return null` below causes React to remove/insert the dialog subtree
+  // on every visibility flip (not a Recharts-side remount), the initial
+  // opacity-0/scale-95 styles need one full paint before flipping to
+  // opacity-100/scale-100 for the transition to actually run. Resets to
+  // `false` whenever `visible` goes false so the entrance replays on the
+  // next open rather than staying at its last value.
+  useEffect(() => {
+    if (!visible) {
+      setEntered(false);
+      return;
+    }
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setEntered(true));
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [visible]);
 
   if (!visible || reading === undefined) return null;
 
@@ -68,11 +92,26 @@ export default function ChartTooltip({
     <div
       role="dialog"
       aria-label={`Reading details, ${fmtTooltipTitle(reading.datetime)}`}
-      className="flex flex-col gap-2 rounded-xl p-4 shadow-[var(--shadow-elevation)]"
+      className={`flex flex-col gap-2 rounded-xl p-4 shadow-[var(--shadow-elevation)] duration-[150ms] ease-out motion-safe:transition-[opacity,transform] motion-reduce:transition-opacity ${
+        entered
+          ? "opacity-100 motion-safe:scale-100"
+          : "opacity-0 motion-safe:scale-95"
+      }`}
       style={{
         background: "var(--color-sky)",
         color: "var(--color-ink)",
         border: "2px solid var(--color-ink)",
+        // Rule 1 fix (discovered during Task 2 live verification): Recharts'
+        // TooltipBoundingBox wrapper hardcodes `pointer-events: none` on its
+        // ancestor div (recharts-tooltip-wrapper) so hover tooltips never
+        // steal pointer events from the chart underneath. For THIS
+        // click-persistent tooltip that default silently makes the Close
+        // button unclickable via real pointer/mouse events (Escape still
+        // worked, masking the bug in keyboard-only testing). CSS lets a
+        // descendant opt back in explicitly — `pointer-events: auto` here
+        // restores real click handling for this dialog and its Close button
+        // without touching BPTimeline.tsx/PulseTrend.tsx's <Tooltip> usage.
+        pointerEvents: "auto",
       }}
     >
       <p className="m-0" style={{ fontSize: 20, fontWeight: 700 }}>
@@ -97,7 +136,20 @@ export default function ChartTooltip({
       )}
       <button
         type="button"
-        onClick={onClose}
+        onClick={(e) => {
+          // Rule 1 fix (discovered during Task 2 live verification): the
+          // owning chart's <LineChart onClick={() => setDismissed(false)}>
+          // re-shows the tooltip on ANY click inside the chart's wrapper
+          // div, not just clicks on data points. Because this dialog now
+          // receives real pointer events (see the pointerEvents: "auto" fix
+          // above), a Close click bubbles past this button, through the
+          // Recharts wrapper, into that handler — undoing the dismissal in
+          // the same event. stopPropagation keeps the click scoped to this
+          // button's own onClose call without touching BPTimeline.tsx /
+          // PulseTrend.tsx's <LineChart onClick> (out of this plan's scope).
+          e.stopPropagation();
+          onClose();
+        }}
         className="min-h-12 min-w-12 self-end rounded-lg px-5"
         style={{
           background: "var(--color-accent)",
