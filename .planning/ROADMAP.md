@@ -81,10 +81,14 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 **Depends on:** Phase 12
 **Plans:** 12 plans in 4 waves
 **UI hint**: yes
-
 Plans:
+**Wave 1**
+
 - [ ] 13-01-PLAN.md — Design tokens (index.css full replacement) + WCAG contrast regression test (wave 1)
 - [ ] 13-02-PLAN.md — Font migration: install/import Inter + Space Grotesk behind a package-legitimacy checkpoint (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 13-03-PLAN.md — Header + GuideOverlay re-skin, close the 48px gap on 4 utility buttons (wave 2)
 - [ ] 13-04-PLAN.md — App.tsx + CommandBar re-skin: new dark "feature panel" identity for the Command Bar (wave 2)
 - [ ] 13-05-PLAN.md — FilterBar + OverlayToggle + DateRangePicker re-skin (wave 2)
@@ -93,5 +97,11 @@ Plans:
 - [ ] 13-08-PLAN.md — UploadPage + AgentStatusBanner re-skin (wave 2)
 - [ ] 13-09-PLAN.md — AddRecordPage + records/* field-sets re-skin (wave 2)
 - [ ] 13-10-PLAN.md — EmptyState + LoginGate re-skin (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 13-11-PLAN.md — New StatsSparkline component + StatsStrip rewired to icon+value+sparkline+status-pill card language (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 13-12-PLAN.md — Full-site automated regression sweep + human cross-screen/cross-theme checkpoint (wave 4)
