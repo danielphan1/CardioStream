@@ -7,7 +7,7 @@
 // re-authored here.
 //
 // No QueryClientProvider needed — this component makes no network calls.
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { VOICE_COMMAND_CATEGORIES } from "../lib/voiceCommands";
@@ -146,5 +146,41 @@ describe("GuideOverlay", () => {
     expect(region).not.toBeNull();
     expect(backdrop?.getAttribute("role")).toBeNull();
     expect(backdrop === region).toBe(false);
+  });
+
+  it("keeps the region mounted immediately after close, then removes it once the exit fade completes", async () => {
+    useGuide.setState({ open: true });
+    render(<GuideOverlay />);
+    expect(
+      screen.getByRole("region", { name: "Site guide" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /close/i }));
+
+    // Still present immediately after the close click -- the exit fade has
+    // not finished, so the delayed-unmount mechanism must keep it mounted.
+    expect(
+      screen.getByRole("region", { name: "Site guide" }),
+    ).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("region", { name: "Site guide" }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it("gives both the backdrop and the region a motion-reduce-gated opacity transition", () => {
+    useGuide.setState({ open: true });
+    const { container } = render(<GuideOverlay />);
+    const backdrop = container.querySelector('div[aria-hidden="true"]');
+    const region = container.querySelector('[role="region"]');
+    expect(backdrop).not.toBeNull();
+    expect(region).not.toBeNull();
+    for (const el of [backdrop, region]) {
+      const className = (el as HTMLElement).className;
+      expect(className).toMatch(/transition-opacity/);
+      expect(className).toMatch(/motion-reduce:transition-none/);
+    }
   });
 });
