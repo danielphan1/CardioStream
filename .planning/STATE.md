@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: Awaiting next milestone
-last_updated: "2026-08-28T23:20:00.000Z"
-last_activity: 2026-08-28 - Completed quick task 260828-ly8: Closed 4 motion-language gaps from an impeccable animate survey (GuideOverlay fade, ChartTooltip entrance, DateRangePicker reveal, AddRecordPage tab-swap transition)
+last_updated: "2026-08-29T10:22:41.497Z"
+last_activity: "2026-08-28 - Completed quick task 260828-ly8: Closed 4 motion-language gaps from an impeccable animate survey (GuideOverlay fade, ChartTooltip entrance, DateRangePicker reveal, AddRecordPage tab-swap transition) — all live-verified individually and via a final independent spot-check"
 progress:
   total_phases: 7
   completed_phases: 7
@@ -137,10 +137,10 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-08-28T00:15:41.000Z
-Stopped at: Completed quick task 260827-kir (impeccable critique P2 fix). Mid-sequence executing the user's full scoped plan from the 2026-08-27 re-critique (score 35/40): step 1/4 (clarify, P0), step 2/4 (harden filters persistence, P1), and step 3/4 (harden OverlayToggle dimming, P2) all done; step 4/4 (polish pass) is the last remaining step.
+Last session: 2026-08-29T10:22:41.490Z
+Stopped at: Phase 13 UI-SPEC approved
 Next action: Continue the scoped critique-fix sequence — /impeccable polish as the final pass over the three fixes (clarify, filters persistence, OverlayToggle)
-Resume file: None
+Resume file: .planning/phases/13-visual-redesign-nautical-minimalist-theme/13-UI-SPEC.md
 
 ## Operator Next Steps
 
