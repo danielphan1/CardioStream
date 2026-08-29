@@ -73,3 +73,14 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
 | 11. Full Site Guide | v1.1 | 5/5 | Complete    | 2026-08-26 |
 | 12. Visual Refresh | v1.1 | 8/8 | Complete    | 2026-08-27 |
+
+### Phase 13: Visual Redesign — Nautical Minimalist Theme
+
+**Goal:** Every screen gets a completely new visual identity — a clean, minimalist nautical/ocean world replacing today's design system outright — with zero regression to existing functionality or the accessibility floor.
+**Requirements**: TBD (no active REQUIREMENTS.md yet — between milestones; see `13-CONTEXT.md` for the locked scope/decisions instead)
+**Depends on:** Phase 12
+**Plans:** 0 plans
+**UI hint**: yes
+
+Plans:
+- [ ] TBD (run /gsd-ui-phase 13 first — this is a full visual-world replacement — then /gsd-plan-phase 13)

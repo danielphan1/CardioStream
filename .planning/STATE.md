@@ -81,6 +81,10 @@ Recent decisions affecting current work:
 - [Phase 12-08]: Task 1's min-h-12 grep threshold (>=60) was miscalibrated against a stale PATTERNS.md baseline; a stronger pre/post git-diff comparison across the actual Wave 2 commit range proved zero accessibility-floor regression, so the deviation is non-blocking documentation, not a failed VISUAL-02 check.
 - [Phase 12-08]: Phase 12's final checkpoint (cross-screen, cross-theme visual verification) was approved by the real user ("Everything passes") after a live walkthrough, closing VISUAL-01 and VISUAL-02 for the whole phase.
 
+### Roadmap Evolution
+
+- Phase 13 added: Visual Redesign — Nautical Minimalist Theme. Full visual-identity replacement (not an evolution like Phase 12) — new palette/type/spacing/elevation/component language sitewide, carrying forward the existing nautical motif (`--color-foam`/`--color-sky`, wave-curve divider) with far more craft, rendered clean and minimalist. All existing functionality and the accessibility floor carry over unchanged. Direction gathered live via `impeccable`'s new-work intake (structural + genre reference images reviewed in-browser); full scope and locked decisions in `13-CONTEXT.md`. Next: `/gsd-ui-phase 13`.
+
 ### Pending Todos
 
 None yet.
