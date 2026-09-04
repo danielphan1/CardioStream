@@ -105,34 +105,34 @@ export function OverlayEventsList({
 
   return (
     <section aria-label="Overlaid events">
-      <h2 className="mb-4 text-h2 leading-tight font-bold text-[var(--color-ink)]">
+      <h2 className="mb-4 text-heading leading-tight text-[var(--color-depth)]">
         Overlaid events
       </h2>
       {errorNotes.map((msg) => (
-        <p key={msg} role="alert" className="mb-2 text-[18px] text-[var(--color-ink)]">
+        <p key={msg} role="alert" className="mb-2 text-[18px] text-[var(--color-depth)]">
           {msg}
         </p>
       ))}
       {merged.length === 0 ? (
         emptyMessage && (
-          <p className="text-[18px] text-[var(--color-ink)]">{emptyMessage}</p>
+          <p className="text-[18px] text-[var(--color-depth)]">{emptyMessage}</p>
         )
       ) : (
-        <section className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
+        <section className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
           <table className="w-full text-left">
             <caption className="sr-only">Overlaid events</caption>
             <thead>
               <tr>
-                <th scope="col" className="p-2 text-xl font-bold">
+                <th scope="col" className="p-2 text-label">
                   Date
                 </th>
-                <th scope="col" className="p-2 text-xl font-bold">
+                <th scope="col" className="p-2 text-label">
                   Type
                 </th>
-                <th scope="col" className="p-2 text-xl font-bold">
+                <th scope="col" className="p-2 text-label">
                   What happened
                 </th>
-                <th scope="col" className="p-2 text-xl font-bold">
+                <th scope="col" className="p-2 text-label">
                   Notes
                 </th>
               </tr>
@@ -152,7 +152,7 @@ export function OverlayEventsList({
             <button
               type="button"
               onClick={() => setVisible((v) => v + PAGE_SIZE)}
-              className="mt-4 min-h-12 w-full rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
+              className="mt-4 min-h-12 w-full rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
             >
               Show 20 more
             </button>
@@ -166,7 +166,7 @@ export function OverlayEventsList({
 function OverlayEventRow({ event }: { event: OverlayEvent }) {
   const { Icon, color, tableLabel } = OVERLAY_META[event.type];
   return (
-    <tr className="border-t border-[var(--color-foam)]">
+    <tr className="border-t border-[var(--color-deck)]">
       <td className="p-2 text-lg">{event.dateCell}</td>
       <td className="p-2">
         <span
