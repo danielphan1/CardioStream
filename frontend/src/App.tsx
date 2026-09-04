@@ -234,7 +234,7 @@ function Dashboard() {
           <OverlayToggle />
         </div>
         <div className="flex flex-col gap-8">
-          <StatsStrip stats={stats.data} isLoading={stats.isPending} />
+          <StatsStrip stats={stats.data} isLoading={stats.isPending} readings={readings.data ?? []} />
           {chartRegion}
         </div>
         <div className="flex flex-col gap-8">
