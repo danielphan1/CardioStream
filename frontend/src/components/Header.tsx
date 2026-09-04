@@ -2,14 +2,14 @@
 // prototype is explicitly NOT a visual reference. Sailboat mark + Display
 // title + labeled theme toggle (D-15) + decorative wave divider (D-16).
 //
-// Phase 5 (D-06) adds the discreet caregiver-controls zone in the header-right
+// Phase 5 (D-06) adds the caregiver-controls zone in the header-right
 // flex row: a view toggle ("Upload" / "Back to dashboard") and a "Log out"
 // control that opens a confirm dialog. Both are styled like the theme toggle
-// (2px ink border, sky surface, icon + text label) and are NEVER accent-filled
-// — the accent fill is reserved for the UI-SPEC list, which excludes these.
-// They are exempt from the 48px floor (D-06, Accessibility Scope) so Chris's
-// large voice/chart UI stays visually dominant, but keep the inherited 3px
-// focus ring and full keyboard operability.
+// (2px depth border, mist surface, icon + text label) and are NEVER brass-
+// filled — the brass fill is reserved for the UI-SPEC list, which excludes
+// these. Phase 13 (D-06) removed the prior sub-floor carve-out for these
+// controls — they carry the same unconditional >=48px floor and 3px focus
+// ring as every other interactive control in the app.
 // All colors are index.css tokens — no hex values here.
 import { useEffect, useRef, useState } from "react";
 import {
@@ -88,15 +88,15 @@ function LogoutConfirmDialog({
         aria-labelledby="logout-title"
         aria-describedby="logout-body"
         onKeyDown={handleKeyDown}
-        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
       >
         <h2
           id="logout-title"
-          className="text-h2 font-bold leading-tight text-[var(--color-ink)]"
+          className="text-heading leading-tight text-[var(--color-depth)]"
         >
           Log out?
         </h2>
-        <p id="logout-body" className="text-lg text-[var(--color-ink)]">
+        <p id="logout-body" className="text-lg text-[var(--color-depth)]">
           You'll need the password to unlock the dashboard again.
         </p>
         <div className="flex justify-end gap-4">
@@ -104,14 +104,14 @@ function LogoutConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)]"
+            className="min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
+            className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
           >
             Log out
           </button>
@@ -152,22 +152,22 @@ export function Header() {
   }
 
   return (
-    <header className="bg-[var(--color-foam)]">
+    <header className="bg-[var(--color-deck)]">
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
         <div className="flex items-center gap-2">
           <Sailboat
             aria-hidden="true"
             size={32}
-            className="shrink-0 text-[var(--color-ink)]"
+            className="shrink-0 text-[var(--color-depth)]"
           />
-          <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
+          <h1 className="text-heading leading-tight text-[var(--color-depth)]">
             Chris's Health Dashboard
           </h1>
         </div>
 
         {/* Header-right controls: theme toggle + the D-06 caregiver zone. Every
             control is icon + text (never icon-only) and styled as an inactive
-            control (border, not accent fill) — the navy accent fill is reserved
+            control (border, not brass fill) — the brass fill is reserved
             for the UI-SPEC list, which excludes all of these. */}
         <div className="flex flex-wrap items-center gap-4">
           {/* Theme toggle (D-15). */}
@@ -175,7 +175,7 @@ export function Header() {
             type="button"
             onClick={toggleTheme}
             aria-pressed={isDark}
-            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
+            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
           >
             {isDark ? (
               <Moon aria-hidden="true" size={24} />
@@ -187,13 +187,13 @@ export function Header() {
 
           {/* Voice Replies toggle (D-02, TTS-02) — mute/quiet control for the
               spoken-confirmation feature; styled identically to the Theme
-              toggle above (icon + text, aria-pressed, >=48px, bordered sky
-              surface, never accent-filled). */}
+              toggle above (icon + text, aria-pressed, >=48px, bordered mist
+              surface, never brass-filled). */}
           <button
             type="button"
             onClick={toggleSpeech}
             aria-pressed={speechEnabled}
-            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
+            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
           >
             {speechEnabled ? (
               <Volume2 aria-hidden="true" size={24} />
@@ -205,8 +205,8 @@ export function Header() {
 
           {/* Guide toggle (D-02, GUIDE-01/02/04) — opens/closes the full-site
               guide overlay; styled identically to the Theme/Voice Replies
-              toggles above (icon + text, aria-pressed, >=48px, bordered sky
-              surface, never accent-filled). Label stays "Guide" in both
+              toggles above (icon + text, aria-pressed, >=48px, bordered mist
+              surface, never brass-filled). Label stays "Guide" in both
               states — the dedicated Close (X) control inside the overlay
               already owns that verb (11-UI-SPEC.md Copywriting Contract).
               id is a stable focus-restoration target for GuideOverlay
@@ -223,7 +223,7 @@ export function Header() {
             type="button"
             onClick={toggleGuide}
             aria-pressed={guideOpen}
-            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-[20px] font-bold text-[var(--color-ink)]"
+            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
           >
             <BookOpen aria-hidden="true" size={24} />
             Guide
@@ -232,13 +232,13 @@ export function Header() {
           {/* View toggle (D-06, widened to three states by Phase 8 D-01):
               "Upload" + "Add Record" show together on the dashboard; either
               non-dashboard view shows exactly one "Back to dashboard" button.
-              Discreet — exempt from the 48px floor. */}
+              Phase 13 (D-06): no 48px carve-out — unconditional floor applies. */}
           {onDashboard ? (
             <>
               <button
                 type="button"
                 onClick={() => go("upload")}
-                className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+                className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
               >
                 <Upload aria-hidden="true" size={24} />
                 Upload
@@ -246,7 +246,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => go("records")}
-                className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+                className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
               >
                 <ClipboardPlus aria-hidden="true" size={24} />
                 Add Record
@@ -256,7 +256,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => go("dashboard")}
-              className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+              className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
             >
               <Upload aria-hidden="true" size={24} />
               Back to dashboard
@@ -270,7 +270,7 @@ export function Header() {
             ref={logoutButtonRef}
             type="button"
             onClick={() => setConfirmingLogout(true)}
-            className="flex items-center gap-2 rounded-lg border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-[20px] font-bold text-[var(--color-ink)]"
+            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
           >
             <LogOut aria-hidden="true" size={24} />
             Log out
@@ -279,7 +279,7 @@ export function Header() {
       </div>
 
       {/* Wave-curve divider (D-16) — decorative only, flips to deep sea in
-          dark theme via the --color-sky token. No imagery behind data. */}
+          dark theme via the --color-mist token. No imagery behind data. */}
       <svg
         aria-hidden="true"
         className="block h-6 w-full"
@@ -288,7 +288,7 @@ export function Header() {
       >
         <path
           d="M0 12 C 120 0, 240 24, 360 12 C 480 0, 600 24, 720 12 C 840 0, 960 24, 1080 12 C 1200 0, 1320 24, 1440 12 L 1440 24 L 0 24 Z"
-          fill="var(--color-sky)"
+          fill="var(--color-mist)"
         />
       </svg>
 
