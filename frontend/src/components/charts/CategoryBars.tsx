@@ -64,7 +64,7 @@ export default function CategoryBars({ stats, variant }: CategoryBarsProps) {
         x={Number(x) + Number(width) + 8}
         y={Number(y) + Number(height) / 2}
         fontSize={18}
-        fill="var(--color-ink)"
+        fill="var(--color-depth)"
         dominantBaseline="middle"
       >
         {row.label}

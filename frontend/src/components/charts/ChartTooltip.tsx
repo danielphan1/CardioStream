@@ -98,9 +98,9 @@ export default function ChartTooltip({
           : "opacity-0 motion-safe:scale-95"
       }`}
       style={{
-        background: "var(--color-sky)",
-        color: "var(--color-ink)",
-        border: "2px solid var(--color-ink)",
+        background: "var(--color-mist)",
+        color: "var(--color-depth)",
+        border: "2px solid var(--color-depth)",
         // Rule 1 fix (discovered during Task 2 live verification): Recharts'
         // TooltipBoundingBox wrapper hardcodes `pointer-events: none` on its
         // ancestor div (recharts-tooltip-wrapper) so hover tooltips never
@@ -114,7 +114,7 @@ export default function ChartTooltip({
         pointerEvents: "auto",
       }}
     >
-      <p className="m-0" style={{ fontSize: 20, fontWeight: 700 }}>
+      <p className="m-0" style={{ fontSize: 20, fontWeight: 600 }}>
         {fmtTooltipTitle(reading.datetime)}
       </p>
       {pulseFirst ? [pulseRow, bpRow] : [bpRow, pulseRow]}
@@ -124,7 +124,7 @@ export default function ChartTooltip({
           background: categoryColor(reading.bp_category),
           color: CHIP_TEXT,
           fontSize: 20,
-          fontWeight: 700,
+          fontWeight: 600,
         }}
       >
         {reading.bp_category}
@@ -152,10 +152,10 @@ export default function ChartTooltip({
         }}
         className="min-h-12 min-w-12 self-end rounded-lg px-5"
         style={{
-          background: "var(--color-accent)",
-          color: "var(--color-accent-text)",
+          background: "var(--color-brass)",
+          color: "var(--color-brass-text)",
           fontSize: 20,
-          fontWeight: 700,
+          fontWeight: 600,
         }}
       >
         Close

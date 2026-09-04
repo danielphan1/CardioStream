@@ -137,7 +137,7 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
       {/* Hero slot — parent supplies the fixed height (Pitfall 2). Keyed on
           the active chart so a rotation remounts (and fades) only the hero. */}
       <div>
-        <h2 className="text-h2 leading-tight font-bold text-[var(--color-ink)]">
+        <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           {active.title}
         </h2>
         <div key={active.id} className="h-[420px]">
@@ -155,9 +155,9 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
             type="button"
             aria-label={`Show ${entry.ariaName} chart`}
             onClick={() => setActiveChart(entry.id)}
-            className="min-h-12 rounded-xl bg-[var(--color-sky)] p-4 text-left shadow-[var(--shadow-elevation)]"
+            className="min-h-12 rounded-xl bg-[var(--color-mist)] p-4 text-left shadow-[var(--shadow-elevation)]"
           >
-            <span className="block text-control font-bold text-[var(--color-ink)]">
+            <span className="block text-label text-[var(--color-depth)]">
               {entry.title}
             </span>
             {/* Pitfall 8: the button handles activation — the chart is a
