@@ -20,12 +20,12 @@ type FilterBarProps = {
   latestReading: string | null;
 };
 
-// Shared control styling contract (UI-SPEC accent rules): inactive = sky
-// card with ink text + 2px ink border; active = reserved navy accent fill.
+// Shared control styling contract (13-UI-SPEC.md accent rules): inactive =
+// mist card with depth text + 2px depth border; active = brass accent fill.
 const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-control font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
 const activeClass =
-  "min-h-12 rounded-xl px-4 text-control font-bold bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-brass)] text-[var(--color-brass-text)] border-2 border-[var(--color-brass)]";
 
 const DAY_PRESETS: { key: Exclude<DatePreset, "custom">; label: string }[] = [
   { key: "7d", label: "7 days" },
@@ -74,7 +74,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
   // mount-fade already signals agent-driven chart changes (CONTEXT).
   const pulseClass = (field: PulseField) =>
     pulsing.includes(field)
-      ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
+      ? " rounded-lg ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
       : "";
 
   const isDayPreset =
@@ -91,7 +91,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
   const sentence = sentenceParts.join(" · ");
 
   return (
-    <section className="bg-[var(--color-sky)] p-4">
+    <section className="bg-[var(--color-mist)] p-4">
       <div className="flex flex-wrap gap-4">
         {/* Date preset segmented row (D-17) */}
         <div
@@ -172,7 +172,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
                   // 3px ink ring on the active chip — box-shadow so the
                   // :focus-visible outline stays independently visible.
                   boxShadow: isActive
-                    ? "0 0 0 3px var(--color-ink)"
+                    ? "0 0 0 3px var(--color-depth)"
                     : undefined,
                 }}
               >
@@ -196,7 +196,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
       )}
 
       {/* Filter-state sentence (D-20) — announced politely on change */}
-      <p aria-live="polite" className="mt-4 text-[18px] text-[var(--color-ink)]">
+      <p aria-live="polite" className="mt-4 text-[18px] text-[var(--color-depth)]">
         {sentence}
       </p>
     </section>

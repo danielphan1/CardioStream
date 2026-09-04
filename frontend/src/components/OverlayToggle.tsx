@@ -25,9 +25,9 @@ const NOTE_COPY =
 // the ACTIVE fill is per-dataset (inline style), not a shared accent class,
 // per 09-UI-SPEC.md's Marker & Icon Contract.
 const inactiveClass =
-  "min-h-12 flex items-center gap-2 rounded-xl px-4 text-control font-bold bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)] shadow-[var(--shadow-elevation)]";
+  "min-h-12 flex items-center gap-2 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)] shadow-[var(--shadow-elevation)]";
 const activeClass =
-  "min-h-12 flex items-center gap-2 rounded-xl px-4 text-control font-bold border-2 shadow-[var(--shadow-elevation)]";
+  "min-h-12 flex items-center gap-2 rounded-xl px-4 text-label border-2 shadow-[var(--shadow-elevation)]";
 
 export function OverlayToggle() {
   const overlayDatasets = useFilters((s) => s.overlayDatasets);
@@ -46,7 +46,7 @@ export function OverlayToggle() {
     return () => clearTimeout(t);
   }, [pulseSeq, pulseFields]);
   const pulseClass = pulsing.includes("overlay")
-    ? " ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
+    ? " ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
     : "";
 
   const overlayApplies =
@@ -55,9 +55,9 @@ export function OverlayToggle() {
   const sentence = buildOverlaySentence(overlayDatasets);
 
   return (
-    <section className="bg-[var(--color-sky)] p-4">
+    <section className="bg-[var(--color-mist)] p-4">
       <div className="flex flex-wrap items-center gap-4">
-        <span className="text-control font-bold text-[var(--color-ink)]">
+        <span className="text-label text-[var(--color-depth)]">
           Overlay:
         </span>
         <div
@@ -95,12 +95,12 @@ export function OverlayToggle() {
       {!overlayApplies && (
         <p
           aria-live="polite"
-          className="mt-2 text-[18px] text-[var(--color-ink)]"
+          className="mt-2 text-[18px] text-[var(--color-depth)]"
         >
           {NOTE_COPY}
         </p>
       )}
-      <p aria-live="polite" className="mt-4 text-[18px] text-[var(--color-ink)]">
+      <p aria-live="polite" className="mt-4 text-[18px] text-[var(--color-depth)]">
         {sentence}
       </p>
     </section>
