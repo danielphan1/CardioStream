@@ -136,10 +136,9 @@ export function isDotCrowded(width: number, pointCount: number): boolean {
 }
 
 /**
- * Average glyph width as a fraction of font-size for the bold 14px Atkinson
- * Hyperlegible band-label chip text — deliberately generous so the estimate
- * errs toward a slightly wider chip rather than one that clips its own
- * label.
+ * Average glyph width as a fraction of font-size for the bold 14px Inter
+ * band-label chip text — deliberately generous so the estimate errs toward
+ * a slightly wider chip rather than one that clips its own label.
  */
 const CHIP_CHAR_WIDTH_FACTOR = 0.62;
 
