@@ -23,8 +23,8 @@ const rdpSizing = {
   "--rdp-day-height": "48px",
   "--rdp-day_button-width": "48px",
   "--rdp-day_button-height": "48px",
-  "--rdp-accent-color": "var(--color-accent)",
-  "--rdp-accent-background-color": "var(--color-sky)",
+  "--rdp-accent-color": "var(--color-brass)",
+  "--rdp-accent-background-color": "var(--color-mist)",
 } as React.CSSProperties;
 
 export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
@@ -74,14 +74,14 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
   }
 
   const inputClass =
-    "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
+    "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
 
   return (
     <div
       className={`flex flex-col gap-4 transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`}
     >
       <div className="flex flex-wrap gap-4">
-        <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
+        <label className="flex flex-col gap-1 text-label text-[var(--color-depth)]">
           From
           <input
             type="text"
@@ -98,7 +98,7 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
             </span>
           )}
         </label>
-        <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
+        <label className="flex flex-col gap-1 text-label text-[var(--color-depth)]">
           To
           <input
             type="text"
@@ -117,7 +117,7 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
         </label>
       </div>
 
-      <div style={rdpSizing} className="text-[18px] text-[var(--color-ink)]">
+      <div style={rdpSizing} className="text-[18px] text-[var(--color-depth)]">
         <DayPicker
           mode="range"
           selected={selected}
@@ -132,8 +132,8 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
         aria-disabled={!canApply}
         className={
           canApply
-            ? "min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
-            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)]"
+            ? "min-h-12 self-start rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
+            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
         }
       >
         Apply
