@@ -79,13 +79,13 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 **Goal:** Every screen gets a completely new visual identity — a clean, minimalist nautical/ocean world replacing today's design system outright — with zero regression to existing functionality or the accessibility floor.
 **Requirements**: TBD (no active REQUIREMENTS.md yet — between milestones; decision IDs D-01 through D-09 from `13-CONTEXT.md` are the requirement source instead — see plan `requirements` frontmatter)
 **Depends on:** Phase 12
-**Plans:** 12 plans in 4 waves
+**Plans:** 2/12 plans executed
 **UI hint**: yes
 Plans:
 **Wave 1**
 
-- [ ] 13-01-PLAN.md — Design tokens (index.css full replacement) + WCAG contrast regression test (wave 1)
-- [ ] 13-02-PLAN.md — Font migration: install/import Inter + Space Grotesk behind a package-legitimacy checkpoint (wave 1)
+- [x] 13-01-PLAN.md — Design tokens (index.css full replacement) + WCAG contrast regression test (wave 1)
+- [x] 13-02-PLAN.md — Font migration: install/import Inter + Space Grotesk behind a package-legitimacy checkpoint (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
