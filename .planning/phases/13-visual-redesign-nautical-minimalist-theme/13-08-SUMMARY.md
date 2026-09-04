@@ -106,3 +106,12 @@ Both files' Phase-12 token debt is fully closed. No blockers for downstream Wave
 ---
 *Phase: 13-visual-redesign-nautical-minimalist-theme*
 *Completed: 2026-09-04*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/UploadPage.tsx
+- FOUND: frontend/src/components/AgentStatusBanner.tsx
+- FOUND: .planning/phases/13-visual-redesign-nautical-minimalist-theme/13-08-SUMMARY.md
+- FOUND commit: ec9169d (Task 1)
+- FOUND commit: 5069d30 (Task 2)
+- FOUND commit: 215a811 (plan metadata)
