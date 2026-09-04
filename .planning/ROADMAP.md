@@ -79,7 +79,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 **Goal:** Every screen gets a completely new visual identity — a clean, minimalist nautical/ocean world replacing today's design system outright — with zero regression to existing functionality or the accessibility floor.
 **Requirements**: TBD (no active REQUIREMENTS.md yet — between milestones; decision IDs D-01 through D-09 from `13-CONTEXT.md` are the requirement source instead — see plan `requirements` frontmatter)
 **Depends on:** Phase 12
-**Plans:** 2/12 plans executed
+**Plans:** 10/12 plans executed
 **UI hint**: yes
 Plans:
 **Wave 1**
@@ -89,14 +89,14 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 13-03-PLAN.md — Header + GuideOverlay re-skin, close the 48px gap on 4 utility buttons (wave 2)
-- [ ] 13-04-PLAN.md — App.tsx + CommandBar re-skin: new dark "feature panel" identity for the Command Bar (wave 2)
-- [ ] 13-05-PLAN.md — FilterBar + OverlayToggle + DateRangePicker re-skin (wave 2)
-- [ ] 13-06-PLAN.md — ReadingsTable + OverlayEventsList re-skin (wave 2)
-- [ ] 13-07-PLAN.md — BPTimeline + ChartTooltip + CategoryBars + AmPmComparison + ChartDeck re-skin (wave 2)
-- [ ] 13-08-PLAN.md — UploadPage + AgentStatusBanner re-skin (wave 2)
-- [ ] 13-09-PLAN.md — AddRecordPage + records/* field-sets re-skin (wave 2)
-- [ ] 13-10-PLAN.md — EmptyState + LoginGate re-skin (wave 2)
+- [x] 13-03-PLAN.md — Header + GuideOverlay re-skin, close the 48px gap on 4 utility buttons (wave 2)
+- [x] 13-04-PLAN.md — App.tsx + CommandBar re-skin: new dark "feature panel" identity for the Command Bar (wave 2)
+- [x] 13-05-PLAN.md — FilterBar + OverlayToggle + DateRangePicker re-skin (wave 2)
+- [x] 13-06-PLAN.md — ReadingsTable + OverlayEventsList re-skin (wave 2)
+- [x] 13-07-PLAN.md — BPTimeline + ChartTooltip + CategoryBars + AmPmComparison + ChartDeck re-skin (wave 2)
+- [x] 13-08-PLAN.md — UploadPage + AgentStatusBanner re-skin (wave 2)
+- [x] 13-09-PLAN.md — AddRecordPage + records/* field-sets re-skin (wave 2)
+- [x] 13-10-PLAN.md — EmptyState + LoginGate re-skin (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
