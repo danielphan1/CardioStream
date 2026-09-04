@@ -53,9 +53,9 @@ const TYPE_OPTIONS: { key: RecordType; label: string }[] = [
 // Type-switcher styling — mirrors FilterBar's exact inactiveClass/activeClass
 // constants verbatim (D-02, UI-SPEC "AddRecordPage.tsx layout").
 const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-control bg-[var(--color-sky)] text-[var(--color-ink)] border-2 border-[var(--color-ink)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
 const activeClass =
-  "min-h-12 rounded-xl px-4 text-control bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-brass)] text-[var(--color-brass-text)] border-2 border-[var(--color-brass)]";
 
 /**
  * Mount-fade wrapper mirroring ChartDeck.tsx's own `FadeSwap` (same
@@ -174,12 +174,12 @@ export function AddRecordPage() {
   const canSubmit = draftBody !== null && !isSubmitting;
 
   return (
-    <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-foam)] px-4 py-8 md:px-8 xl:px-16">
+    <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-deck)] px-4 py-8 md:px-8 xl:px-16">
       <div className="flex flex-col gap-4">
-        <h2 className="text-h2 leading-tight text-[var(--color-ink)]">
+        <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           Add a record
         </h2>
-        <p className="text-lg text-[var(--color-ink)]">
+        <p className="text-lg text-[var(--color-depth)]">
           Log a new lab result, incident, or procedure. Choose a type below,
           then fill in the details.
         </p>
@@ -224,8 +224,8 @@ export function AddRecordPage() {
         aria-busy={isSubmitting}
         className={
           canSubmit
-            ? "min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-control text-[var(--color-accent-text)]"
-            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control text-[var(--color-ink)]"
+            ? "min-h-12 self-start rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
+            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
         }
       >
         {isSubmitting ? "Saving…" : SUBMIT_LABEL[recordType]}
@@ -235,10 +235,10 @@ export function AddRecordPage() {
         <section
           role="status"
           aria-label="Add record result"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           <CheckCircle2 aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
-          <p className="text-lg text-[var(--color-ink)]">
+          <p className="text-lg text-[var(--color-depth)]">
             Added 1 {submitState.noun}.
           </p>
         </section>
@@ -248,7 +248,7 @@ export function AddRecordPage() {
         <section
           role="alert"
           aria-label="Add record notice"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-lg text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-lg text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           <p>
