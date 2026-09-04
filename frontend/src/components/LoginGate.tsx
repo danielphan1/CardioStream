@@ -99,7 +99,7 @@ export function LoginGate() {
               className="mt-0.5 shrink-0"
             />
             <p>
-              <span className="font-bold">That password didn't work.</span>{" "}
+              <span className="font-semibold">That password didn't work.</span>{" "}
               Please try again.
             </p>
           </div>

@@ -165,7 +165,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
                     setBpCategory(cat);
                   }
                 }}
-                className="min-h-12 rounded-full px-4 text-[20px] font-bold"
+                className="min-h-12 rounded-full px-4 text-label"
                 style={{
                   backgroundColor: categoryColor(cat),
                   color: CHIP_TEXT,
