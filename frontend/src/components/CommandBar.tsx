@@ -223,7 +223,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   // pulse and a static ring-2 fallback for reduced motion (D-09), copying the
   // FilterBar pulseClass structure. Colors are existing tokens only (no hex).
   const ringClass = anyWorking
-    ? "rounded-lg ring-2 ring-[var(--color-accent)]"
+    ? "rounded-lg ring-2 ring-[var(--color-brass)]"
     : voiceState === "listening" || voiceState === "triggered"
       ? "rounded-lg ring-2 ring-[var(--cat-normal)] motion-safe:animate-pulse"
       : "";
@@ -304,7 +304,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             className={
               micArmed
                 ? "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--cat-normal)] bg-[var(--cat-normal)] text-[var(--cat-chip-text)]"
-                : "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] text-[var(--color-ink)]"
+                : "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] text-[var(--color-depth)]"
             }
           >
             {voiceState === "paused" ? (
@@ -321,12 +321,12 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           disabled={anyWorking}
           aria-label="Type a dashboard command"
           placeholder={placeholder}
-          className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-4 text-[18px] text-[var(--color-ink)] disabled:opacity-70"
+          className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-[18px] text-[var(--color-depth)] disabled:opacity-70"
         />
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)] disabled:opacity-70"
+          className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-control font-bold text-[var(--color-brass-text)] disabled:opacity-70"
         >
           Send
         </button>
@@ -342,17 +342,17 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           or returns the voice session to "listening" (never "off"). */}
       {anyWorking && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <p className="flex items-center gap-2 text-[18px] font-bold text-[var(--color-ink)]">
+          <p className="flex items-center gap-2 text-[18px] font-bold text-[var(--color-panel-text)]">
             <span
               aria-hidden="true"
-              className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-ink)] border-t-transparent motion-safe:animate-spin"
+              className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-panel-text)] border-t-transparent motion-safe:animate-spin"
             />
             {voiceWorking ? "WORKING…" : "Working…"}
           </p>
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)]"
+            className="min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-control font-bold text-[var(--color-depth)]"
           >
             Cancel
           </button>
@@ -365,7 +365,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           itself) — a second live announcement here would double-speak the
           same event for screen-reader users. */}
       {isSpeaking && (
-        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-ink)]">
+        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-panel-text)]">
           <Volume2
             aria-hidden="true"
             className="h-5 w-5 motion-safe:animate-pulse motion-reduce:animate-none"
@@ -383,7 +383,9 @@ export function CommandBar({ latestReading }: CommandBarProps) {
         <p
           aria-live="polite"
           className={`mt-3 flex items-start gap-2 text-[18px] ${
-            lineGreen ? "text-[var(--cat-normal)]" : "text-[var(--color-ink)]"
+            lineGreen
+              ? "w-fit rounded-full bg-[var(--cat-normal)] px-3 py-1 text-[var(--cat-chip-text)]"
+              : "text-[var(--color-panel-text)]"
           }`}
         >
           {lineGlyph === "mic" && (
