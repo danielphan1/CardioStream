@@ -16,8 +16,8 @@ type ProcedureFieldsProps = {
 };
 
 const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
-const labelClass = "flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]";
+  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
+const labelClass = "flex flex-col gap-1 text-label text-[var(--color-depth)]";
 
 export function ProcedureFields({ onDraftChange }: ProcedureFieldsProps) {
   const [dateText, setDateText] = useState("");
@@ -47,7 +47,7 @@ export function ProcedureFields({ onDraftChange }: ProcedureFieldsProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="flex items-center gap-2 text-[20px] font-bold text-[var(--color-ink)]">
+      <h3 className="flex items-center gap-2 text-label text-[var(--color-depth)]">
         <Stethoscope aria-hidden="true" size={24} />
         Procedure details
       </h3>
