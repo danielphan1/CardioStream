@@ -1,11 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-// Self-hosted fonts — no CDN requests (SEC-03 discipline). All three families
-// below are self-hosted the same way: Atkinson Hyperlegible (still in use,
-// removal deferred to a later cleanup task), Inter (body), Space Grotesk (display).
-import '@fontsource/atkinson-hyperlegible/400.css'
-import '@fontsource/atkinson-hyperlegible/700.css'
+// Self-hosted fonts — no CDN requests (SEC-03 discipline). Both families
+// below are self-hosted the same way: Inter (body), Space Grotesk (display).
+// (code review WR-03: the Atkinson Hyperlegible imports formerly here were
+// dead weight — the Phase 13 redesign fully replaced the prior type system
+// and nothing in the codebase references that family anymore; removed
+// rather than keep shipping two unused font-weight files on every load.)
 import '@fontsource/inter/400.css'
 import '@fontsource/inter/600.css'
 import '@fontsource/space-grotesk/600.css'
