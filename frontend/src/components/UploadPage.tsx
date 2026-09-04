@@ -83,12 +83,12 @@ export function UploadPage() {
   }
 
   return (
-    <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-foam)] px-4 py-8 md:px-8 xl:px-16">
+    <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-deck)] px-4 py-8 md:px-8 xl:px-16">
       <div className="flex flex-col gap-4">
-        <h2 className="text-h2 leading-tight text-[var(--color-ink)]">
+        <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           Add new readings
         </h2>
-        <p className="text-lg text-[var(--color-ink)]">
+        <p className="text-lg text-[var(--color-depth)]">
           Choose the .xlsx file you exported from the OMRON app. New readings are
           added automatically — uploading the same file twice is safe.
         </p>
@@ -98,7 +98,7 @@ export function UploadPage() {
           label is the large accent affordance (≥48px); the native OS button it
           triggers is browser-sized and exempt from the 48px floor. */}
       <div className="flex flex-col gap-2">
-        <label className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-accent)] px-6 text-control text-[var(--color-accent-text)]">
+        <label className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]">
           <FileUp aria-hidden="true" size={24} />
           Choose a file
           <input
@@ -109,12 +109,12 @@ export function UploadPage() {
           />
         </label>
         {filename !== null && (
-          <p className="text-lg text-[var(--color-ink)]">Selected: {filename}</p>
+          <p className="text-lg text-[var(--color-depth)]">Selected: {filename}</p>
         )}
       </div>
 
       {state.status === "loading" && (
-        <p aria-busy="true" className="text-lg text-[var(--color-ink)]">
+        <p aria-busy="true" className="text-lg text-[var(--color-depth)]">
           Reading your file…
         </p>
       )}
@@ -123,13 +123,13 @@ export function UploadPage() {
         <section
           role="status"
           aria-label="Upload result"
-          className="flex flex-col gap-4 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+          className="flex flex-col gap-4 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           <div className="flex items-start gap-2">
             <CheckCircle2 aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
             <div className="flex flex-col gap-2">
               {assembleSentences(state.summary).map((sentence) => (
-                <p key={sentence} className="text-lg text-[var(--color-ink)]">
+                <p key={sentence} className="text-lg text-[var(--color-depth)]">
                   {sentence}
                 </p>
               ))}
@@ -142,7 +142,7 @@ export function UploadPage() {
                 type="button"
                 aria-expanded={showRejects}
                 onClick={() => setShowRejects((v) => !v)}
-                className="flex w-fit items-center gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 py-2 text-control text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+                className="flex w-fit items-center gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 py-2 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
               >
                 <ChevronDown
                   aria-hidden="true"
@@ -156,7 +156,7 @@ export function UploadPage() {
               {showRejects && (
                 <ul className="flex flex-col gap-1 pl-1">
                   {state.summary.rejected.map((row) => (
-                    <li key={row.row_index} className="text-lg text-[var(--color-ink)]">
+                    <li key={row.row_index} className="text-lg text-[var(--color-depth)]">
                       Row {row.row_index}: {row.reason}.
                     </li>
                   ))}
@@ -171,7 +171,7 @@ export function UploadPage() {
         <section
           role="alert"
           aria-label="Upload notice"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] p-6 text-lg text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-lg text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           {state.kind === "not-omron" ? (
