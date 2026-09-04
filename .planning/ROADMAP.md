@@ -79,7 +79,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 **Goal:** Every screen gets a completely new visual identity — a clean, minimalist nautical/ocean world replacing today's design system outright — with zero regression to existing functionality or the accessibility floor.
 **Requirements**: TBD (no active REQUIREMENTS.md yet — between milestones; decision IDs D-01 through D-09 from `13-CONTEXT.md` are the requirement source instead — see plan `requirements` frontmatter)
 **Depends on:** Phase 12
-**Plans:** 11/12 plans executed
+**Plans:** 12/12 plans complete
 **UI hint**: yes
 Plans:
 **Wave 1**
@@ -104,4 +104,4 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 13-12-PLAN.md — Full-site automated regression sweep + human cross-screen/cross-theme checkpoint (wave 4)
+- [x] 13-12-PLAN.md — Full-site automated regression sweep + human cross-screen/cross-theme checkpoint (wave 4)
