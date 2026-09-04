@@ -252,7 +252,7 @@ export function AddRecordPage() {
         >
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           <p>
-            <span className="font-bold">
+            <span className="font-semibold">
               Something went wrong saving that {submitState.noun}.
             </span>{" "}
             Nothing was added — please try again.

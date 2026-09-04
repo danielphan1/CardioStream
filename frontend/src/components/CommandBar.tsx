@@ -326,7 +326,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-control font-bold text-[var(--color-brass-text)] disabled:opacity-70"
+          className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:opacity-70"
         >
           Send
         </button>
@@ -342,7 +342,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           or returns the voice session to "listening" (never "off"). */}
       {anyWorking && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <p className="flex items-center gap-2 text-[18px] font-bold text-[var(--color-panel-text)]">
+          <p className="flex items-center gap-2 text-[18px] font-semibold text-[var(--color-panel-text)]">
             <span
               aria-hidden="true"
               className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-panel-text)] border-t-transparent motion-safe:animate-spin"
@@ -352,7 +352,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-control font-bold text-[var(--color-depth)]"
+            className="min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             Cancel
           </button>
@@ -365,7 +365,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           itself) — a second live announcement here would double-speak the
           same event for screen-reader users. */}
       {isSpeaking && (
-        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-panel-text)]">
+        <p className="mt-3 flex items-center gap-2 text-[18px] font-semibold text-[var(--color-panel-text)]">
           <Volume2
             aria-hidden="true"
             className="h-5 w-5 motion-safe:animate-pulse motion-reduce:animate-none"
@@ -395,7 +395,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             <MicOff aria-hidden="true" className="h-6 w-6 shrink-0" />
           )}
           {lineGlyph === "marker" && (
-            <span aria-hidden="true" className="font-bold">
+            <span aria-hidden="true" className="font-semibold">
               {MARKER[status]}
             </span>
           )}
