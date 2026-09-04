@@ -1,110 +1,126 @@
 /*
- * Design-token system — 02-UI-SPEC.md locked palette (D-12/D-13/D-14/D-15).
+ * Design-token system — 13-UI-SPEC.md locked "Slack Water" (light) /
+ * "Night Watch" (dark) palette (D-01, D-02, D-06, D-07, D-08, D-09).
  * ALL color custom properties for BOTH themes live here; later plans consume
  * var(--...) and never invent color values. Hex pairs are contrast-computed
  * in the UI-SPEC tables — do not re-derive.
  *
- * Dark mode is a manual toggle (D-15): Tailwind 4 defaults to
- * prefers-color-scheme, so @custom-variant rebinds `dark:` to the `.dark`
- * class on <html> (RESEARCH Pitfall 12).
+ * --color-panel / --color-panel-text are a dedicated, NON-theme-inverting
+ * pair reserved for the Command Bar's "one dark, contrasting feature panel"
+ * identity (D-04) — unlike every other color token here, they do not swap
+ * light/dark roles between :root and .dark; --color-panel stays dark and
+ * --color-panel-text stays light in both themes. Do not reuse --color-depth
+ * for this purpose (it inverts per theme by design).
+ *
+ * Dark mode is a manual toggle (carried over from Phase 12): Tailwind 4
+ * defaults to prefers-color-scheme, so @custom-variant rebinds `dark:` to the
+ * `.dark` class on <html> (RESEARCH Pitfall 12).
  */
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* 18px body floor — ACC-01 */
+  /* 18px body floor — D-06 */
   --text-base: 1.125rem;
-  --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI",
-    sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
 
-  /* Named type-scale tokens (D-06) — same rendered sizes already in use
-     today (20px control labels, 24px section headings, 32px display text),
-     formalized as @theme tokens rather than ad-hoc pixel literals. */
-  --text-control: 1.25rem;
-  --text-control--font-weight: 700;
-  --text-control--line-height: 1.25;
-  --text-h2: 1.5rem;
-  --text-h2--font-weight: 700;
-  --text-h2--line-height: 1.25;
-  --text-h1: 2rem;
-  --text-h1--font-weight: 700;
-  --text-h1--line-height: 1.25;
+  /* Tailwind v4 rounded-xl override — 14px per 13-UI-SPEC.md Elevation & Shape */
+  --radius-xl: 14px;
+
+  /* Named type-scale tokens (13-UI-SPEC.md Typography table) */
+  --text-label: 1.25rem;
+  --text-label--font-weight: 600;
+  --text-label--line-height: 1.25;
+  --text-heading: 1.5rem;
+  --text-heading--font-weight: 600;
+  --text-heading--line-height: 1.2;
+  --text-display: 2.25rem;
+  --text-display--font-weight: 600;
+  --text-display--line-height: 1.15;
 }
 
 :root {
-  /* Surfaces + ink — light theme ("airy nautical", default) */
-  --color-foam: #F2F7F5; /* page background */
-  --color-sky: #E2EDF2; /* cards, filter bar surface */
-  --color-ink: #14213D; /* ALL text, icons, borders (D-13) */
-  --color-accent: #B94927; /* terracotta — replaces navy, D-03 */
-  --color-accent-text: #FFFFFF;
-  --color-focus: #1D4E89; /* 3px focus-visible ring */
-  --shadow-elevation: 0 4px 10px -2px rgba(20, 33, 61, 0.12), 0 2px 4px -2px rgba(20, 33, 61, 0.08);
+  /* Surfaces + ink — light theme ("Slack Water") */
+  --color-deck: #F5F7F6; /* page background */
+  --color-mist: #E3EBE9; /* cards, filter bar surface */
+  --color-depth: #101C2E; /* ALL text, icons, borders */
+  --color-brass: #8A5A1E; /* primary accent — One Signal Rule */
+  --color-brass-text: #FFFFFF;
+  --color-signal: #0F6E86; /* 3px focus-visible ring */
+  --color-hazard: #9C2B22; /* reserved for destructive actions */
+  --color-hazard-text: #FFFFFF;
+  --color-panel: #101C2E; /* Command Bar feature-panel background — always dark, non-inverting */
+  --color-panel-text: #F5F7F6; /* Command Bar feature-panel text — always light, non-inverting */
+  --shadow-elevation: 0 8px 24px -4px rgba(16, 28, 46, 0.10), 0 2px 6px -2px rgba(16, 28, 46, 0.06);
 
   /* Chart series */
-  --line-systolic: #1D3557;
-  --line-diastolic: #26707D;
-  --ref-bradycardia: #4A6B8A;
+  --line-systolic: #1E3A5F;
+  --line-diastolic: #1F7A6C;
+  --ref-bradycardia: #3E6E8E;
 
-  /* Clinical category colors (D-14) — chips, bars, AND timeline bands */
-  --cat-hypotension: #4A6B8A;
-  --cat-normal: #2F7D5C;
-  --cat-elevated: #8F6A00;
-  --cat-stage1: #B34700;
-  --cat-stage2: #B3261E;
-  --cat-crisis: #7F1D1D;
+  /* Clinical category colors — chips, bars, AND timeline bands */
+  --cat-hypotension: #3E6E8E;
+  --cat-normal: #2B7A5B;
+  --cat-elevated: #866A00;
+  --cat-stage1: #B5591C;
+  --cat-stage2: #A33323;
+  --cat-crisis: #7A1F1A;
   --band-opacity: 0.10;
   --cat-chip-text: #FFFFFF;
 
-  /* Overlay dataset marker/toggle colors (D-05) — violet/magenta/olive hue
+  /* Overlay dataset marker/toggle colors — violet/magenta/olive hue
      families, chosen to sit outside every existing clinical/chart hue range */
-  --overlay-labs: #6A3FA0;
-  --overlay-incidents: #A32672;
-  --overlay-procedures: #5C6B1E;
+  --overlay-labs: #6B4A9E;
+  --overlay-incidents: #9C2E6E;
+  --overlay-procedures: #5B6B2A;
   --overlay-chip-text: #FFFFFF;
 }
 
 .dark {
-  /* Surfaces + ink — dark theme ("night sea") */
-  --color-foam: #0B1626;
-  --color-sky: #13233A;
-  --color-ink: #E8F1EF;
-  --color-accent: #DA6F4E;
-  --color-accent-text: #0B1626;
-  --color-focus: #8FC1D4;
-  --shadow-elevation: 0 4px 10px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 241, 239, 0.06);
+  /* Surfaces + ink — dark theme ("Night Watch") */
+  --color-deck: #0A121F;
+  --color-mist: #101D30;
+  --color-depth: #E7EEF2;
+  --color-brass: #D9A356;
+  --color-brass-text: #0A121F;
+  --color-signal: #7ED4E8;
+  --color-hazard: #E2685A;
+  --color-hazard-text: #0A121F;
+  --color-panel: #050A12; /* genuinely dark on its own — NOT derived from --color-depth's dark-theme (near-white) value */
+  --color-panel-text: #F5F7F6; /* same literal hex as light theme — intentionally non-inverting */
+  --shadow-elevation: 0 8px 24px -4px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(231, 238, 242, 0.05);
 
-  --line-systolic: #A8CBEA;
-  --line-diastolic: #6FC7C4;
+  --line-systolic: #9DBFE0;
+  --line-diastolic: #7FD6C4;
   --ref-bradycardia: #8FB3D1;
 
   --cat-hypotension: #8FB3D1;
-  --cat-normal: #63C68F;
+  --cat-normal: #5FBF8F;
   --cat-elevated: #E0B84E;
-  --cat-stage1: #EE9B57;
-  --cat-stage2: #EF7B70;
-  --cat-crisis: #F2564D;
+  --cat-stage1: #E58F52;
+  --cat-stage2: #E8776C;
+  --cat-crisis: #F0584C;
   --band-opacity: 0.14;
-  --cat-chip-text: #0B1626;
+  --cat-chip-text: #0A121F;
 
-  --overlay-labs: #C9A6EA;
-  --overlay-incidents: #F0A8D0;
-  --overlay-procedures: #C9D48A;
-  --overlay-chip-text: #0B1626;
+  --overlay-labs: #C3A0E8;
+  --overlay-incidents: #EFA0C9;
+  --overlay-procedures: #C7D488;
+  --overlay-chip-text: #0A121F;
 }
 
 body {
-  background: var(--color-foam);
-  color: var(--color-ink);
-  font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI",
-    sans-serif;
+  background: var(--color-deck);
+  color: var(--color-depth);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 18px;
   line-height: 1.5;
 }
 
 /* UI-SPEC focus contract (ACC-02): visible ring on every interactive element */
 :focus-visible {
-  outline: 3px solid var(--color-focus);
+  outline: 3px solid var(--color-signal);
   outline-offset: 2px;
 }
 

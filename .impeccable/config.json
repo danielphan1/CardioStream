@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "inter",
+        "createdAt": "2026-09-04T18:55:03.782Z",
+        "reason": "13-UI-SPEC.md Typography table locks Inter (body/label/heading) + Space Grotesk (display) as the new Phase 13 font system, replacing Atkinson Hyperlegible; DESIGN.md update is a separate later plan"
+      }
+    ]
+  }
+}
