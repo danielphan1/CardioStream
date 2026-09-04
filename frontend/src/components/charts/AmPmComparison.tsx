@@ -52,7 +52,7 @@ function makeBarLabels(period: "AM" | "PM") {
           x={cx}
           y={Number(y) - 6}
           fontSize={16}
-          fill="var(--color-ink)"
+          fill="var(--color-depth)"
           textAnchor="middle"
         >
           {period}
@@ -61,7 +61,7 @@ function makeBarLabels(period: "AM" | "PM") {
           x={cx}
           y={Number(y) + 20}
           fontSize={16}
-          fontWeight={700}
+          fontWeight={600}
           fill="var(--cat-chip-text)"
           textAnchor="middle"
         >
@@ -122,7 +122,7 @@ export default function AmPmComparison({
       <div className="flex h-full flex-1 flex-col">
         <p
           className="m-0 text-center"
-          style={{ fontSize: 20, fontWeight: 700, color: "var(--color-ink)" }}
+          style={{ fontSize: 20, fontWeight: 600, color: "var(--color-depth)" }}
         >
           Blood pressure (mmHg)
         </p>
@@ -149,7 +149,7 @@ export default function AmPmComparison({
       <div className="flex h-full flex-1 flex-col">
         <p
           className="m-0 text-center"
-          style={{ fontSize: 20, fontWeight: 700, color: "var(--color-ink)" }}
+          style={{ fontSize: 20, fontWeight: 600, color: "var(--color-depth)" }}
         >
           Pulse (bpm)
         </p>
