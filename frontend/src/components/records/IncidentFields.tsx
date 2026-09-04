@@ -59,7 +59,7 @@ export function IncidentFields({ onDraftChange }: IncidentFieldsProps) {
       ...(notes.trim() !== "" ? { notes: notes.trim() } : {}),
     };
     onDraftChange(body);
-  }, [dateText, timeText, incidentType, duration, notes, onDraftChange]);
+  }, [dateText, timeText, incidentType, duration, notes, canSubmit, onDraftChange]);
 
   return (
     <div className="flex flex-col gap-4">
