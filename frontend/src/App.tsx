@@ -74,11 +74,11 @@ function useClearanceHeight(
 function ChartSkeleton() {
   return (
     <div aria-busy="true" className="flex flex-col gap-8">
-      <div className="h-[420px] animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
+      <div className="h-[420px] animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
       <div className="grid gap-8 md:grid-cols-3">
-        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
-        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
-        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-sky)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
       </div>
     </div>
   );
@@ -151,9 +151,9 @@ function Dashboard() {
     chartRegion = (
       <section
         aria-label="Data unavailable"
-        className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-sky)] p-8 text-center shadow-[var(--shadow-elevation)]"
+        className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-mist)] p-8 text-center shadow-[var(--shadow-elevation)]"
       >
-        <h2 className="text-h2 leading-tight font-bold">
+        <h2 className="text-heading leading-tight">
           Couldn't load the readings
         </h2>
         <p className="text-lg">
@@ -166,7 +166,7 @@ function Dashboard() {
             void readings.refetch();
             void stats.refetch();
           }}
-          className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
+          className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
         >
           Try again
         </button>
@@ -211,7 +211,7 @@ function Dashboard() {
           the mic button into this same bar. */}
       <section
         ref={commandBarRef}
-        className={`bg-[var(--color-sky)]${guideOpen ? " sticky top-0 z-[60]" : ""}`}
+        className={`bg-[var(--color-panel)]${guideOpen ? " sticky top-0 z-[60]" : ""}`}
       >
         <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
           <CommandBar latestReading={latestReading} />
@@ -239,7 +239,7 @@ function Dashboard() {
         </div>
         <div className="flex flex-col gap-8">
           <section aria-label="Readings table">
-            <h2 className="mb-4 text-h2 leading-tight font-bold text-[var(--color-ink)]">
+            <h2 className="mb-4 text-heading leading-tight text-[var(--color-depth)]">
               Readings
             </h2>
             <ReadingsTable readings={readings.data ?? []} />
@@ -271,7 +271,7 @@ function UploadView() {
   const headerRef = useRef<HTMLDivElement>(null);
   const guideClearance = useClearanceHeight(headerRef);
   return (
-    <div className="min-h-screen bg-[var(--color-foam)]">
+    <div className="min-h-screen bg-[var(--color-deck)]">
       {/* inert while the guide overlay covers this view — see Dashboard's
           Header comment for why (GUIDE-03/04 keyboard fix). */}
       <div inert={guideOpen} ref={headerRef}>
@@ -293,7 +293,7 @@ function RecordsView() {
   const headerRef = useRef<HTMLDivElement>(null);
   const guideClearance = useClearanceHeight(headerRef);
   return (
-    <div className="min-h-screen bg-[var(--color-foam)]">
+    <div className="min-h-screen bg-[var(--color-deck)]">
       {/* inert while the guide overlay covers this view — see Dashboard's
           Header comment for why (GUIDE-03/04 keyboard fix). */}
       <div inert={guideOpen} ref={headerRef}>
