@@ -22,19 +22,19 @@ const rdpSizing = {
   "--rdp-day-height": "48px",
   "--rdp-day_button-width": "48px",
   "--rdp-day_button-height": "48px",
-  "--rdp-accent-color": "var(--color-accent)",
-  "--rdp-accent-background-color": "var(--color-sky)",
+  "--rdp-accent-color": "var(--color-brass)",
+  "--rdp-accent-background-color": "var(--color-mist)",
 } as React.CSSProperties;
 
 const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-foam)] px-3 text-[18px] text-[var(--color-ink)]";
+  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
 
 export function SingleDateField({ label, value, onChange }: SingleDateFieldProps) {
   const valid = isValidDateText(value);
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-control font-bold text-[var(--color-ink)]">
+      <label className="flex flex-col gap-1 text-label text-[var(--color-depth)]">
         {label}
         <input
           type="text"
@@ -47,7 +47,7 @@ export function SingleDateField({ label, value, onChange }: SingleDateFieldProps
         />
       </label>
 
-      <div style={rdpSizing} className="text-[18px] text-[var(--color-ink)]">
+      <div style={rdpSizing} className="text-[18px] text-[var(--color-depth)]">
         <DayPicker
           mode="single"
           selected={valid ? parseDateOnly(value) : undefined}
