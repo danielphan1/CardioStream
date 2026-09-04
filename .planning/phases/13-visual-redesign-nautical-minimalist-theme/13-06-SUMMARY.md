@@ -100,3 +100,12 @@ None - plan executed exactly as written; every token/class mapping matched the p
 ---
 *Phase: 13-visual-redesign-nautical-minimalist-theme*
 *Completed: 2026-09-04*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/ReadingsTable.tsx
+- FOUND: frontend/src/components/OverlayEventsList.tsx
+- FOUND: .planning/phases/13-visual-redesign-nautical-minimalist-theme/13-06-SUMMARY.md
+- FOUND: eb7b107 (Task 1 commit)
+- FOUND: 8658715 (Task 2 commit)
+- FOUND: 4a24833 (SUMMARY.md commit)
