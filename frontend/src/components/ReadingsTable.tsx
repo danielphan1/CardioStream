@@ -76,7 +76,7 @@ export function ReadingsTable({ readings }: ReadingsTableProps) {
   return (
     <section
       ref={ref}
-      className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]"
+      className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]"
     >
       {cardLayout ? (
         <div role="list" aria-label="Readings" className="flex flex-col gap-4">
@@ -89,22 +89,22 @@ export function ReadingsTable({ readings }: ReadingsTableProps) {
           <caption className="sr-only">Readings</caption>
           <thead>
             <tr>
-              <th scope="col" className="p-2 text-xl font-bold">
+              <th scope="col" className="p-2 text-label">
                 Date
               </th>
-              <th scope="col" className="p-2 text-xl font-bold">
+              <th scope="col" className="p-2 text-label">
                 Time
               </th>
-              <th scope="col" className="p-2 text-xl font-bold">
+              <th scope="col" className="p-2 text-label">
                 AM/PM
               </th>
-              <th scope="col" className="p-2 text-xl font-bold">
+              <th scope="col" className="p-2 text-label">
                 Blood pressure
               </th>
-              <th scope="col" className="p-2 text-xl font-bold">
+              <th scope="col" className="p-2 text-label">
                 Pulse
               </th>
-              <th scope="col" className="p-2 text-xl font-bold">
+              <th scope="col" className="p-2 text-label">
                 Category
               </th>
             </tr>
@@ -125,7 +125,7 @@ export function ReadingsTable({ readings }: ReadingsTableProps) {
         <button
           type="button"
           onClick={() => setVisible((v) => v + PAGE_SIZE)}
-          className="mt-4 min-h-12 w-full rounded-xl bg-[var(--color-accent)] px-6 text-control font-bold text-[var(--color-accent-text)]"
+          className="mt-4 min-h-12 w-full rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
         >
           Show 20 more
         </button>
@@ -138,7 +138,7 @@ function ReadingRow({ reading: r }: { reading: Reading }) {
   const hasNote = r.notes !== null && r.notes !== "";
   return (
     <>
-      <tr className="border-t border-[var(--color-foam)]">
+      <tr className="border-t border-[var(--color-deck)]">
         <td className="p-2 text-lg">{fmtDateCell(r.datetime)}</td>
         <td className="p-2 text-lg">{fmtTimeCell(r.datetime)}</td>
         <td className="p-2 text-lg">{r.am_pm}</td>
@@ -180,27 +180,27 @@ function ReadingCard({ reading: r }: { reading: Reading }) {
   return (
     <div
       role="listitem"
-      className="rounded-xl border border-[var(--color-foam)] p-4"
+      className="rounded-xl border border-[var(--color-deck)] p-4"
     >
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
-        <dt className="text-lg font-bold">Date</dt>
+        <dt className="text-lg font-semibold">Date</dt>
         <dd className="text-lg">{fmtDateCell(r.datetime)}</dd>
 
-        <dt className="text-lg font-bold">Time</dt>
+        <dt className="text-lg font-semibold">Time</dt>
         <dd className="text-lg">{fmtTimeCell(r.datetime)}</dd>
 
-        <dt className="text-lg font-bold">AM/PM</dt>
+        <dt className="text-lg font-semibold">AM/PM</dt>
         <dd className="text-lg">{r.am_pm}</dd>
 
-        <dt className="text-lg font-bold">Blood pressure</dt>
+        <dt className="text-lg font-semibold">Blood pressure</dt>
         <dd className="text-lg">
           {r.systolic} / {r.diastolic}
         </dd>
 
-        <dt className="text-lg font-bold">Pulse</dt>
+        <dt className="text-lg font-semibold">Pulse</dt>
         <dd className="text-lg">{r.pulse}</dd>
 
-        <dt className="text-lg font-bold">Category</dt>
+        <dt className="text-lg font-semibold">Category</dt>
         <dd className="text-lg">
           <span
             className="inline-block rounded-full px-3 py-1 text-lg"
