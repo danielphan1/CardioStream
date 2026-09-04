@@ -27,8 +27,8 @@ const SECTIONS = [
   { id: "about-this-guide", label: "About This Guide" },
 ];
 
-const h2Class = "text-h2 leading-tight font-bold text-[var(--color-ink)]";
-const bodyClass = "text-lg text-[var(--color-ink)]";
+const h2Class = "text-heading leading-tight text-[var(--color-depth)]";
+const bodyClass = "text-lg text-[var(--color-depth)]";
 
 // See the `top` style comment below for what these mean and why they exist.
 // CLOSE_BAR_HEIGHT (64px = py-2 + the close button's min-h-12, both fixed
@@ -184,24 +184,24 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           to play before the DOM node disappears. */}
       <div
         aria-hidden="true"
-        className={`fixed inset-0 z-40 bg-[var(--color-foam)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
+        className={`fixed inset-0 z-40 bg-[var(--color-deck)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
           shown ? "opacity-100" : "opacity-0"
         }`}
       />
       <div
         role="region"
         aria-label="Site guide"
-        className={`fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-foam)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
+        className={`fixed inset-x-0 bottom-0 z-50 overflow-y-auto bg-[var(--color-deck)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
           shown ? "opacity-100" : "opacity-0"
         }`}
         style={{ top: clearanceAbove ?? DEFAULT_CLEARANCE_ABOVE }}
       >
-        <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-foam)] px-4 py-2 md:px-8">
+        <div className="sticky top-0 z-10 flex justify-end bg-[var(--color-deck)] px-4 py-2 md:px-8">
           <button
             ref={closeButtonRef}
             type="button"
             onClick={() => setOpen(false)}
-            className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-6 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+            className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
           >
             <X aria-hidden="true" size={24} />
             Close
@@ -236,12 +236,12 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           className="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pb-16 md:px-8 xl:px-16"
           style={{ paddingTop: CLEARANCE_BUFFER }}
         >
-          <h1 className="text-h1 font-bold leading-tight text-[var(--color-ink)]">
+          <h1 className="text-heading leading-tight text-[var(--color-depth)]">
             Site Guide
           </h1>
 
           <nav aria-label="Jump to a section">
-            <p className="text-control font-bold text-[var(--color-ink)]">
+            <p className="text-label text-[var(--color-depth)]">
               Jump to a section
             </p>
             <ul className="mt-2 flex flex-wrap gap-2">
@@ -249,7 +249,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
-                    className="flex min-h-12 items-center rounded-xl border-2 border-[var(--color-ink)] bg-[var(--color-sky)] px-4 text-control font-bold text-[var(--color-ink)] shadow-[var(--shadow-elevation)]"
+                    className="flex min-h-12 items-center rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
                   >
                     {s.label}
                   </a>
@@ -372,10 +372,10 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
             <h2 className={h2Class}>What Can I Say</h2>
             {VOICE_COMMAND_CATEGORIES.map((c) => (
               <div key={c.id}>
-                <h3 className="text-control font-bold text-[var(--color-ink)]">
+                <h3 className="text-label text-[var(--color-depth)]">
                   {c.label}
                 </h3>
-                <p className="text-lg font-bold text-[var(--color-ink)]">
+                <p className="text-lg font-semibold text-[var(--color-depth)]">
                   "{c.example}"
                 </p>
                 <p className={bodyClass}>{SIMILAR_PHRASINGS_NOTE}</p>
