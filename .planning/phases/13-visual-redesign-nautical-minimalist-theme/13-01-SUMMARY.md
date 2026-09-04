@@ -125,3 +125,12 @@ None - no external service configuration required.
 ---
 *Phase: 13-visual-redesign-nautical-minimalist-theme*
 *Completed: 2026-09-04*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/index.css
+- FOUND: frontend/src/tests/contrast.test.ts
+- FOUND: .planning/phases/13-visual-redesign-nautical-minimalist-theme/13-01-SUMMARY.md
+- FOUND: commit 4c70854 (feat(13-01): replace Phase 12 token layer)
+- FOUND: commit a65ad08 (test(13-01): update WCAG contrast regression test)
+- FOUND: commit 5accad8 (docs(13-01): complete design token layer plan)
