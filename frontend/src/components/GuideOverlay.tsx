@@ -138,10 +138,24 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
   // stable id (Header.tsx), which is also the semantically correct
   // destination (the control that reopens the guide), mirroring
   // LogoutConfirmDialog's existing restore-to-trigger pattern in spirit.
+  // wasOpenRef (code review CR-01, iteration 2): `useEffect` runs once after
+  // every initial mount regardless of `open`'s value, and `GuideOverlay` is
+  // mounted fresh at three separate call sites in App.tsx (Dashboard,
+  // Upload, Add Record) — so without this guard, the `else` branch below
+  // fires `document.getElementById("guide-toggle-button")?.focus()` on
+  // EVERY navigation between those views (and on initial login), even
+  // though the guide was never open. Seeding the ref from `open` means the
+  // first render's "wasOpen" always matches `open` itself, so the `else`
+  // branch can only run once `wasOpenRef.current` was actually `true` on a
+  // prior render — i.e. only on a real open->close transition, never on
+  // mount.
+  const wasOpenRef = useRef(open);
   useEffect(() => {
+    const wasOpen = wasOpenRef.current;
+    wasOpenRef.current = open;
     if (open) {
       closeButtonRef.current?.focus();
-    } else {
+    } else if (wasOpen) {
       document.getElementById("guide-toggle-button")?.focus();
     }
   }, [open]);
