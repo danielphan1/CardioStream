@@ -13,35 +13,66 @@
 // Presentational only: data is fetched at App level (plan 02-07) and passed
 // down. `isLoading` covers the initial load; after first load TanStack
 // Query's keepPreviousData prevents blank tiles on filter changes.
-import type { StatsSummary, VitalStats } from "../api/types";
-import { categoryColor } from "../lib/palette";
+//
+// 13-11: rewired to the structural reference's icon + label + large value +
+// sparkline + status-pill card language (13-UI-SPEC.md Component Language
+// item 2). `readings` is a new prop — the sparkline needs the raw per-reading
+// series (verbatim, no derivation) that `stats` alone doesn't carry.
+import { Activity, Gauge, HeartPulse, ListChecks } from "lucide-react";
+
+import type { BPCategory, Reading, StatsSummary, VitalStats } from "../api/types";
+import { categoryColor, CHIP_TEXT } from "../lib/palette";
+
+import StatsSparkline from "./charts/StatsSparkline";
 
 type StatsStripProps = {
   stats: StatsSummary | undefined;
   isLoading: boolean;
+  readings: Reading[];
 };
 
-/** One vital tile: Label caption, Display avg, 18px min/max line. */
+/** One vital tile: icon, label, Display avg, sparkline, 18px min/max line,
+ *  and (Systolic/Diastolic only) a status pill for the latest category. */
 function VitalTile({
   label,
   vital,
+  Icon,
+  values,
+  sparklineColor,
+  statusCategory,
 }: {
   label: string;
   vital: VitalStats | null;
+  Icon: typeof Gauge;
+  values: number[];
+  sparklineColor: string;
+  statusCategory?: BPCategory | null;
 }) {
   // count === 0 → VitalStats is null → em dash for ALL THREE values
   // (never 0, never blank — D-22 null contract).
   return (
-    <div className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
-      <p className="text-control leading-tight font-bold">{label}</p>
-      <p className="text-h1 leading-tight font-bold">
+    <div className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
+      <Icon aria-hidden="true" size={24} className="text-[var(--color-depth)]" />
+      <p className="mt-2 text-label text-[var(--color-depth)]">{label}</p>
+      <p className="text-display font-display text-[var(--color-depth)]">
         {vital !== null ? vital.avg : "—"}
       </p>
-      <p className="text-lg">
+      <p className="text-[18px] text-[var(--color-depth)]">
         {vital !== null
           ? `min ${vital.min} · max ${vital.max}`
           : "min — · max —"}
       </p>
+      {vital !== null && values.length >= 2 && (
+        <StatsSparkline values={values} color={sparklineColor} />
+      )}
+      {statusCategory != null && (
+        <span
+          className="mt-2 inline-block w-fit rounded-full px-3 py-1 text-[18px]"
+          style={{ backgroundColor: categoryColor(statusCategory), color: CHIP_TEXT }}
+        >
+          {statusCategory}
+        </span>
+      )}
     </div>
   );
 }
@@ -49,15 +80,15 @@ function VitalTile({
 /** Skeleton tile for the initial-load state (UI-SPEC loading contract). */
 function SkeletonTile() {
   return (
-    <div className="animate-pulse rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
-      <div className="h-6 w-24 rounded bg-[var(--color-foam)]" />
-      <div className="mt-2 h-9 w-16 rounded bg-[var(--color-foam)]" />
-      <div className="mt-2 h-5 w-32 rounded bg-[var(--color-foam)]" />
+    <div className="animate-pulse rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
+      <div className="h-6 w-24 rounded bg-[var(--color-deck)]" />
+      <div className="mt-2 h-9 w-16 rounded bg-[var(--color-deck)]" />
+      <div className="mt-2 h-5 w-32 rounded bg-[var(--color-deck)]" />
     </div>
   );
 }
 
-export function StatsStrip({ stats, isLoading }: StatsStripProps) {
+export function StatsStrip({ stats, isLoading, readings }: StatsStripProps) {
   if (isLoading) {
     return (
       <section
@@ -81,15 +112,46 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
     return null;
   }
 
+  // Oldest-to-newest, matching the main chart's time axis direction (the
+  // sparkline should read left-to-right forward in time) — same ascending
+  // sort convention as ReadingsTable.tsx, just not reversed.
+  const chronological = [...readings].sort((a, b) => a.datetime.localeCompare(b.datetime));
+  // Drives the status pill — only Systolic/Diastolic show it (BP category is
+  // a joint systolic+diastolic classification; Pulse has no AHA category
+  // ladder, only a bradycardia reference line; Readings count isn't a vital).
+  const latestCategory = chronological.at(-1)?.bp_category ?? null;
+
   return (
     <section aria-label="Summary statistics" className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <VitalTile label="Systolic" vital={stats.systolic} />
-        <VitalTile label="Diastolic" vital={stats.diastolic} />
-        <VitalTile label="Pulse" vital={stats.pulse} />
-        <div className="rounded-xl bg-[var(--color-sky)] p-6 shadow-[var(--shadow-elevation)]">
-          <p className="text-control leading-tight font-bold">Readings</p>
-          <p className="text-h1 leading-tight font-bold">{stats.count}</p>
+        <VitalTile
+          label="Systolic"
+          vital={stats.systolic}
+          Icon={Gauge}
+          values={chronological.map((r) => r.systolic)}
+          sparklineColor="var(--line-systolic)"
+          statusCategory={latestCategory}
+        />
+        <VitalTile
+          label="Diastolic"
+          vital={stats.diastolic}
+          Icon={Activity}
+          values={chronological.map((r) => r.diastolic)}
+          sparklineColor="var(--line-diastolic)"
+          statusCategory={latestCategory}
+        />
+        <VitalTile
+          label="Pulse"
+          vital={stats.pulse}
+          Icon={HeartPulse}
+          values={chronological.map((r) => r.pulse)}
+          sparklineColor="var(--line-systolic)"
+          statusCategory={null}
+        />
+        <div className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
+          <ListChecks aria-hidden="true" size={24} className="text-[var(--color-depth)]" />
+          <p className="mt-2 text-label text-[var(--color-depth)]">Readings</p>
+          <p className="text-display font-display text-[var(--color-depth)]">{stats.count}</p>
         </div>
       </div>
 
@@ -100,7 +162,7 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
         {stats.categories.map((c) => (
           <li
             key={c.category}
-            className="flex items-center gap-2 rounded-lg bg-[var(--color-sky)] px-4 py-2 text-lg"
+            className="flex items-center gap-2 rounded-lg bg-[var(--color-mist)] px-4 py-2 text-lg"
           >
             <span
               aria-hidden="true"
