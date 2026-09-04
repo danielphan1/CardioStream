@@ -90,7 +90,18 @@ export default function ChartTooltip({
 
   return (
     <div
-      role="dialog"
+      // role="group", not role="dialog" (code review WR-01): this panel
+      // moves no focus on open and restores none on close (Escape and the
+      // Close button both just call `onClose`, leaving focus wherever it
+      // already was on the Recharts accessibilityLayer chart container —
+      // there's no per-point DOM node here to restore focus to). A
+      // screen reader encountering `role="dialog"` expects the dialog
+      // itself to receive focus, which this component never does, so that
+      // role over-promised semantics it doesn't implement. `role="group"`
+      // — a related cluster of content and controls, no focus-management
+      // contract — matches actual behavior, mirroring GuideOverlay's own
+      // deliberate choice to avoid dialog semantics for the same reason.
+      role="group"
       aria-label={`Reading details, ${fmtTooltipTitle(reading.datetime)}`}
       className={`flex flex-col gap-2 rounded-xl p-4 shadow-[var(--shadow-elevation)] duration-[150ms] ease-out motion-safe:transition-[opacity,transform] motion-reduce:transition-opacity ${
         entered

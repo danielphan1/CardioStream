@@ -33,7 +33,7 @@ const [fixture] = toTimePoints([readingFixture]);
 describe("ChartTooltip", () => {
   it("renders nothing when inactive (baseline sanity check)", () => {
     render(<ChartTooltip onClose={vi.fn()} />);
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group")).not.toBeInTheDocument();
   });
 
   it("starts at opacity-0 and transitions to opacity-100 shortly after becoming visible", async () => {
@@ -44,9 +44,9 @@ describe("ChartTooltip", () => {
         onClose={vi.fn()}
       />,
     );
-    expect(screen.getByRole("dialog").className).toMatch(/opacity-0/);
+    expect(screen.getByRole("group").className).toMatch(/opacity-0/);
     await waitFor(() =>
-      expect(screen.getByRole("dialog").className).toMatch(/opacity-100/),
+      expect(screen.getByRole("group").className).toMatch(/opacity-100/),
     );
   });
 
@@ -59,9 +59,9 @@ describe("ChartTooltip", () => {
       />,
     );
     await waitFor(() =>
-      expect(screen.getByRole("dialog").className).toMatch(/opacity-100/),
+      expect(screen.getByRole("group").className).toMatch(/opacity-100/),
     );
-    const className = screen.getByRole("dialog").className;
+    const className = screen.getByRole("group").className;
     expect(className).toMatch(/motion-safe:transition-\[opacity,transform\]/);
     expect(className).toMatch(/motion-reduce:transition-opacity/);
     expect(className).toMatch(/motion-safe:scale-/);
