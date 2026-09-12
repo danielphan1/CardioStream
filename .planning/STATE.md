@@ -83,6 +83,7 @@ Recent decisions affecting current work:
 
 ### Roadmap Evolution
 
+- Phase 14 added: Unified Show Panel and Combined Timeline. Client-driven change request from Chris (2026-09-12 meeting, decisions confirmed): replace the mutually-exclusive chart deck + separate overlay row with ONE five-checkbox Show panel driving ONE dual-axis combined timeline. **Explicitly reverses Phase 9's locked decision** ("BP Timeline and Pulse Trend stay today's two separate hero charts, no new combined-metric chart" — `09-CONTEXT.md`); that scope call was correct at the time and is simply not what the client wants now. Design contract written and client-approved before planning. Full scope and locked decisions in `14-CONTEXT.md`. Next: `/gsd-plan-phase 14`.
 - Phase 13 added: Visual Redesign — Nautical Minimalist Theme. Full visual-identity replacement (not an evolution like Phase 12) — new palette/type/spacing/elevation/component language sitewide, carrying forward the existing nautical motif (`--color-foam`/`--color-sky`, wave-curve divider) with far more craft, rendered clean and minimalist. All existing functionality and the accessibility floor carry over unchanged. Direction gathered live via `impeccable`'s new-work intake (structural + genre reference images reviewed in-browser); full scope and locked decisions in `13-CONTEXT.md`. Next: `/gsd-ui-phase 13`.
 
 ### Pending Todos

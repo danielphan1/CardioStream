@@ -105,3 +105,14 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [x] 13-12-PLAN.md — Full-site automated regression sweep + human cross-screen/cross-theme checkpoint (wave 4)
+
+### Phase 14: Unified Show Panel and Combined Timeline
+
+**Goal:** Chris can turn any dataset on or off independently — by voice or by checkbox — and see any combination on one chart, including blood pressure and pulse together and events on their own.
+**Requirements**: Client change request (Chris, 2026-09-12); decision IDs D-01 through D-10 in `14-CONTEXT.md` are the requirement source. Reverses Phase 9's "no combined-metric chart" lock.
+**Depends on:** Phase 13
+**Plans:** 0 plans
+**UI hint**: yes
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 14 to break down)
