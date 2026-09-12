@@ -111,8 +111,21 @@ Plans:
 **Goal:** Chris can turn any dataset on or off independently — by voice or by checkbox — and see any combination on one chart, including blood pressure and pulse together and events on their own.
 **Requirements**: Client change request (Chris, 2026-09-12); decision IDs D-01 through D-10 in `14-CONTEXT.md` are the requirement source. Reverses Phase 9's "no combined-metric chart" lock.
 **Depends on:** Phase 13
-**Plans:** 0 plans
+**Plans:** 0/6 plans complete
 **UI hint**: yes
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 14 to break down)
+**Wave 1**
+
+- [ ] 14-01-PLAN.md — `--line-pulse` token both themes + first contrast coverage for vitals line colours (wave 1)
+- [ ] 14-02-PLAN.md — store/filters.ts: `visibleDatasets` + `chartView` with v1→v2 persistence migration (wave 1)
+- [ ] 14-03-PLAN.md — backend agent: five dataset tokens + new `show_only` action (wave 1)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 14-04-PLAN.md — ShowPanel + ChartViewSwitcher + EventTimelineList; OverlayToggle deleted (wave 2)
+- [ ] 14-05-PLAN.md — CombinedTimeline dual-axis chart; BPTimeline + PulseTrend retired (wave 2)
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 14-06-PLAN.md — ChartDeck view router, App wiring, agent mirror, voice vocabulary + guide (wave 3)
