@@ -54,9 +54,17 @@
   --color-panel-text: #F5F7F6; /* Command Bar feature-panel text — always light, non-inverting */
   --shadow-elevation: 0 8px 24px -4px rgba(16, 28, 46, 0.10), 0 2px 6px -2px rgba(16, 28, 46, 0.06);
 
-  /* Chart series */
+  /* Chart series — systolic/diastolic share the mmHg axis, pulse owns the bpm
+     axis. --line-pulse is a rust deliberately outside four existing hue
+     families (systolic navy, diastolic teal, the three --overlay-* hues, and
+     --color-brass, which is reserved by the One Signal Rule). It is warmer and
+     lighter than --color-hazard so a pulse line never reads as an alarm.
+     Pulse also draws DASHED (see CombinedTimeline): its luminance ratio against
+     systolic is only 1.89:1, so in greyscale the stroke pattern — not the hue —
+     is what keeps the two series apart. */
   --line-systolic: #1E3A5F;
   --line-diastolic: #1F7A6C;
+  --line-pulse: #9E4A24;
   --ref-bradycardia: #3E6E8E;
 
   /* Clinical category colors — chips, bars, AND timeline bands */
@@ -93,6 +101,7 @@
 
   --line-systolic: #9DBFE0;
   --line-diastolic: #7FD6C4;
+  --line-pulse: #E3A07C;
   --ref-bradycardia: #8FB3D1;
 
   --cat-hypotension: #8FB3D1;
