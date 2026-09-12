@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Phase 13 — visual-redesign-nautical-minimalist-theme
+**Current focus:** Phase 14 complete — unified-show-panel-and-combined-timeline
 
 ## Current Position
 
-Phase: 13 (visual-redesign-nautical-minimalist-theme) — EXECUTING
-Plan: 1 of 12
-Status: Executing Phase 13
-Last activity: 2026-09-04 -- Phase 13 execution started
+Phase: 14 (unified-show-panel-and-combined-timeline) — COMPLETE
+Plan: 6 of 6
+Status: Phase 14 verified (14-VERIFICATION.md, status: passed)
+Last activity: 2026-09-12 -- Phase 14 executed and verified live in-browser
 
 ## Performance Metrics
 
@@ -92,6 +92,15 @@ None yet.
 
 ### Blockers/Concerns
 
+- [Phase 14] **Voice path for the new vocabulary is untested against a real model.** `show_only`,
+  the five-token `DatasetToken`, and `command.datasets` are unit-tested on both sides of the wire
+  and covered by the ACC-03 parity suite, but the agent is inert (AGENT-01, no API credits) so no
+  live utterance was ever issued. Re-run the 43-fixture eval once billing is funded.
+- [Phase 14] **`backend/tests/test_auth_upload.py::test_config_new_fields_default_keyless` fails
+  locally** because `backend/.env` sets `SITE_PASSWORD` and pydantic-settings reads it. Pre-existing
+  (confirmed on stashed code), unrelated to Phase 14, still worth fixing — the test should isolate
+  the environment rather than depend on a developer's `.env`.
+
 - [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and degrades to `unclear`. Phase 6 (Liveness) makes this failure *visible*, but does not fix it — funding is a v2/billing-only item, deferred by user decision.
 - [Phase 10 planning]: TTS vs. existing aria-live confirmation is an open product decision (does TTS coexist with aria-live, opt-in vs. default-on framing of the mute toggle) — JS cannot reliably detect screen-reader presence; decide explicitly during Phase 10 planning.
 - [Phase 8 follow-up]: CR-01's fix (guard against a stale mutation race clobbering `AddRecordPage` state on mid-submit type-switch) is a concurrency fix that automated tests can't fully exercise (existing suite is synchronous-mock only) — spot-check manually: fill Lab form → submit → switch to Incident before the response resolves → confirm nothing is clobbered.
@@ -138,10 +147,10 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-04T00:00:00.000Z
-Stopped at: Session resumed, proceeding to execute Phase 13 (12 plans, 4 waves) starting at plan 13-01
-Next action: /gsd-execute-phase 13
-Resume file: .planning/phases/13-visual-redesign-nautical-minimalist-theme/13-01-PLAN.md
+Last session: 2026-09-12T00:00:00.000Z
+Stopped at: Phase 14 complete — client change request (unified dataset checkboxes + combined timeline) built, tested, and verified live
+Next action: close out v1.1 with /gsd-complete-milestone, or start the next milestone
+Resume file: .planning/phases/14-unified-show-panel-and-combined-timeline/14-VERIFICATION.md
 
 ## Operator Next Steps
 
