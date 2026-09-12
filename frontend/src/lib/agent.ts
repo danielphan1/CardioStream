@@ -7,20 +7,27 @@
 // by construction; nothing model-authored is executed.
 import { create } from "zustand";
 
-import type { AppliedFilters, BPCategory, ChartId } from "../api/types";
+import type {
+  AppliedFilters,
+  BPCategory,
+  ChartView,
+  SeriesDataset,
+} from "../api/types";
 import type { DatePreset } from "./dates";
 import { parseDateOnly, presetLabel } from "./dates";
+import { DATASET_META, DATASET_ORDER } from "./datasetMeta";
 import { useFilters } from "../store/filters";
 import { useGuide } from "../store/guide";
 import { useSpeech } from "../store/speech";
 
-// The five filter groups FilterBar (plan 03-04) highlights on a D-08 pulse.
+// The control groups that highlight on a D-08 pulse. Phase 14 renamed
+// "overlay" to "datasets" — the group now covers all five, not just events.
 export type PulseField =
   | "chart"
   | "dateRange"
   | "amPm"
   | "bpCategory"
-  | "overlay";
+  | "datasets";
 
 // Tiny zustand signal store: `mark` bumps `seq` and replaces `fields`, so a
 // FilterBar effect keyed on `seq` re-runs its highlight even when the same
@@ -56,30 +63,32 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   // explicit guideOpen branch below governs that case on its own.
   const hasOtherCommand =
     f.reset === true ||
-    f.activeChart != null ||
+    f.chartView != null ||
     f.datePreset != null ||
     (f.customRange?.from != null && f.customRange?.to != null) ||
     f.amPm != null ||
     f.bpCategory != null ||
     (f.overlayDataset != null && f.overlayState != null) ||
+    (f.datasetsOn != null && f.datasetsOn.length > 0) ||
+    (f.showOnly != null && f.showOnly.length > 0) ||
     f.speechEnabled != null;
   if (hasOtherCommand && useGuide.getState().open) {
     useGuide.getState().setOpen(false);
   }
 
   if (f.reset) {
-    s.showAllData(); // datePreset/customRange/amPm/bpCategory/overlayDatasets → defaults
+    s.showAllData(); // view/date/amPm/category/datasets → defaults
     touched.add("chart");
     touched.add("dateRange");
     touched.add("amPm");
     touched.add("bpCategory");
-    touched.add("overlay");
+    touched.add("datasets");
   }
 
   // Present-value deltas only (`!= null` — "all" is a valid present value, so
   // truthiness would be wrong; every value here is otherwise a non-empty token).
-  if (f.activeChart != null) {
-    s.setActiveChart(f.activeChart);
+  if (f.chartView != null) {
+    s.setChartView(f.chartView);
     touched.add("chart");
   }
   if (f.datePreset != null) {
@@ -99,9 +108,25 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
     s.setBpCategory(f.bpCategory);
     touched.add("bpCategory");
   }
+  // Three dataset paths, deliberately distinct (see backend schemas.py):
+  //   overlayDataset + overlayState  one dataset, additive  "show my pulse"
+  //   datasetsOn                     several,     additive  "BP for 30 days"
+  //   showOnly                       several,     EXCLUSIVE "only BP and pulse"
+  // showOnly is applied LAST so that a delta carrying both an additive and an
+  // exclusive instruction ends in the exclusive state the user asked for.
   if (f.overlayDataset != null && f.overlayState != null) {
-    s.setOverlayDataset(f.overlayDataset, f.overlayState === "on");
-    touched.add("overlay");
+    s.setDataset(f.overlayDataset, f.overlayState === "on");
+    touched.add("datasets");
+  }
+  if (f.datasetsOn != null && f.datasetsOn.length > 0) {
+    for (const dataset of f.datasetsOn) {
+      s.setDataset(dataset, true);
+    }
+    touched.add("datasets");
+  }
+  if (f.showOnly != null && f.showOnly.length > 0) {
+    s.showOnlyDatasets(f.showOnly);
+    touched.add("datasets");
   }
   if (f.speechEnabled != null) {
     useSpeech.getState().setEnabled(f.speechEnabled === "on");
@@ -118,12 +143,25 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   return fields;
 }
 
-const CHART_PHRASE: Record<ChartId, string> = {
-  bp_timeline: "blood pressure",
-  pulse_trend: "pulse",
+const VIEW_PHRASE: Record<ChartView, string> = {
+  timeline: "the timeline",
   bp_categories: "BP categories",
   am_pm_comparison: "the AM vs PM comparison",
 };
+
+/** "a" / "a and b" / "a, b and c" — spoken, so no Oxford comma. */
+function joinWithAnd(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/** What the timeline is actually drawing, in fixed DATASET_ORDER. */
+function datasetsPhrase(visible: Record<SeriesDataset, boolean>): string {
+  const on = DATASET_ORDER.filter((d) => visible[d]);
+  if (on.length === 0) return "nothing";
+  return joinWithAnd(on.map((d) => DATASET_META[d].label.toLowerCase()));
+}
 
 // parseDateOnly-safe long-date form — NEVER new Date("YYYY-MM-DD") (Pitfall 7,
 // UTC-midnight off-by-one). Mirrors dates.ts fmtLongDate output, safely.
@@ -145,7 +183,8 @@ function fmtLongDateOnly(dateOnly: string): string {
  */
 export function composeConfirmation(
   state: {
-    activeChart: ChartId;
+    chartView: ChartView;
+    visibleDatasets: Record<SeriesDataset, boolean>;
     datePreset: DatePreset;
     customRange: { from: string | null; to: string | null };
     amPm: "all" | "AM" | "PM";
@@ -153,7 +192,14 @@ export function composeConfirmation(
   },
   _latestReading: string | null,
 ): string {
-  const chartPhrase = CHART_PHRASE[state.activeChart];
+  // On the timeline, name the DATASETS — that is what changed and what Chris
+  // is looking at. On a summary view the datasets do not apply, so name the
+  // view instead. Saying "showing the timeline" while he just asked for pulse
+  // would be technically true and useless.
+  const chartPhrase =
+    state.chartView === "timeline"
+      ? datasetsPhrase(state.visibleDatasets)
+      : VIEW_PHRASE[state.chartView];
 
   let rangePhrase: string;
   if (state.datePreset === "all") {

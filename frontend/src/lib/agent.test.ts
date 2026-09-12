@@ -13,17 +13,23 @@ import {
   useAgentPulse,
   type PulseField,
 } from "./agent";
-import type { ChartId, BPCategory } from "../api/types";
+import type { BPCategory, ChartView, SeriesDataset } from "../api/types";
 import type { DatePreset } from "./dates";
 
 beforeEach(() => {
   useFilters.setState({
-    activeChart: "bp_timeline",
+    chartView: "timeline",
     datePreset: "all",
     customRange: { from: null, to: null },
     amPm: "all",
     bpCategory: "all",
-    overlayDatasets: { labs: false, incidents: false, procedures: false },
+    visibleDatasets: {
+      blood_pressure: true,
+      pulse: true,
+      labs: false,
+      incidents: false,
+      procedures: false,
+    },
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
   useSpeech.setState({ enabled: true, isSpeaking: false, primed: false });
@@ -31,7 +37,8 @@ beforeEach(() => {
 });
 
 type ConfState = {
-  activeChart: ChartId;
+  chartView: ChartView;
+  visibleDatasets: Record<SeriesDataset, boolean>;
   datePreset: DatePreset;
   customRange: { from: string | null; to: string | null };
   amPm: "all" | "AM" | "PM";
@@ -40,7 +47,14 @@ type ConfState = {
 
 function confState(overrides: Partial<ConfState> = {}): ConfState {
   return {
-    activeChart: "bp_timeline",
+    chartView: "timeline",
+    visibleDatasets: {
+      blood_pressure: true,
+      pulse: false,
+      labs: false,
+      incidents: false,
+      procedures: false,
+    },
     datePreset: "all",
     customRange: { from: null, to: null },
     amPm: "all",
@@ -53,10 +67,11 @@ describe("applyAgentFilters", () => {
   it("changes only the mentioned field; other filters carry over (D-13)", () => {
     useFilters.setState({ datePreset: "30d", amPm: "AM" });
 
-    applyAgentFilters({ activeChart: "pulse_trend" });
+    applyAgentFilters({ showOnly: ["pulse"] });
 
     const s = useFilters.getState();
-    expect(s.activeChart).toBe("pulse_trend");
+    expect(s.visibleDatasets.pulse).toBe(true);
+    expect(s.visibleDatasets.blood_pressure).toBe(false);
     expect(s.datePreset).toBe("30d"); // survived
     expect(s.amPm).toBe("AM"); // survived
   });
@@ -79,10 +94,11 @@ describe("applyAgentFilters", () => {
   it("applies reset FIRST, then per-field deltas", () => {
     useFilters.setState({ datePreset: "30d", bpCategory: "Stage 2" });
 
-    applyAgentFilters({ reset: true, activeChart: "pulse_trend", amPm: "AM" });
+    applyAgentFilters({ reset: true, showOnly: ["pulse"], amPm: "AM" });
 
     const s = useFilters.getState();
-    expect(s.activeChart).toBe("pulse_trend"); // delta after reset
+    expect(s.visibleDatasets.pulse).toBe(true); // delta applied after reset
+    expect(s.visibleDatasets.blood_pressure).toBe(false);
     expect(s.amPm).toBe("AM"); // delta after reset
     expect(s.datePreset).toBe("all"); // reset default (no delta)
     expect(s.bpCategory).toBe("all"); // reset default (no delta)
@@ -108,13 +124,13 @@ describe("applyAgentFilters", () => {
 
   it("marks a D-08 pulse for exactly the touched groups and bumps seq", () => {
     const fields = applyAgentFilters({
-      activeChart: "pulse_trend",
+      showOnly: ["pulse"],
       amPm: "AM",
     });
 
-    expect([...fields].sort()).toEqual(["amPm", "chart"]);
+    expect([...fields].sort()).toEqual(["amPm", "datasets"]);
     const pulse = useAgentPulse.getState();
-    expect([...pulse.fields].sort()).toEqual(["amPm", "chart"]);
+    expect([...pulse.fields].sort()).toEqual(["amPm", "datasets"]);
     expect(pulse.seq).toBe(1); // bumped from 0
   });
 
@@ -126,16 +142,64 @@ describe("applyAgentFilters", () => {
       "bpCategory",
       "chart",
       "dateRange",
-      "overlay",
-    ];
+      "datasets",
+    ].sort() as PulseField[];
     expect([...useAgentPulse.getState().fields].sort()).toEqual(expected);
   });
 
-  it("overlayDataset + overlayState reaches setOverlayDataset and pulses overlay", () => {
+  it("overlayDataset + overlayState is ADDITIVE — one dataset, others untouched", () => {
     applyAgentFilters({ overlayDataset: "labs", overlayState: "on" });
 
-    expect(useFilters.getState().overlayDatasets.labs).toBe(true);
-    expect(useAgentPulse.getState().fields).toContain("overlay");
+    const v = useFilters.getState().visibleDatasets;
+    expect(v.labs).toBe(true);
+    expect(v.blood_pressure).toBe(true); // survived — this path never clears
+    expect(useAgentPulse.getState().fields).toContain("datasets");
+  });
+
+  it("datasetsOn turns several on additively, leaving the rest", () => {
+    applyAgentFilters({ datasetsOn: ["incidents"] });
+
+    const v = useFilters.getState().visibleDatasets;
+    expect(v.incidents).toBe(true);
+    expect(v.blood_pressure).toBe(true);
+    expect(v.pulse).toBe(true);
+  });
+
+  it("showOnly is EXCLUSIVE — the client's own 'only ...' phrasing", () => {
+    applyAgentFilters({ showOnly: ["blood_pressure", "pulse"] });
+
+    expect(useFilters.getState().visibleDatasets).toEqual({
+      blood_pressure: true,
+      pulse: true,
+      labs: false,
+      incidents: false,
+      procedures: false,
+    });
+  });
+
+  it("applies showOnly LAST so an exclusive instruction wins over an additive one", () => {
+    applyAgentFilters({
+      datasetsOn: ["procedures"],
+      showOnly: ["pulse"],
+    });
+
+    const v = useFilters.getState().visibleDatasets;
+    expect(v.pulse).toBe(true);
+    expect(v.procedures).toBe(false);
+  });
+
+  it("a showOnly delta closes an open guide (hasOtherCommand enumeration)", () => {
+    useGuide.setState({ open: true });
+
+    applyAgentFilters({ showOnly: ["pulse"] });
+
+    expect(useGuide.getState().open).toBe(false);
+  });
+
+  it("an empty showOnly list is ignored rather than blanking the dashboard", () => {
+    applyAgentFilters({ showOnly: [] });
+
+    expect(useFilters.getState().visibleDatasets.blood_pressure).toBe(true);
   });
 
   it("speechEnabled reaches useSpeech.setEnabled without touching the pulse (no PulseField for it)", () => {
@@ -155,7 +219,7 @@ describe("applyAgentFilters", () => {
   it("an unrelated command auto-closes an already-open guide (D-07)", () => {
     useGuide.setState({ open: true });
 
-    applyAgentFilters({ activeChart: "pulse_trend" });
+    applyAgentFilters({ showOnly: ["pulse"] });
 
     expect(useGuide.getState().open).toBe(false);
   });
@@ -181,7 +245,7 @@ describe("composeConfirmation", () => {
   it("emits the VOICE-06/D-07 canonical string exactly", () => {
     expect(
       composeConfirmation(
-        confState({ activeChart: "bp_timeline", datePreset: "30d", amPm: "AM" }),
+        confState({ datePreset: "30d", amPm: "AM" }),
         null,
       ),
     ).toBe("Showing blood pressure, last 30 days, mornings");
@@ -191,7 +255,6 @@ describe("composeConfirmation", () => {
     expect(
       composeConfirmation(
         confState({
-          activeChart: "bp_timeline",
           datePreset: "custom",
           customRange: { from: "2025-02-01", to: "2025-04-30" },
         }),
@@ -204,7 +267,13 @@ describe("composeConfirmation", () => {
     expect(
       composeConfirmation(
         confState({
-          activeChart: "pulse_trend",
+          visibleDatasets: {
+            blood_pressure: false,
+            pulse: true,
+            labs: false,
+            incidents: false,
+            procedures: false,
+          },
           datePreset: "all",
           amPm: "PM",
           bpCategory: "Stage 2",

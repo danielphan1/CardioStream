@@ -53,7 +53,14 @@ beforeEach(() => {
   installFakeRecognition();
   installFakeSpeechSynthesis();
   useFilters.setState({
-    activeChart: "bp_timeline",
+    chartView: "timeline",
+    visibleDatasets: {
+      blood_pressure: true,
+      pulse: true,
+      labs: false,
+      incidents: false,
+      procedures: false,
+    },
     datePreset: "all",
     customRange: { from: null, to: null },
     amPm: "all",
@@ -122,7 +129,7 @@ describe("useVoiceCommand interim transcript (D-10)", () => {
 describe("useVoiceCommand final submit (D-03)", () => {
   it("submits the stripped command through the shared mutation exactly once", async () => {
     mockPostAgent.mockResolvedValue(
-      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
     );
     const { result } = renderVoice();
     act(() => result.current.start());
@@ -138,7 +145,7 @@ describe("useVoiceCommand final submit (D-03)", () => {
       context: null,
     });
     // Applied reply mutated the store through applyAgentFilters and set the echo.
-    expect(useFilters.getState().activeChart).toBe("pulse_trend");
+    expect(useFilters.getState().visibleDatasets).toEqual({ blood_pressure: false, pulse: true, labs: false, incidents: false, procedures: false });
     expect(result.current.message).toMatch(/^Showing pulse/);
     expect(result.current.state).toBe("listening"); // D-13 back to listening
     // Voice path speaks the exact echoed confirmation (TTS-01).
@@ -179,7 +186,7 @@ describe("useVoiceCommand newest wins (D-05)", () => {
         }),
       )
       .mockResolvedValueOnce(
-        reply({ kind: "applied", filters: { activeChart: "bp_categories" } }),
+        reply({ kind: "applied", filters: { chartView: "bp_categories" } }),
       );
 
     const { result } = renderVoice();
@@ -192,13 +199,13 @@ describe("useVoiceCommand newest wins (D-05)", () => {
     await act(async () => {
       rec.emitResult("dashboard show pulse trend", true);
     });
-    expect(useFilters.getState().activeChart).toBe("bp_categories");
+    expect(useFilters.getState().chartView).toBe("bp_categories");
 
     // The stale first reply lands LATE — it must not overwrite the newest view.
     await act(async () => {
-      resolveFirst(reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }));
+      resolveFirst(reply({ kind: "applied", filters: { showOnly: ["pulse"] } }));
     });
-    expect(useFilters.getState().activeChart).toBe("bp_categories");
+    expect(useFilters.getState().chartView).toBe("bp_categories");
   });
 
   it("drops a stale reply's store write too — a late 'unavailable' reply does not flip agentStatus back (D-05/D-07/T-06-07)", async () => {
@@ -213,7 +220,7 @@ describe("useVoiceCommand newest wins (D-05)", () => {
         }),
       )
       .mockResolvedValueOnce(
-        reply({ kind: "applied", filters: { activeChart: "bp_categories" } }),
+        reply({ kind: "applied", filters: { chartView: "bp_categories" } }),
       );
 
     const { result } = renderVoice();
@@ -262,10 +269,10 @@ describe("useVoiceCommand stop/pause supersede (D-05, WR-01)", () => {
     // stays untouched and the bar must NOT flip back to "listening" (no zombie UI).
     await act(async () => {
       resolveReply(
-        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+        reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
       );
     });
-    expect(useFilters.getState().activeChart).toBe("bp_timeline"); // unchanged post-stop
+    expect(useFilters.getState().visibleDatasets.pulse).toBe(true); // unchanged post-stop
     expect(result.current.state).toBe("off"); // not resurrected to "listening"
   });
 });
@@ -294,10 +301,10 @@ describe("useVoiceCommand cancel (impeccable critique P2)", () => {
     // store stays untouched and the Cancelled message must not be overwritten.
     await act(async () => {
       resolveReply(
-        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+        reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
       );
     });
-    expect(useFilters.getState().activeChart).toBe("bp_timeline"); // unchanged post-cancel
+    expect(useFilters.getState().visibleDatasets.pulse).toBe(true); // unchanged post-cancel
     expect(result.current.message).toBe("Cancelled — listening again."); // not overwritten
   });
 

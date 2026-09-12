@@ -198,7 +198,7 @@ export default function CombinedTimeline({
           {/* Bands FIRST — behind the lines (Pitfall 7). Blood-pressure
               context, so they follow the blood_pressure dataset (D-04). */}
           {showBP &&
-            BANDS.map(({ cat, y1, y2, chip }) => (
+            BANDS.map(({ cat, y1, y2 }) => (
               <ReferenceArea
                 key={`band-${cat}`}
                 yAxisId={MMHG}

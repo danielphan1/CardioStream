@@ -183,7 +183,7 @@ describe("CombinedTimeline series", () => {
     const { container } = render(
       <CombinedTimeline readings={READINGS} showBP showPulse />,
     );
-    const strokes = [...lines(container)].map((l) => l.getAttribute("stroke"));
+    const strokes = Array.from(lines(container)).map((l) => l.getAttribute("stroke"));
     expect(new Set(strokes).size).toBe(3);
   });
 });

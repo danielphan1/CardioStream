@@ -28,7 +28,6 @@ import { categoryColor } from "../../lib/palette";
 
 export type CategoryBarsProps = {
   stats: StatsSummary;
-  variant: "hero" | "mini";
 };
 
 type BarLabelGlyphProps = {
@@ -39,8 +38,7 @@ type BarLabelGlyphProps = {
   index?: number;
 };
 
-export default function CategoryBars({ stats, variant }: CategoryBarsProps) {
-  const hero = variant === "hero";
+export default function CategoryBars({ stats }: CategoryBarsProps) {
   const rows = categoryBarData(stats);
   const animate = prefersReducedMotion() === false;
 
@@ -77,15 +75,14 @@ export default function CategoryBars({ stats, variant }: CategoryBarsProps) {
       <BarChart
         layout="vertical"
         data={rows}
-        accessibilityLayer={hero}
-        margin={hero ? { top: 8, right: 300, bottom: 8, left: 8 } : undefined}
+        accessibilityLayer
+        margin={{ top: 8, right: 300, bottom: 8, left: 8 }}
       >
         <XAxis
           type="number"
           domain={[0, "dataMax"]}
           allowDecimals={false}
           tick={{ fontSize: 16 }}
-          hide={!hero}
         />
         {/* Category names live in the D-10 label — ticks stay hidden. */}
         <YAxis type="category" dataKey="category" hide />
@@ -93,7 +90,7 @@ export default function CategoryBars({ stats, variant }: CategoryBarsProps) {
           {rows.map((row) => (
             <Cell key={row.category} fill={categoryColor(row.category)} />
           ))}
-          {hero && <LabelList content={barLabel} />}
+          <LabelList content={barLabel} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>

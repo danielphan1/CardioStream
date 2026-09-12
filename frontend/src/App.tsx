@@ -14,6 +14,7 @@ import type { ReactNode, RefObject } from "react";
 import { AddRecordPage } from "./components/AddRecordPage";
 import { AgentStatusBanner } from "./components/AgentStatusBanner";
 import { ChartDeck } from "./components/ChartDeck";
+import { ChartViewSwitcher } from "./components/ChartViewSwitcher";
 import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
@@ -21,7 +22,7 @@ import { GuideOverlay } from "./components/GuideOverlay";
 import { Header } from "./components/Header";
 import { LoginGate } from "./components/LoginGate";
 import { OverlayEventsList } from "./components/OverlayEventsList";
-import { OverlayToggle } from "./components/OverlayToggle";
+import { ShowPanel } from "./components/ShowPanel";
 import { ReadingsTable } from "./components/ReadingsTable";
 import { StatsStrip } from "./components/StatsStrip";
 import { UploadPage } from "./components/UploadPage";
@@ -101,11 +102,11 @@ function Dashboard() {
   // toggle is on, keyed narrowly on { start_date, end_date } (T-09-06: the
   // overlay endpoints have no server-side effect for am_pm/bp_category, so
   // never key/gate on the full `resolved` object).
-  const overlayDatasets = useFilters((s) => s.overlayDatasets);
+  const visibleDatasets = useFilters((s) => s.visibleDatasets);
   const dateWindow = { start_date: resolved.start_date, end_date: resolved.end_date };
-  const labs = useLabs(dateWindow, overlayDatasets.labs);
-  const incidents = useIncidents(dateWindow, overlayDatasets.incidents);
-  const procedures = useProcedures(dateWindow, overlayDatasets.procedures);
+  const labs = useLabs(dateWindow, visibleDatasets.labs);
+  const incidents = useIncidents(dateWindow, visibleDatasets.incidents);
+  const procedures = useProcedures(dateWindow, visibleDatasets.procedures);
 
   // Gated on the toggle flag, not just query state (Gap 1 / CR-1 fix):
   // TanStack Query's `enabled: false` stops future fetches but does NOT
@@ -115,16 +116,16 @@ function Dashboard() {
   // unrelated re-renders (WR-2) since Query keeps `.data` stable via
   // structural sharing when content is unchanged.
   const labsEvents = useMemo(
-    () => (overlayDatasets.labs ? labsToEvents(labs.data ?? []) : []),
-    [overlayDatasets.labs, labs.data],
+    () => (visibleDatasets.labs ? labsToEvents(labs.data ?? []) : []),
+    [visibleDatasets.labs, labs.data],
   );
   const incidentsEvents = useMemo(
-    () => (overlayDatasets.incidents ? incidentsToEvents(incidents.data ?? []) : []),
-    [overlayDatasets.incidents, incidents.data],
+    () => (visibleDatasets.incidents ? incidentsToEvents(incidents.data ?? []) : []),
+    [visibleDatasets.incidents, incidents.data],
   );
   const proceduresEvents = useMemo(
-    () => (overlayDatasets.procedures ? proceduresToEvents(procedures.data ?? []) : []),
-    [overlayDatasets.procedures, procedures.data],
+    () => (visibleDatasets.procedures ? proceduresToEvents(procedures.data ?? []) : []),
+    [visibleDatasets.procedures, procedures.data],
   );
   const overlayEvents = useMemo(
     () => mergeOverlayEvents(labsEvents, incidentsEvents, proceduresEvents),
@@ -221,7 +222,7 @@ function Dashboard() {
       <GuideOverlay clearanceAbove={guideClearance} />
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); single column
           (UI-SPEC responsive). Content is grouped into 3 wrapper clusters —
-          controls (FilterBar+OverlayToggle), visualizations (StatsStrip+chart
+          controls (FilterBar+ShowPanel), visualizations (StatsStrip+chart
           region), and detail-records (ReadingsTable+OverlayEventsList) —
           gap-4/gap-8 rhythm within a cluster, gap-12 (48px) between clusters.
           inert while the guide is open — see Header's comment above. */}
@@ -231,10 +232,11 @@ function Dashboard() {
       >
         <div className="flex flex-col gap-4">
           <FilterBar latestReading={latestReading} />
-          <OverlayToggle />
+          <ShowPanel />
         </div>
         <div className="flex flex-col gap-8">
           <StatsStrip stats={stats.data} isLoading={stats.isPending} readings={readings.data ?? []} />
+          <ChartViewSwitcher />
           {chartRegion}
         </div>
         <div className="flex flex-col gap-8">
@@ -245,14 +247,14 @@ function Dashboard() {
             <ReadingsTable readings={readings.data ?? []} />
           </section>
           <OverlayEventsList
-            labs={{ enabled: overlayDatasets.labs, events: labsEvents, isError: labs.isError }}
+            labs={{ enabled: visibleDatasets.labs, events: labsEvents, isError: labs.isError }}
             incidents={{
-              enabled: overlayDatasets.incidents,
+              enabled: visibleDatasets.incidents,
               events: incidentsEvents,
               isError: incidents.isError,
             }}
             procedures={{
-              enabled: overlayDatasets.procedures,
+              enabled: visibleDatasets.procedures,
               events: proceduresEvents,
               isError: procedures.isError,
             }}

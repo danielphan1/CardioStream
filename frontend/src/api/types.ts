@@ -179,6 +179,11 @@ export type AppliedFilters = {
   // dataset untouched.
   overlayDataset?: SeriesDataset | null;
   overlayState?: "on" | "off" | null;
+  // Additive multi-dataset set — turn these on, leave the rest. Carries the
+  // dataset half of a combined utterance ("show me my blood pressure for the
+  // last 30 days, mornings only"), which the single-valued toggle above
+  // cannot express alongside filters.
+  datasetsOn?: SeriesDataset[] | null;
   // Exclusive multi-dataset set ("only blood pressure and pulse") — everything
   // named goes on, everything else goes off. Added in Phase 14 because the
   // single-valued toggle above literally cannot express the client's own

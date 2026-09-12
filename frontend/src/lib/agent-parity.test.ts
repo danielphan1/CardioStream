@@ -2,10 +2,10 @@
 // filter is ever voice-unreachable and no command vocabulary is dead:
 //
 //   1. Enumeration reachability — every concrete value of the FULL frontend unions
-//      (ChartId×4, BPCategory×6+"all", datePreset×4, amPm×3) applied through the
+//      (ChartView×3, SeriesDataset×5, BPCategory×6+"all", datePreset×4, amPm×3) through the
 //      SINGLE mutation surface applyAgentFilters() actually mutates the matching
-//      useFilters slice. Adding a chart/category/preset without a command path, or
-//      a store action with no AppliedFilters field, breaks this suite.
+//      useFilters slice. Adding a view/dataset/category/preset without a command
+//      path, or a store action with no AppliedFilters field, breaks this suite.
 //   2. Frontend↔backend token equality — the enumerated unions equal the
 //      backend/app/agent/schemas.py ChartToken / AppliedFilters literals verbatim
 //      (read from disk, read-only). Token drift on either side breaks the build.
@@ -20,16 +20,15 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { applyAgentFilters, useAgentPulse } from "./agent";
 import { useFilters } from "../store/filters";
-import type { BPCategory, ChartId, OverlayDataset } from "../api/types";
+import type { BPCategory, ChartView, SeriesDataset } from "../api/types";
 
 // The full frontend unions — enumerated so a future addition without a command
 // path (or a backend token drift) fails a concrete assertion, not silently.
-const CHART_IDS = [
-  "bp_timeline",
-  "pulse_trend",
+const CHART_VIEWS = [
+  "timeline",
   "bp_categories",
   "am_pm_comparison",
-] as const satisfies readonly ChartId[];
+] as const satisfies readonly ChartView[];
 
 const BP_CATEGORIES = [
   "Hypotension",
@@ -43,39 +42,52 @@ const BP_CATEGORIES = [
 const DATE_PRESETS = ["7d", "30d", "90d", "all"] as const;
 const AMPM = ["all", "AM", "PM"] as const;
 
-const DATASETS = ["labs", "incidents", "procedures"] as const satisfies readonly OverlayDataset[];
+const DATASETS = [
+  "blood_pressure",
+  "pulse",
+  "labs",
+  "incidents",
+  "procedures",
+] as const satisfies readonly SeriesDataset[];
 
 // The six mutating actions on the filter store (store/filters.ts). Every one MUST
 // be reachable through some AppliedFilters field (ACC-03); the store is compared
 // against this list below so adding an action without a command path fails.
 const STORE_ACTIONS = [
-  "setActiveChart",
+  "setChartView",
   "setDatePreset",
   "setCustomRange",
   "setAmPm",
   "setBpCategory",
   "showAllData",
-  "setOverlayDataset",
+  "setDataset",
+  "showOnlyDatasets",
 ] as const;
 
 beforeEach(() => {
   useFilters.setState({
-    activeChart: "bp_timeline",
+    chartView: "timeline",
     datePreset: "all",
     customRange: { from: null, to: null },
     amPm: "all",
     bpCategory: "all",
-    overlayDatasets: { labs: false, incidents: false, procedures: false },
+    visibleDatasets: {
+      blood_pressure: true,
+      pulse: true,
+      labs: false,
+      incidents: false,
+      procedures: false,
+    },
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
 });
 
 describe("enumeration reachability — every UI filter is voice-reachable (ACC-03)", () => {
-  it.each(CHART_IDS)(
-    "applyAgentFilters({ activeChart: '%s' }) mutates the store",
-    (chart) => {
-      applyAgentFilters({ activeChart: chart });
-      expect(useFilters.getState().activeChart).toBe(chart);
+  it.each(CHART_VIEWS)(
+    "applyAgentFilters({ chartView: '%s' }) mutates the store",
+    (view) => {
+      applyAgentFilters({ chartView: view });
+      expect(useFilters.getState().chartView).toBe(view);
     },
   );
 
@@ -123,7 +135,25 @@ describe("enumeration reachability — every UI filter is voice-reachable (ACC-0
     "applyAgentFilters({ overlayDataset: '%s', overlayState: 'on' }) mutates the store",
     (dataset) => {
       applyAgentFilters({ overlayDataset: dataset, overlayState: "on" });
-      expect(useFilters.getState().overlayDatasets[dataset]).toBe(true);
+      expect(useFilters.getState().visibleDatasets[dataset]).toBe(true);
+    },
+  );
+
+  it.each(DATASETS)(
+    "applyAgentFilters({ showOnly: ['%s'] }) leaves ONLY that dataset on",
+    (dataset) => {
+      applyAgentFilters({ showOnly: [dataset] });
+      const v = useFilters.getState().visibleDatasets;
+      expect(v[dataset]).toBe(true);
+      expect(Object.values(v).filter(Boolean)).toHaveLength(1);
+    },
+  );
+
+  it.each(DATASETS)(
+    "applyAgentFilters({ datasetsOn: ['%s'] }) turns it on additively",
+    (dataset) => {
+      applyAgentFilters({ datasetsOn: [dataset] });
+      expect(useFilters.getState().visibleDatasets[dataset]).toBe(true);
     },
   );
 });
@@ -137,9 +167,10 @@ describe("store↔command 1:1 mapping — no unreachable action, no dead field",
     assert: () => void;
   }[] = [
     {
-      action: "setActiveChart",
-      apply: () => applyAgentFilters({ activeChart: "pulse_trend" }),
-      assert: () => expect(useFilters.getState().activeChart).toBe("pulse_trend"),
+      action: "setChartView",
+      apply: () => applyAgentFilters({ chartView: "bp_categories" }),
+      assert: () =>
+        expect(useFilters.getState().chartView).toBe("bp_categories"),
     },
     {
       action: "setDatePreset",
@@ -168,11 +199,17 @@ describe("store↔command 1:1 mapping — no unreachable action, no dead field",
       assert: () => expect(useFilters.getState().datePreset).toBe("all"),
     },
     {
-      action: "setOverlayDataset",
+      action: "setDataset",
       apply: () =>
         applyAgentFilters({ overlayDataset: "labs", overlayState: "on" }),
       assert: () =>
-        expect(useFilters.getState().overlayDatasets.labs).toBe(true),
+        expect(useFilters.getState().visibleDatasets.labs).toBe(true),
+    },
+    {
+      action: "showOnlyDatasets",
+      apply: () => applyAgentFilters({ showOnly: ["pulse"] }),
+      assert: () =>
+        expect(useFilters.getState().visibleDatasets.blood_pressure).toBe(false),
     },
   ];
 
@@ -213,11 +250,11 @@ describe("frontend voice vocabulary matches backend tokens (D-15)", () => {
     return [...match[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort();
   }
 
-  it("backend ChartToken equals the frontend ChartId union verbatim", () => {
+  it("backend ChartToken equals the frontend ChartView union verbatim", () => {
     const backendCharts = literalTokens(
       schemaText.match(/ChartToken = Literal\[([^\]]*)\]/),
     );
-    expect(backendCharts).toEqual([...CHART_IDS].sort());
+    expect(backendCharts).toEqual([...CHART_VIEWS].sort());
   });
 
   it("backend AppliedFilters.bpCategory equals the frontend BPCategory union + 'all'", () => {
@@ -227,7 +264,7 @@ describe("frontend voice vocabulary matches backend tokens (D-15)", () => {
     expect(backendBp).toEqual(["all", ...BP_CATEGORIES].sort());
   });
 
-  it("backend DatasetToken equals the frontend OverlayDataset union verbatim", () => {
+  it("backend DatasetToken equals the frontend SeriesDataset union verbatim", () => {
     const backendDatasets = literalTokens(
       schemaText.match(/DatasetToken = Literal\[([^\]]*)\]/),
     );
@@ -235,7 +272,7 @@ describe("frontend voice vocabulary matches backend tokens (D-15)", () => {
   });
 
   it("schemas.py contains every chart token and BP category label (presence)", () => {
-    for (const token of CHART_IDS) expect(schemaText).toContain(token);
+    for (const token of CHART_VIEWS) expect(schemaText).toContain(token);
     for (const label of BP_CATEGORIES) expect(schemaText).toContain(label);
   });
 });

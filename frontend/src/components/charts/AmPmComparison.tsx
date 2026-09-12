@@ -4,7 +4,7 @@
  * (≤132 filtered rows — trivial).
  *
  * BP (mmHg) and pulse (bpm) have different LOCKED domains (UI-SPEC fixed
- * axis bounds: BP [40,220], pulse [30,120]), so the hero renders TWO
+ * axis bounds: BP [40,220], pulse [30,120]), so it renders TWO
  * side-by-side BarCharts. Bars render from the domain floor by design —
  * D-05 positional consistency: a 125 avg systolic bar tops out at the same
  * height as a 125 reading on the timeline, never rescaled.
@@ -24,7 +24,6 @@ import { groupAmPm, prefersReducedMotion } from "../../lib/chartData";
 
 export type AmPmComparisonProps = {
   readings: Reading[];
-  variant: "hero" | "mini";
 };
 
 type MeasureRow = {
@@ -74,9 +73,7 @@ function makeBarLabels(period: "AM" | "PM") {
 
 export default function AmPmComparison({
   readings,
-  variant,
 }: AmPmComparisonProps) {
-  const hero = variant === "hero";
   const animate = prefersReducedMotion() === false;
 
   const rows = groupAmPm(readings);
@@ -102,20 +99,6 @@ export default function AmPmComparison({
       {withLabels && <LabelList dataKey="PM" content={makeBarLabels("PM")} />}
     </Bar>
   );
-
-  if (!hero) {
-    // Mini: single simplified BP chart — no labels, axes, or second panel.
-    return (
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={bpData} accessibilityLayer={false}>
-          <XAxis dataKey="measure" hide />
-          <YAxis domain={[40, 220]} hide />
-          {amBar(false)}
-          {pmBar(false)}
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  }
 
   return (
     <div className="flex h-full w-full gap-8">

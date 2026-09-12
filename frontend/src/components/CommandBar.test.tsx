@@ -72,7 +72,14 @@ beforeEach(() => {
   mockPostAgent.mockReset();
   installFakeSpeechSynthesis();
   useFilters.setState({
-    activeChart: "bp_timeline",
+    chartView: "timeline",
+    visibleDatasets: {
+      blood_pressure: true,
+      pulse: true,
+      labs: false,
+      incidents: false,
+      procedures: false,
+    },
     datePreset: "all",
     customRange: { from: null, to: null },
     amPm: "all",
@@ -120,7 +127,7 @@ describe("CommandBar", () => {
 
   it("applies filters, echoes full state, and clears the input (D-07)", async () => {
     mockPostAgent.mockResolvedValue(
-      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
     );
     renderBar();
 
@@ -129,7 +136,7 @@ describe("CommandBar", () => {
     const region = await screen.findByText(/^Showing pulse/);
     expect(region).toBeInTheDocument();
     // Store side effect: the chart actually switched.
-    expect(useFilters.getState().activeChart).toBe("pulse_trend");
+    expect(useFilters.getState().visibleDatasets).toEqual({ blood_pressure: false, pulse: true, labs: false, incidents: false, procedures: false });
     // D-03: applied is the only kind that clears the input.
     const input = screen.getByRole("textbox", {
       name: "Type a dashboard command",
@@ -141,7 +148,7 @@ describe("CommandBar", () => {
     mockPostAgent.mockResolvedValue(
       reply({
         kind: "applied",
-        filters: { activeChart: "bp_timeline" },
+        filters: { showOnly: ["blood_pressure"] },
         message: "Your averages are in the stats bar below.",
       }),
     );
@@ -163,7 +170,7 @@ describe("CommandBar", () => {
     mockPostAgent
       .mockResolvedValueOnce(reply({ kind: "clarify", message: "Which chart?", context }))
       .mockResolvedValueOnce(
-        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+        reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
       );
     renderBar();
 
@@ -289,7 +296,7 @@ describe("CommandBar", () => {
 
   it("exposes accessible names and a polite live region", async () => {
     mockPostAgent.mockResolvedValue(
-      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
     );
     renderBar();
 
@@ -307,7 +314,7 @@ describe("CommandBar", () => {
 
   it("speaks the exact on-screen confirmation text on an applied reply (TTS-01)", async () => {
     mockPostAgent.mockResolvedValue(
-      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
     );
     renderBar();
 
@@ -384,12 +391,12 @@ describe("CommandBar", () => {
 
     await act(async () => {
       resolveReply(
-        reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+        reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
       );
     });
 
     expect(screen.queryByText(/^Showing pulse/)).not.toBeInTheDocument();
-    expect(useFilters.getState().activeChart).toBe("bp_timeline");
+    expect(useFilters.getState().visibleDatasets.pulse).toBe(true);
   });
 });
 
@@ -480,7 +487,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
 
   it("replaces the transcript with the confirmation in one spot (D-11)", async () => {
     mockPostAgent.mockResolvedValue(
-      reply({ kind: "applied", filters: { activeChart: "pulse_trend" } }),
+      reply({ kind: "applied", filters: { showOnly: ["pulse"] } }),
     );
     renderBar();
     const rec = startSession();
@@ -489,7 +496,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
 
     expect(await screen.findByText(/^Showing pulse/)).toBeInTheDocument();
     // Charts switched via the store; the transcript is gone (one spot, D-11).
-    expect(useFilters.getState().activeChart).toBe("pulse_trend");
+    expect(useFilters.getState().visibleDatasets).toEqual({ blood_pressure: false, pulse: true, labs: false, incidents: false, procedures: false });
     expect(screen.queryByText("show my pulse")).not.toBeInTheDocument();
   });
 

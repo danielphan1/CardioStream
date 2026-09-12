@@ -89,7 +89,7 @@ describe("ShowPanel checkbox group", () => {
     const { container } = render(<ShowPanel />);
     const labels = container.querySelectorAll("label");
     expect(labels).toHaveLength(5);
-    for (const label of labels) {
+    for (const label of Array.from(labels)) {
       expect(label.className).toContain("min-h-12");
     }
   });

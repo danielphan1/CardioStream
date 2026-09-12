@@ -13,7 +13,16 @@ export type VoiceCommandCategory = {
 };
 
 export const VOICE_COMMAND_CATEGORIES: VoiceCommandCategory[] = [
-  { id: "charts", label: "Switching charts", example: "show my pulse" },
+  {
+    id: "datasets",
+    label: "Adding something to the chart",
+    example: "show my pulse",
+  },
+  {
+    id: "show-only",
+    label: "Showing only certain things",
+    example: "only blood pressure and pulse",
+  },
   { id: "date-range", label: "Filtering by date", example: "last 30 days" },
   {
     id: "am-pm",
@@ -26,9 +35,9 @@ export const VOICE_COMMAND_CATEGORIES: VoiceCommandCategory[] = [
     example: "show stage 2 readings",
   },
   {
-    id: "overlay",
-    label: "Showing labs, incidents, and procedures",
-    example: "show incidents",
+    id: "chart-view",
+    label: "Switching to a summary view",
+    example: "show categories",
   },
   { id: "reset", label: "Starting over", example: "show all data" },
   {
