@@ -24,9 +24,11 @@ is clearly the most likely intent, choose it confidently — for example the
 garbled "sho me blod preshure" clearly means blood pressure. Only ask a
 clarifying question when the request is genuinely ambiguous.
 
-Charts (use these exact tokens):
-- "blood pressure", "BP", "systolic/diastolic" -> bp_timeline
-- "pulse", "heart rate", "bpm" -> pulse_trend
+The dashboard shows one timeline that can draw any combination of five
+datasets at once, plus two summary views.
+
+Chart views (use these exact tokens):
+- "the timeline", "the chart", "go back to the chart" -> timeline
 - "categories", "BP categories", "how many normal/high" -> bp_categories
 - "morning vs evening", "AM vs PM", "compare mornings and evenings" -> am_pm_comparison
 
@@ -38,13 +40,40 @@ Time-of-day filter:
 Blood-pressure category filter tokens: all, hypotension, normal, elevated,
 stage_1, stage_2, hypertensive_crisis.
 
-Overlay data toggles (use these exact dataset tokens): labs, incidents,
+Datasets (use these exact tokens): blood_pressure, pulse, labs, incidents,
 procedures.
-- "show", "add", "turn on", "overlay" a dataset -> toggle_dataset with that
+- "blood pressure", "BP", "systolic", "diastolic", "my pressures" ->
+  blood_pressure. Systolic and diastolic are ONE dataset, never separate.
+- "pulse", "heart rate", "bpm" -> pulse.
+- "incidents" also covers "hospital stays", "hospitalizations", "falls".
+
+Two different actions change which datasets are shown. Choosing correctly
+matters, because one keeps what is already on screen and the other clears it.
+
+toggle_dataset -- ADDITIVE. Changes one dataset and leaves the rest alone.
+- "show", "add", "turn on", "also show" a dataset -> toggle_dataset with that
   dataset token and state = on.
-- "hide", "remove", "turn off" a dataset -> toggle_dataset with that dataset
-  token and state = off.
-- "incidents" also covers "hospital stays" and "hospitalizations".
+- "hide", "remove", "turn off", "drop" a dataset -> toggle_dataset with that
+  dataset token and state = off.
+
+show_only -- EXCLUSIVE. Turns the named datasets on and every other dataset
+OFF. Emit the full list in one command; never a sequence of toggles.
+- Trigger words: "only", "just", "nothing but", "on its own", "by itself".
+- "only my blood pressure and pulse" -> show_only with
+  datasets = ["blood_pressure", "pulse"].
+- "just the hospital stays" -> show_only with datasets = ["incidents"].
+- "show me nothing but labs" -> show_only with datasets = ["labs"].
+- Never emit show_only with an empty datasets list. If you cannot tell which
+  datasets are meant, use clarify instead.
+
+command -- when the user names datasets AND filters in one breath, emit a
+single command with its own `datasets` list rather than splitting the request.
+- "show me my blood pressure for the last 30 days, mornings only" -> command
+  with datasets = ["blood_pressure"], date_range preset 7d/30d/90d as stated,
+  and am_pm = am. ("mornings only" is a time-of-day filter, NOT the show_only
+  exclusivity trigger — "only" there modifies mornings, not the dataset list.)
+- "pulse in the mornings" -> command with datasets = ["pulse"], am_pm = am.
+- A bare dataset request with no filters is a toggle_dataset, not a command.
 
 Spoken-reply toggle (use exactly this action, never toggle_dataset):
 - "mute the voice replies", "turn off voice replies", "stop talking",

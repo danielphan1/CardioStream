@@ -34,8 +34,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # Claude-facing token vocabularies (lowercase snake_case — Pitfall 2)
 # --------------------------------------------------------------------------- #
 
-# MUST equal the frontend ChartId union verbatim (charts pass through unmapped).
-ChartToken = Literal["bp_timeline", "pulse_trend", "bp_categories", "am_pm_comparison"]
+# MUST equal the frontend ChartView union verbatim (views pass through unmapped).
+# Phase 14 dropped bp_timeline/pulse_trend: the two vitals stopped being charts
+# and became independently toggleable datasets on one shared timeline.
+ChartToken = Literal["timeline", "bp_categories", "am_pm_comparison"]
 
 BPCategoryToken = Literal[
     "all", "hypotension", "normal", "elevated", "stage_1", "stage_2", "hypertensive_crisis"
@@ -46,7 +48,12 @@ MonthToken = Literal[
     "july", "august", "september", "october", "november", "december",
 ]
 
-DatasetToken = Literal["labs", "incidents", "procedures"]
+# MUST equal the frontend SeriesDataset union verbatim. Phase 14 grew this from
+# the three event types to all five datasets, so blood pressure and pulse are
+# voice-toggleable the same way labs/incidents/procedures already were.
+DatasetToken = Literal[
+    "blood_pressure", "pulse", "labs", "incidents", "procedures"
+]
 
 
 # --------------------------------------------------------------------------- #
@@ -98,6 +105,13 @@ class DashboardCommand(BaseModel):
 
     action: Literal["command"]
     chart: ChartToken | None = None
+    # Datasets named alongside filters in one utterance — the project's
+    # canonical example is exactly this shape: "show me my blood pressure for
+    # the last 30 days, mornings only". Without this field that sentence would
+    # have to split into a dataset action AND a filter command, and one of the
+    # two halves would be dropped. ADDITIVE (turns these on, leaves the rest
+    # alone) — "only"/"just" is the explicit way to exclude, via ShowOnly.
+    datasets: list[DatasetToken] | None = None
     date_range: DateRange | None = None
     am_pm: Literal["all", "am", "pm"] | None = None
     bp_category: BPCategoryToken | None = None
@@ -140,6 +154,25 @@ class ToggleDataset(BaseModel):
     state: Literal["on", "off"]
 
 
+class ShowOnly(BaseModel):
+    """Exclusive multi-dataset selection (Phase 14, D-01/D-02).
+
+    This exists because ``ToggleDataset`` above is single-valued and additive,
+    and therefore cannot express the client's own first example — "only see the
+    blood pressures and pulses". That is two datasets AND an implied "turn
+    everything else off"; no sequence of single toggles expresses it as one
+    utterance.
+
+    Everything named goes on, everything unnamed goes off. Emptiness cannot be
+    constrained in the schema (structured outputs reject numeric bounds such as
+    minItems), so ``service._apply_show_only`` rejects an empty list locally
+    rather than applying a delta that would blank the dashboard.
+    """
+
+    action: Literal["show_only"]
+    datasets: list[DatasetToken]
+
+
 class ToggleSpeech(BaseModel):
     """Spoken-replies mute/unmute — explicit on/off state (D-01), mirrors
     ToggleDataset exactly except there is only one toggleable concept (no
@@ -168,6 +201,7 @@ class AgentOutput(BaseModel):
         | MedicalRefusal
         | Unintelligible
         | ToggleDataset
+        | ShowOnly
         | ToggleSpeech
         | ToggleGuide
     )
@@ -185,13 +219,21 @@ class AgentOutput(BaseModel):
 
 
 def _lower_value(key: str, val: object) -> object:
-    """Lowercase string values (and one level of nested dict, e.g. date_range) except ``question``."""
+    """Lowercase string values (recursing into dicts and lists) except ``question``.
+
+    The list branch is load-bearing for ``ShowOnly.datasets``: the structured
+    outputs docs require enum values be compared case-insensitively, and without
+    it a model emitting ``["Blood_Pressure"]`` would fail Literal validation and
+    degrade the whole command to ``unclear``.
+    """
     if key == "question":
         return val
     if isinstance(val, str):
         return val.lower()
     if isinstance(val, dict):
         return {k: _lower_value(k, sub) for k, sub in val.items()}
+    if isinstance(val, list):
+        return [_lower_value(key, item) for item in val]
     return val
 
 
@@ -226,15 +268,20 @@ class CustomRange(BaseModel):
 class AppliedFilters(BaseModel):
     """Store-shaped filter delta the frontend applies. Canonical labels, not tokens."""
 
-    activeChart: ChartToken | None = None
+    chartView: ChartToken | None = None
     datePreset: Literal["7d", "30d", "90d", "all"] | None = None
     customRange: CustomRange | None = None
     amPm: Literal["all", "AM", "PM"] | None = None
     bpCategory: Literal[
         "all", "Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Hypertensive Crisis"
     ] | None = None
+    # Additive single-dataset toggle; leaves every other dataset untouched.
     overlayDataset: DatasetToken | None = None
     overlayState: Literal["on", "off"] | None = None
+    # Additive multi-dataset set — turn these on, leave the rest (Phase 14).
+    datasetsOn: list[DatasetToken] | None = None
+    # Exclusive set — named datasets on, all others off (Phase 14).
+    showOnly: list[DatasetToken] | None = None
     speechEnabled: Literal["on", "off"] | None = None
     guideOpen: Literal["open", "closed"] | None = None
     reset: bool = False

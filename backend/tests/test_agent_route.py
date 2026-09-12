@@ -57,7 +57,7 @@ def test_applied_reply_echoes_filters(client) -> None:
     def fake(text, context, earliest, latest):
         return AgentReply(
             kind="applied",
-            filters=AppliedFilters(activeChart="pulse_trend", datePreset="30d", amPm="AM"),
+            filters=AppliedFilters(chartView="timeline", datePreset="30d", amPm="AM"),
             message="",
         )
 
@@ -66,7 +66,7 @@ def test_applied_reply_echoes_filters(client) -> None:
     assert res.status_code == 200
     body = res.json()
     assert body["kind"] == "applied"
-    assert body["filters"]["activeChart"] == "pulse_trend"
+    assert body["filters"]["chartView"] == "timeline"
     assert body["filters"]["datePreset"] == "30d"
     assert body["filters"]["amPm"] == "AM"
 
@@ -76,7 +76,7 @@ def test_custom_range_serializes_with_from_alias(client) -> None:
         return AgentReply(
             kind="applied",
             filters=AppliedFilters(
-                activeChart="bp_timeline",
+                chartView="timeline",
                 customRange=CustomRange(from_="2025-02-01", to="2025-04-30"),
             ),
         )
@@ -110,12 +110,12 @@ def test_clarify_reply_round_trips_context(client) -> None:
 
 
 def test_refuse_reply_uses_fixed_copy(client) -> None:
-    expected = medical_refusal("bp_timeline")
+    expected = medical_refusal("timeline")
 
     def fake(text, context, earliest, latest):
         return AgentReply(
             kind="refuse",
-            filters=AppliedFilters(activeChart="bp_timeline"),
+            filters=AppliedFilters(chartView="timeline"),
             message=expected,
         )
 

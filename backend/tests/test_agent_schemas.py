@@ -11,12 +11,14 @@ Covers (03-01-PLAN Task 1 + Task 3 contract):
   - build_messages one-turn assembly (D-12) + fixed copy structure (D-11) [Task 3]
 """
 
+import pathlib
 from typing import get_args
 
 import pytest
 from pydantic import ValidationError
 
 from app.agent import copy as agent_copy
+from app.agent import prompt
 from app.agent.prompt import SYSTEM_PROMPT, build_messages
 from app.agent.schemas import (
     AMPM_TOKEN_TO_LABEL,
@@ -29,6 +31,7 @@ from app.agent.schemas import (
     DashboardCommand,
     DataQuestion,
     MedicalRefusal,
+    ShowOnly,
     ToggleDataset,
     ToggleGuide,
     ToggleSpeech,
@@ -44,18 +47,18 @@ from app.deps import BPCategory
 
 def test_command_variant_parses():
     out = AgentOutput.model_validate(
-        {"result": {"action": "command", "chart": "pulse_trend", "am_pm": "am"}}
+        {"result": {"action": "command", "chart": "timeline", "am_pm": "am"}}
     )
     assert isinstance(out.result, DashboardCommand)
-    assert out.result.chart == "pulse_trend"
+    assert out.result.chart == "timeline"
     assert out.result.am_pm == "am"
     assert out.result.reset is False
 
 
 def test_data_question_variant_parses():
-    out = AgentOutput.model_validate({"result": {"action": "data_question", "chart": "bp_timeline"}})
+    out = AgentOutput.model_validate({"result": {"action": "data_question", "chart": "timeline"}})
     assert isinstance(out.result, DataQuestion)
-    assert out.result.chart == "bp_timeline"
+    assert out.result.chart == "timeline"
 
 
 def test_clarify_variant_parses():
@@ -68,10 +71,10 @@ def test_clarify_variant_parses():
 
 def test_refuse_medical_variant_parses():
     out = AgentOutput.model_validate(
-        {"result": {"action": "refuse_medical", "chart": "bp_timeline"}}
+        {"result": {"action": "refuse_medical", "chart": "timeline"}}
     )
     assert isinstance(out.result, MedicalRefusal)
-    assert out.result.chart == "bp_timeline"
+    assert out.result.chart == "timeline"
 
 
 def test_unclear_variant_parses():
@@ -184,8 +187,10 @@ def test_nested_date_range_case_drift_normalizes():
 
 
 def test_chart_token_case_drift_normalizes():
-    out = AgentOutput.model_validate({"result": {"action": "command", "chart": "Pulse_Trend"}})
-    assert out.result.chart == "pulse_trend"
+    out = AgentOutput.model_validate(
+        {"result": {"action": "command", "chart": "BP_Categories"}}
+    )
+    assert out.result.chart == "bp_categories"
 
 
 def test_clarify_question_is_not_lowercased():
@@ -279,8 +284,8 @@ def test_system_prompt_is_non_empty_str_constant():
     assert SYSTEM_PROMPT == SYSTEM_PROMPT
 
 
-def test_system_prompt_enumerates_all_four_chart_tokens():
-    for token in ("bp_timeline", "pulse_trend", "bp_categories", "am_pm_comparison"):
+def test_system_prompt_enumerates_all_chart_view_tokens():
+    for token in ("timeline", "bp_categories", "am_pm_comparison"):
         assert token in SYSTEM_PROMPT
 
 
@@ -315,10 +320,9 @@ def test_data_question_message_verbatim():
     assert agent_copy.DATA_QUESTION_MESSAGE == "Your averages are in the stats bar below."
 
 
-def test_chart_phrases_cover_all_four_tokens():
+def test_chart_phrases_cover_all_view_tokens():
     assert set(agent_copy.CHART_PHRASES) == {
-        "bp_timeline",
-        "pulse_trend",
+        "timeline",
         "bp_categories",
         "am_pm_comparison",
     }
@@ -329,11 +333,113 @@ def test_unavailable_message_is_non_empty():
 
 
 def test_medical_refusal_pairs_chart_phrase():
-    msg = agent_copy.medical_refusal("bp_timeline")
-    assert "blood pressure" in msg
+    msg = agent_copy.medical_refusal("timeline")
+    assert "timeline" in msg
     assert "care team" in msg
 
 
 def test_medical_refusal_plain_when_no_chart():
     msg = agent_copy.medical_refusal(None)
     assert "care team" in msg
+
+
+# ── Phase 14: five-dataset vocabulary + the show_only exclusive action ──────
+
+
+def test_dataset_token_covers_all_five_datasets():
+    """The two vitals joined the three event types in Phase 14 — without them
+    'show my pulse' has no dataset token to resolve to."""
+    out = AgentOutput.model_validate(
+        {"result": {"action": "show_only", "datasets": [
+            "blood_pressure", "pulse", "labs", "incidents", "procedures",
+        ]}}
+    )
+    assert out.result.datasets == [
+        "blood_pressure", "pulse", "labs", "incidents", "procedures",
+    ]
+
+
+def test_show_only_variant_parses():
+    out = AgentOutput.model_validate(
+        {"result": {"action": "show_only", "datasets": ["blood_pressure", "pulse"]}}
+    )
+    assert isinstance(out.result, ShowOnly)
+    assert out.result.action == "show_only"
+    assert out.result.datasets == ["blood_pressure", "pulse"]
+
+
+def test_show_only_dataset_case_drift_normalizes():
+    """_lower_value must recurse into LISTS, not just dicts. Without the list
+    branch a model emitting 'Blood_Pressure' fails Literal validation and the
+    whole command degrades to unclear."""
+    out = AgentOutput.model_validate(
+        {"result": {"action": "show_only", "datasets": ["Blood_Pressure", "PULSE"]}}
+    )
+    assert out.result.datasets == ["blood_pressure", "pulse"]
+
+
+def test_command_carries_datasets_alongside_filters():
+    """The project's canonical utterance names a dataset AND filters in one
+    breath; without DashboardCommand.datasets one half would be dropped."""
+    out = AgentOutput.model_validate(
+        {"result": {
+            "action": "command",
+            "datasets": ["blood_pressure"],
+            "date_range": {"kind": "preset", "preset": "30d"},
+            "am_pm": "am",
+        }}
+    )
+    assert out.result.datasets == ["blood_pressure"]
+    assert out.result.am_pm == "am"
+
+
+def test_dataset_phrases_cover_all_five_tokens():
+    assert set(agent_copy.DATASET_PHRASES) == {
+        "blood_pressure", "pulse", "labs", "incidents", "procedures",
+    }
+
+
+def test_show_only_message_uses_declaration_order_not_emitted_order():
+    """This string is spoken aloud, so the same selection must always read the
+    same way regardless of the order the model listed the datasets."""
+    a = agent_copy.show_only_message(["pulse", "blood_pressure"])
+    b = agent_copy.show_only_message(["blood_pressure", "pulse"])
+    assert a == b == "Now showing blood pressure and pulse only."
+
+
+def test_show_only_message_joins_one_two_and_three():
+    assert agent_copy.show_only_message(["pulse"]) == "Now showing pulse only."
+    assert (
+        agent_copy.show_only_message(["labs", "incidents"])
+        == "Now showing labs and incidents only."
+    )
+    assert (
+        agent_copy.show_only_message(["blood_pressure", "labs", "procedures"])
+        == "Now showing blood pressure, labs and procedures only."
+    )
+
+
+def test_show_only_message_never_returns_empty_string():
+    assert agent_copy.show_only_message([])
+
+
+def test_system_prompt_teaches_all_five_dataset_tokens():
+    for token in ("blood_pressure", "pulse", "labs", "incidents", "procedures"):
+        assert token in prompt.SYSTEM_PROMPT
+
+
+def test_system_prompt_teaches_the_exclusivity_triggers():
+    for word in ("only", "just", "nothing but"):
+        assert word in prompt.SYSTEM_PROMPT
+
+
+def test_system_prompt_drops_retired_chart_tokens():
+    assert "bp_timeline" not in prompt.SYSTEM_PROMPT
+    assert "pulse_trend" not in prompt.SYSTEM_PROMPT
+
+
+def test_system_prompt_is_a_plain_constant():
+    """Prompt-injection hygiene (T-03-01): never interpolated with user text."""
+    src = pathlib.Path(prompt.__file__).read_text()
+    assert "SYSTEM_PROMPT.format" not in src
+    assert 'f"""' not in src

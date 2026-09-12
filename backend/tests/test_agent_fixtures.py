@@ -64,7 +64,23 @@ def test_utterance_intent(entry: dict) -> None:
     f = reply.filters
 
     if "chart" in expect:
-        assert f is not None and f.activeChart == expect["chart"], f"{entry['id']}: chart"
+        assert f is not None and f.chartView == expect["chart"], f"{entry['id']}: chart"
+    if "overlayDataset" in expect:
+        assert f is not None and f.overlayDataset == expect["overlayDataset"], (
+            f"{entry['id']}: overlayDataset"
+        )
+    if "overlayState" in expect:
+        assert f is not None and f.overlayState == expect["overlayState"], (
+            f"{entry['id']}: overlayState"
+        )
+    if "datasetsOn" in expect:
+        assert f is not None and f.datasetsOn == expect["datasetsOn"], (
+            f"{entry['id']}: datasetsOn"
+        )
+    if "showOnly" in expect:
+        assert f is not None and f.showOnly == expect["showOnly"], (
+            f"{entry['id']}: showOnly"
+        )
     if "datePreset" in expect:
         assert f is not None and f.datePreset == expect["datePreset"], f"{entry['id']}: preset"
     if "customRange" in expect:

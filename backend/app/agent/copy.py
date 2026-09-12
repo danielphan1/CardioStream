@@ -31,8 +31,7 @@ UNAVAILABLE_MESSAGE = (
 
 # Human-readable phrase per chart token, for the medical-refusal redirect (D-10).
 CHART_PHRASES = {
-    "bp_timeline": "blood pressure",
-    "pulse_trend": "pulse",
+    "timeline": "timeline",
     "bp_categories": "blood-pressure categories",
     "am_pm_comparison": "morning vs evening comparison",
 }
@@ -55,7 +54,12 @@ DATA_QUESTION_MESSAGE = "Your averages are in the stats bar below."
 # Human-readable phrase per overlay dataset token, for the toggle-dataset
 # confirmation (WR-06 — the frontend's composeConfirmation() has no awareness
 # of overlay toggles, so this is the only place that action gets confirmed).
+# Declaration order is the SPOKEN order — show_only_message joins in this
+# order regardless of the order the model emitted, so TTS reads the same
+# sentence for the same selection every time.
 DATASET_PHRASES = {
+    "blood_pressure": "blood pressure",
+    "pulse": "pulse",
     "labs": "labs",
     "incidents": "incidents",
     "procedures": "procedures",
@@ -91,3 +95,30 @@ def toggle_dataset_message(dataset: str, state: str) -> str:
     if state == "on":
         return f"Now showing {phrase}."
     return f"{phrase.capitalize()} hidden."
+
+
+def _join_phrases(phrases: list[str]) -> str:
+    """"a" / "a and b" / "a, b and c" — no Oxford comma, matching how the
+    frontend's own sentence builder reads these aloud."""
+    if len(phrases) <= 1:
+        return "".join(phrases)
+    if len(phrases) == 2:
+        return f"{phrases[0]} and {phrases[1]}"
+    return f"{', '.join(phrases[:-1])} and {phrases[-1]}"
+
+
+def show_only_message(datasets: list[str]) -> str:
+    """Compose the Phase 14 exclusive-selection confirmation (WR-06).
+
+    Ordered by DATASET_PHRASES declaration order, NOT by the order the model
+    emitted them, so "only pulse and blood pressure" and "only blood pressure
+    and pulse" produce the identical spoken sentence.
+    """
+    ordered = [
+        DATASET_PHRASES[token] for token in DATASET_PHRASES if token in datasets
+    ]
+    if not ordered:
+        # Unreachable via _apply_show_only, which rejects an empty list before
+        # composing copy — but a confirmation must never be an empty string.
+        return "Nothing selected."
+    return f"Now showing {_join_phrases(ordered)} only."

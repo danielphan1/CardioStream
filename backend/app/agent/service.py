@@ -39,6 +39,7 @@ from app.agent.copy import (
     UNAVAILABLE_MESSAGE,
     UNCLEAR_MESSAGE,
     medical_refusal,
+    show_only_message,
     toggle_dataset_message,
     toggle_guide_message,
     toggle_speech_message,
@@ -57,6 +58,7 @@ from app.agent.schemas import (
     DashboardCommand,
     DataQuestion,
     MedicalRefusal,
+    ShowOnly,
     ToggleDataset,
     ToggleGuide,
     ToggleSpeech,
@@ -195,7 +197,7 @@ def _apply_command(
     cmd: DashboardCommand, earliest: date | None, latest: date | None
 ) -> AgentReply:
     """Map a ``DashboardCommand`` to an ``applied`` reply (or ``unclear`` on a bad range)."""
-    filters = AppliedFilters(activeChart=cmd.chart, reset=cmd.reset)
+    filters = AppliedFilters(chartView=cmd.chart, reset=cmd.reset)
 
     try:
         resolved = resolve_date_range(cmd.date_range, earliest, latest)
@@ -208,6 +210,11 @@ def _apply_command(
         filters.amPm = AMPM_TOKEN_TO_LABEL[cmd.am_pm]  # type: ignore[assignment]
     if cmd.bp_category is not None:
         filters.bpCategory = BP_TOKEN_TO_LABEL[cmd.bp_category]  # type: ignore[assignment]
+    if cmd.datasets:
+        # De-duplicated; additive (see DashboardCommand.datasets). An empty
+        # list is simply "no datasets mentioned" here — unlike ShowOnly, where
+        # it would mean "hide everything" and is rejected.
+        filters.datasetsOn = list(dict.fromkeys(cmd.datasets))
 
     # message="" — the frontend composes the D-07 full-state echo from the
     # post-merge store; the server never authors the confirmation.
@@ -226,6 +233,34 @@ def _apply_toggle_dataset(cmd: ToggleDataset) -> AgentReply:
         kind="applied",
         filters=filters,
         message=toggle_dataset_message(cmd.dataset, cmd.state),
+        context=None,
+    )
+
+
+def _apply_show_only(cmd: ShowOnly) -> AgentReply:
+    """Map a ``ShowOnly`` result to an ``applied`` reply (Phase 14, D-01/D-02).
+
+    Empty-list guard: structured outputs cannot express ``minItems``, so a model
+    that emits ``{"action": "show_only", "datasets": []}`` would otherwise
+    produce a delta that turns every dataset off and blanks the dashboard. That
+    is never what "only ..." means, so it degrades to ``unclear`` and Chris is
+    asked again rather than being shown an empty screen.
+    """
+    if not cmd.datasets:
+        return AgentReply(kind="unclear", message=UNCLEAR_MESSAGE)
+
+    # De-duplicate while preserving the command's intent — a model repeating a
+    # token ("only pulse and pulse") must not change the outcome.
+    datasets = list(dict.fromkeys(cmd.datasets))
+
+    filters = AppliedFilters(showOnly=datasets)
+    # WR-06: same rationale as _apply_toggle_dataset below — the frontend's
+    # composeConfirmation() describes filter state, not the selection action
+    # itself, so the server composes the acknowledgement here.
+    return AgentReply(
+        kind="applied",
+        filters=filters,
+        message=show_only_message(datasets),
         context=None,
     )
 
@@ -290,6 +325,9 @@ def interpret(
         if isinstance(result, ToggleDataset):
             return _apply_toggle_dataset(result)
 
+        if isinstance(result, ShowOnly):
+            return _apply_show_only(result)
+
         if isinstance(result, ToggleSpeech):
             return _apply_toggle_speech(result)
 
@@ -297,7 +335,7 @@ def interpret(
             return _apply_toggle_guide(result)
 
         if isinstance(result, DataQuestion):
-            filters = AppliedFilters(activeChart=result.chart) if result.chart else AppliedFilters()
+            filters = AppliedFilters(chartView=result.chart) if result.chart else AppliedFilters()
             return AgentReply(kind="applied", filters=filters, message=DATA_QUESTION_MESSAGE)
 
         if isinstance(result, Clarification):
@@ -319,7 +357,7 @@ def interpret(
             )
 
         if isinstance(result, MedicalRefusal):
-            filters = AppliedFilters(activeChart=result.chart) if result.chart else None
+            filters = AppliedFilters(chartView=result.chart) if result.chart else None
             # Fixed template copy — never model prose (D-10, VOICE-09).
             return AgentReply(kind="refuse", filters=filters, message=medical_refusal(result.chart))
 

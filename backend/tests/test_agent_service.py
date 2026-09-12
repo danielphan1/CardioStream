@@ -200,3 +200,91 @@ def test_toggle_guide_maps_to_applied_filters_and_marks_reachable(monkeypatch) -
     assert reply.kind == "applied"
     assert reply.filters.guideOpen == "open"
     assert service._last_outcome is True
+
+
+# ── Phase 14: show_only dispatch and its local guards ──────────────────────
+
+
+def _stub(monkeypatch, result: dict) -> None:
+    """Point service._get_client at a client that returns exactly this result."""
+    parsed_output = AgentOutput(result=result)
+    fake_msg = type("FakeMsg", (), {"stop_reason": "end_turn", "parsed_output": parsed_output})()
+    fake = _make_fake_client(lambda **kwargs: fake_msg)
+    monkeypatch.setattr(service, "_get_client", lambda: fake())
+
+
+def test_show_only_maps_to_applied_filters(monkeypatch) -> None:
+    """The client's own sentence: 'only see the blood pressures and pulses'."""
+    _stub(monkeypatch, {
+        "action": "show_only", "datasets": ["blood_pressure", "pulse"],
+    })
+
+    reply = service.interpret("only see the blood pressures and pulses", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.showOnly == ["blood_pressure", "pulse"]
+    assert reply.message == "Now showing blood pressure and pulse only."
+
+
+def test_show_only_events_only_is_a_legal_selection(monkeypatch) -> None:
+    """'just the hospital stays' leaves no vitals on — the events-only view,
+    which is a first-class state, not an error."""
+    _stub(monkeypatch, {"action": "show_only", "datasets": ["incidents"]})
+
+    reply = service.interpret("just the hospital stays", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.showOnly == ["incidents"]
+
+
+def test_show_only_with_empty_list_degrades_to_unclear(monkeypatch) -> None:
+    """Structured outputs cannot express minItems, so an empty list has to be
+    caught here — applying it would blank the dashboard, which is never what
+    'only ...' means."""
+    _stub(monkeypatch, {"action": "show_only", "datasets": []})
+
+    reply = service.interpret("only", None, None, None)
+
+    assert reply.kind == "unclear"
+    assert reply.message == UNCLEAR_MESSAGE
+
+
+def test_show_only_deduplicates_repeated_tokens(monkeypatch) -> None:
+    _stub(monkeypatch, {"action": "show_only", "datasets": ["pulse", "pulse"]})
+
+    reply = service.interpret("only pulse and pulse", None, None, None)
+
+    assert reply.filters.showOnly == ["pulse"]
+
+
+def test_toggle_dataset_accepts_the_two_vitals(monkeypatch) -> None:
+    """blood_pressure and pulse joined DatasetToken in Phase 14."""
+    _stub(monkeypatch, {
+        "action": "toggle_dataset", "dataset": "blood_pressure", "state": "off",
+    })
+
+    reply = service.interpret("turn off the blood pressure", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.overlayDataset == "blood_pressure"
+    assert reply.filters.overlayState == "off"
+
+
+def test_command_carries_datasets_and_filters_together(monkeypatch) -> None:
+    """The project's canonical utterance. If DashboardCommand could not carry
+    datasets, one half of this sentence would be silently dropped."""
+    _stub(monkeypatch, {
+        "action": "command",
+        "datasets": ["blood_pressure"],
+        "date_range": {"kind": "preset", "preset": "30d"},
+        "am_pm": "am",
+    })
+
+    reply = service.interpret(
+        "show me my blood pressure for the last 30 days, mornings only", None, None, None
+    )
+
+    assert reply.kind == "applied"
+    assert reply.filters.datasetsOn == ["blood_pressure"]
+    assert reply.filters.datePreset == "30d"
+    assert reply.filters.amPm == "AM"
