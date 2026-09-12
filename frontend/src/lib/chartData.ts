@@ -118,12 +118,12 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Matches `dot={{ r: 5 }}` in BPTimeline/PulseTrend — diameter = 2*r. */
+/** Matches `dot={{ r: 5 }}` in CombinedTimeline — diameter = 2*r. */
 const DOT_DIAMETER_PX = 10;
 
 /**
  * Whether per-point dots would visually overlap at the chart's current
- * rendered width (BPTimeline/PulseTrend mobile-overplotting fix,
+ * rendered width (CombinedTimeline mobile-overplotting fix,
  * /impeccable critique P1, 2026-08-27). True when the average px-per-point
  * is tighter than one dot's own diameter. `width` must be the chart's live
  * container width (from `useElementWidth`), not the viewport width, since
@@ -144,7 +144,7 @@ const CHIP_CHAR_WIDTH_FACTOR = 0.62;
 
 /**
  * Sizes the solid background rect behind a BP Timeline band-label chip so
- * the chip fully covers its own text (BPTimeline.tsx's `makeBandLabelChip`,
+ * the chip fully covers its own text (CombinedTimeline.tsx's `makeBandLabelChip`,
  * /impeccable critique P3, 2026-08-28). SVG offers no synchronous
  * string-width query without an actual DOM measurement pass, so this is a
  * same-order-of-magnitude estimate for a decorative chip, not pixel-exact

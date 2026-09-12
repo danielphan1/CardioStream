@@ -3,9 +3,9 @@
  * StatsStrip's stat cards (13-UI-SPEC.md Component Language item 2, D-04).
  *
  * This is new build work, not a re-skin (13-PATTERNS.md) — there is no
- * direct analog elsewhere in the codebase. It follows PulseTrend.tsx's
+ * direct analog elsewhere in the codebase. It follows CombinedTimeline.tsx's
  * mini-variant gating (no axes, no click-to-persist popover) and
- * BPTimeline.tsx's decorative/aria-hidden/contrast-exemption precedent, but
+ * CombinedTimeline.tsx's decorative/aria-hidden/contrast-exemption precedent, but
  * is simpler:
  * this component has no "hero" branch at all — it is always the minimal
  * decorative shape, never keyboard-focusable, never a second source of

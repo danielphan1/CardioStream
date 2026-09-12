@@ -27,7 +27,7 @@ const readingFixture: Reading = {
 
 // ChartTooltip's `payload` prop mirrors Recharts' injected shape: each entry
 // wraps a full TimePoint (ts/systolic/diastolic/pulse/reading), not a bare
-// Reading — reuse the same toTimePoints() helper BPTimeline/PulseTrend use.
+// Reading — reuse the same toTimePoints() helper CombinedTimeline uses.
 const [fixture] = toTimePoints([readingFixture]);
 
 describe("ChartTooltip", () => {

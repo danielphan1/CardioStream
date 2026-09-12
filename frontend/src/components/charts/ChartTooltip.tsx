@@ -27,7 +27,7 @@ export type ChartTooltipProps = {
   dismissed?: boolean;
   /** Called on Close click and on Escape while visible. */
   onClose: () => void;
-  /** PulseTrend leads with the pulse row (its primary series). */
+  /** Lead with the pulse row when blood pressure is hidden (CombinedTimeline). */
   pulseFirst?: boolean;
 };
 
@@ -121,7 +121,7 @@ export default function ChartTooltip({
         // worked, masking the bug in keyboard-only testing). CSS lets a
         // descendant opt back in explicitly — `pointer-events: auto` here
         // restores real click handling for this dialog and its Close button
-        // without touching BPTimeline.tsx/PulseTrend.tsx's <Tooltip> usage.
+        // without touching CombinedTimeline.tsx's <Tooltip> usage.
         pointerEvents: "auto",
       }}
     >
@@ -156,8 +156,8 @@ export default function ChartTooltip({
           // above), a Close click bubbles past this button, through the
           // Recharts wrapper, into that handler — undoing the dismissal in
           // the same event. stopPropagation keeps the click scoped to this
-          // button's own onClose call without touching BPTimeline.tsx /
-          // PulseTrend.tsx's <LineChart onClick> (out of this plan's scope).
+          // button's own onClose call without touching CombinedTimeline.tsx's
+          // <LineChart onClick> (out of that plan's scope).
           e.stopPropagation();
           onClose();
         }}
