@@ -123,12 +123,11 @@ export type ProcedureCreate = {
   notes?: string | null;
 };
 
-// Future agent command vocabulary (RESEARCH Code Example 3)
-export type ChartId =
-  | "bp_timeline"
-  | "pulse_trend"
-  | "bp_categories"
-  | "am_pm_comparison";
+// Agent command vocabulary. Phase 14 split the old four-member `ChartId` in
+// two: the two vitals stopped being *charts* and became independently
+// toggleable *datasets* on one shared timeline, leaving only the three genuine
+// views. `bp_timeline` and `pulse_trend` no longer exist anywhere.
+export type ChartView = "timeline" | "bp_categories" | "am_pm_comparison";
 
 // Resolved query params for /readings and /stats/summary
 export type ResolvedFilters = {
@@ -149,21 +148,42 @@ export type ClarifyContext = { original_text: string; question: string };
 // POST /agent body — text plus optional clarification context (VOICE-08).
 export type AgentRequest = { text: string; context: ClarifyContext | null };
 
-// The single declaration site for the overlay dataset union (OVERLAY-03/04) —
-// store/filters.ts imports this rather than re-declaring it, matching the
-// file's existing convention for BPCategory/ChartId.
+// The single declaration site for the overlay dataset union (OVERLAY-03/04).
+// Deliberately still just the three EVENT types: the event hooks, overlayMeta,
+// overlayEvents, and OverlayEventsList all key off events specifically, and
+// widening this union would let a vitals token leak into code that can only
+// render date markers.
 export type OverlayDataset = "labs" | "incidents" | "procedures";
+
+// Everything the Show panel can toggle (Phase 14, D-01/D-02) — the three event
+// types above plus the two vitals. `blood_pressure` covers systolic AND
+// diastolic as one unit: Chris says "blood pressures" as a single thing, it is
+// how BP is read clinically, and it keeps the spoken vocabulary at five tokens
+// instead of adding "systolic"/"diastolic" for speech recognition to garble.
+export type SeriesDataset =
+  | "blood_pressure"
+  | "pulse"
+  | "labs"
+  | "incidents"
+  | "procedures";
 
 // Server-composed filter delta — only these closed-union fields mutate the
 // store (T-03-07). Wire key is `from` (backend serializes `from_` alias "from").
 export type AppliedFilters = {
-  activeChart?: ChartId | null;
+  chartView?: ChartView | null;
   datePreset?: "7d" | "30d" | "90d" | "all" | null;
   customRange?: { from: string; to: string } | null;
   amPm?: "all" | "AM" | "PM" | null;
   bpCategory?: "all" | BPCategory | null;
-  overlayDataset?: OverlayDataset | null;
+  // Additive single-dataset toggle ("show my pulse") — leaves every other
+  // dataset untouched.
+  overlayDataset?: SeriesDataset | null;
   overlayState?: "on" | "off" | null;
+  // Exclusive multi-dataset set ("only blood pressure and pulse") — everything
+  // named goes on, everything else goes off. Added in Phase 14 because the
+  // single-valued toggle above literally cannot express the client's own
+  // example sentence.
+  showOnly?: SeriesDataset[] | null;
   speechEnabled?: "on" | "off" | null;
   guideOpen?: "open" | "closed" | null;
   reset?: boolean;
