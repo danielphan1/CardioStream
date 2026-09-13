@@ -7,14 +7,27 @@ Naive local datetimes end-to-end — no timezone configuration anywhere (DATA-05
 
 from functools import lru_cache
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# The public, insecure signing secret used for keyless local/test boot. Single
+# source of truth so the field default and the guard below cannot drift apart —
+# if they drifted, the guard would silently stop guarding.
+DEV_TOKEN_SECRET = "dev-insecure-secret"
 
 
 class Settings(BaseSettings):
     # Read backend/.env when present (must be gitignored — health data / key
     # custody, SEC-02); env vars still take precedence over the file.
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    #
+    # hide_input_in_errors: pydantic otherwise echoes a repr of the whole input
+    # dict into every ValidationError — which for THIS model means the real
+    # SITE_PASSWORD / ANTHROPIC_API_KEY landing in boot logs the moment any
+    # validation fails (e.g. the TOKEN_SECRET guard below). Secrets never go to
+    # logs (SEC-02); the guard's own message carries the fix instructions.
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", hide_input_in_errors=True
+    )
 
     database_url: str = "sqlite:///./dev.db"
     # Explicit CORS origins for the API (API-01/API-02) — Vite dev server by
@@ -39,8 +52,9 @@ class Settings(BaseSettings):
     site_password: str = ""
     # itsdangerous signing secret for the Bearer token. The dev default keeps
     # tests deterministic; prod MUST override via TOKEN_SECRET (never shipped
-    # to the client — SEC-01, threat T-05-02).
-    token_secret: str = "dev-insecure-secret"
+    # to the client — SEC-01, threat T-05-02). Enforced by the boot-time guard
+    # below: keeping this default alongside a real SITE_PASSWORD is refused.
+    token_secret: str = DEV_TOKEN_SECRET
 
     @field_validator("database_url")
     @classmethod
@@ -56,6 +70,27 @@ class Settings(BaseSettings):
         if v.startswith("postgresql://"):
             return v.replace("postgresql://", "postgresql+psycopg://", 1)
         return v
+
+    @model_validator(mode="after")
+    def _reject_dev_token_secret_in_deployment(self) -> "Settings":
+        """Refuse to BOOT when a configured deployment kept the dev signing secret.
+
+        ``DEV_TOKEN_SECRET`` is public — it is committed right above. A deploy
+        running on it can have its Bearer tokens FORGED by anyone, which makes
+        the shared-password gate decorative (threat T-GCV-03). A non-empty
+        ``site_password`` is the signal that this is a real deployment rather
+        than a keyless local/test boot, so only that pairing is rejected;
+        keyless boot (no password at all) keeps the dev default and still works.
+        Failing loudly at construction beats failing open on every request.
+        """
+        if self.site_password and self.token_secret == DEV_TOKEN_SECRET:
+            raise ValueError(
+                "TOKEN_SECRET is still the insecure dev default while SITE_PASSWORD is set. "
+                "Anyone can forge a Bearer token for this deployment. Generate a real secret "
+                'with: python -c "import secrets;print(secrets.token_urlsafe(32))" '
+                "and set it as TOKEN_SECRET (Railway variables in prod, backend/.env locally)."
+            )
+        return self
 
 
 @lru_cache

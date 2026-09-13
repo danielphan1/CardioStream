@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from app.config import Settings, get_settings
 from app.routers.agent import limiter
@@ -78,6 +79,36 @@ def test_config_leaves_already_normalized_url_unchanged() -> None:
     assert s.database_url == "postgresql+psycopg://u:p@host/db"
 
 
+def test_config_rejects_dev_token_secret_when_password_configured() -> None:
+    """A real deployment that forgot TOKEN_SECRET refuses to BOOT (T-GCV-03).
+
+    Finding 3. ``dev-insecure-secret`` is public (it is committed in config.py),
+    so anyone could forge a valid Bearer token for a deploy still running on it
+    — the password gate would be decorative. site_password non-empty means "a
+    real deployment", so the pairing is rejected at construction time, loudly,
+    rather than failing open at request time.
+    """
+    with pytest.raises(ValidationError) as excinfo:
+        Settings(site_password="anything")
+    message = str(excinfo.value)
+    assert "TOKEN_SECRET" in message
+    assert "secrets.token_urlsafe(32)" in message  # the fix is in the message
+
+
+def test_config_keyless_boot_keeps_dev_token_secret() -> None:
+    """No site_password → the dev default is fine; local/test boot stays keyless."""
+    s = Settings()
+    assert s.site_password == ""
+    assert s.token_secret == "dev-insecure-secret"
+
+
+def test_config_password_with_real_secret_constructs() -> None:
+    """A configured deployment that DID set TOKEN_SECRET constructs normally."""
+    s = Settings(site_password="x", token_secret="a-real-secret")
+    assert s.site_password == "x"
+    assert s.token_secret == "a-real-secret"
+
+
 def test_serializer_round_trip_signs_and_verifies() -> None:
     """_serializer signs a token that the same serializer verifies (D-02)."""
     get_settings.cache_clear()
@@ -129,8 +160,14 @@ def auth_password(monkeypatch):
 
     Mirrors the existing env-override discipline: cache_clear() before and after
     so the module-level get_settings() lru_cache reflects the patched env.
+
+    TOKEN_SECRET is set explicitly because a non-empty SITE_PASSWORD marks this
+    as a "real deployment" to the boot-time guard in config.py, which refuses
+    the insecure dev default in that pairing (T-GCV-03). A test must not lean
+    on an insecure default to pass — it sets a real one, like a deploy would.
     """
     monkeypatch.setenv("SITE_PASSWORD", "correct-horse")
+    monkeypatch.setenv("TOKEN_SECRET", "test-only-not-the-dev-default")
     get_settings.cache_clear()
     yield "correct-horse"
     get_settings.cache_clear()
@@ -165,6 +202,42 @@ def test_auth_rate_limit_sixth_request_429(real_gate_client, auth_password) -> N
         real_gate_client.post("/auth", json={"password": "wrong"})
     sixth = real_gate_client.post("/auth", json={"password": "wrong"})
     assert sixth.status_code == 429
+
+
+# --- Quick 260913-gcv: the gate must fail CLOSED (T-GCV-01 / T-GCV-02) --------
+
+
+def test_auth_unconfigured_site_password_issues_no_token(real_gate_client, monkeypatch) -> None:
+    """SITE_PASSWORD unconfigured → NO token is issued, not even for an empty password.
+
+    Finding 1 (T-GCV-01). A deploy that forgets SITE_PASSWORD previously failed
+    OPEN: the field defaults to "", and ``hmac.compare_digest("", "")`` is True,
+    so ``POST /auth {"password": ""}`` handed a fully valid, non-expiring token
+    to any anonymous caller. Deliberately does NOT use the ``auth_password``
+    fixture — the whole point is the unconfigured state.
+    """
+    monkeypatch.delenv("SITE_PASSWORD", raising=False)
+    get_settings.cache_clear()
+    assert get_settings().site_password == ""  # precondition: genuinely unconfigured
+
+    resp = real_gate_client.post("/auth", json={"password": ""})
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "unauthorized"
+    assert "token" not in resp.json()
+    get_settings.cache_clear()
+
+
+def test_auth_non_ascii_password_401_never_500(real_gate_client, auth_password) -> None:
+    """A non-ASCII password candidate gets a clean 401, never a server error.
+
+    Finding 2 (T-GCV-02). ``hmac.compare_digest`` rejects ``str`` arguments that
+    are not ASCII-only, so a unicode password raised an uncaught TypeError out
+    of the route (a 500 + stack trace in prod). Comparing utf-8 BYTES on both
+    sides keeps the compare constant-time and makes this just another wrong
+    password.
+    """
+    resp = real_gate_client.post("/auth", json={"password": "pässwörd"})
+    assert resp.status_code == 401
 
 
 # --- Plan 05-03: POST /upload (gated, idempotent, never-500) -------------------
