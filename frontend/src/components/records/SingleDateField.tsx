@@ -2,11 +2,15 @@
 // (≥48px day cells) PLUS direct typed YYYY-MM-DD entry for keyboard users.
 // Extracted from DateRangePicker.tsx's single-date half — not a wrapper
 // around the range component. Validation reuses the one promoted
-// isValidDateText from lib/dates.ts (never redefined here).
+// isValidDateText from lib/dates.ts (never redefined here); the text field and
+// the calendar sizing come from the one shared components/fields.tsx (this
+// file used to carry a verbatim copy of DateRangePicker's rdpSizing).
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 
 import { formatDateParam, isValidDateText, parseDateOnly } from "../../lib/dates";
+import { TextField } from "../fields";
+import { rdpSizing } from "../rdpSizing";
 
 type SingleDateFieldProps = {
   label: string;
@@ -14,38 +18,19 @@ type SingleDateFieldProps = {
   onChange: (value: string) => void;
 };
 
-// v9 CSS custom properties — day cells at the 48px target floor, selected-day
-// styling on the accent tokens (theme-aware via index.css). Duplicated
-// verbatim from DateRangePicker.tsx (plain literal, not logic that can drift).
-const rdpSizing = {
-  "--rdp-day-width": "48px",
-  "--rdp-day-height": "48px",
-  "--rdp-day_button-width": "48px",
-  "--rdp-day_button-height": "48px",
-  "--rdp-accent-color": "var(--color-brass)",
-  "--rdp-accent-background-color": "var(--color-mist)",
-} as React.CSSProperties;
-
-const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
-
 export function SingleDateField({ label, value, onChange }: SingleDateFieldProps) {
   const valid = isValidDateText(value);
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-label text-[var(--color-depth)]">
-        {label}
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="YYYY-MM-DD"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-invalid={value !== "" && !valid}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label={label}
+        inputMode="numeric"
+        placeholder="YYYY-MM-DD"
+        value={value}
+        onChange={onChange}
+        invalid={value !== "" && !valid}
+      />
 
       <div style={rdpSizing} className="text-[18px] text-[var(--color-depth)]">
         <DayPicker
