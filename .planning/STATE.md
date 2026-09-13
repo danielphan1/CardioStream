@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: 14 (unified-show-panel-and-combined-timeline) — COMPLETE
 Plan: 6 of 6
 Status: Phase 14 verified + code-reviewed (14-VERIFICATION.md passed; 14-REVIEW.md / 14-REVIEW-FIX.md, 5/5 findings fixed)
-Last activity: 2026-09-13 -- Completed quick task 260913-fdm: applied 9 of 10 over-engineering audit findings (net -41 lines, zero test files touched); item 9 deferred to Blockers
+Last activity: 2026-09-13 -- Completed quick task 260913-gcv: hardened the shared-password gate against misconfiguration (3 fail-open defects + the .env test leak); production confirmed never exposed
 
 ## Performance Metrics
 
@@ -108,6 +108,23 @@ None yet.
   `sys.path`, so a worktree test run can silently import the *unmodified main-repo source* and report green
   against code it never executed. The executor caught this and asserted `app.deps.__file__` resolved inside
   the worktree before trusting any result. Any future worktree task touching the backend must do the same.
+  Corollary found in 260913-gcv: a gitignored file the bug *depends on* (there, `backend/.env`) is also
+  absent from a worktree, so verifying there reproduces the CI condition where the bug is invisible. Synthesize
+  the file and watch the real failure reproduce before trusting a fix.
+
+- [Quick 260913-gcv, 2026-09-13]: **Deferred — `parse_omron` row guard does not bound memory.** `etl.py`
+  calls `pd.read_excel()` on the whole upload and only *then* checks `len(df) > max_rows`, so the 10k-row
+  DoS guard fires after the file is already fully in memory; a decompression-bomb `.xlsx` would exhaust
+  memory before it runs. Mitigating factor: `/upload` is behind the auth gate, so it needs an authenticated
+  caller. Seen during the 260913-gcv correctness pass and deliberately NOT bundled into a security change.
+
+- [Quick 260913-gcv, 2026-09-13]: **New environments must set `TOKEN_SECRET` before first boot.** `Settings`
+  now refuses to start when `SITE_PASSWORD` is set while `TOKEN_SECRET` is still the dev default — that
+  combination allowed offline Bearer-token forgery from a value committed to this repo. Production is
+  confirmed to have both set in Railway (so it was never exposed and the validator will not fire there),
+  but any NEW environment — staging, a rebuilt service, a fresh clone — must set `TOKEN_SECRET`
+  (`python -c "import secrets;print(secrets.token_urlsafe(32))"`) or it will not boot. That refusal is the
+  intended behavior, not a regression.
 
 - [Phase 14 review, 2026-09-12]: Code review found a **critical** regression the phase's own
   tests and live walkthrough both missed — `App.tsx`'s `readings.length === 0` EmptyState guard
@@ -119,10 +136,14 @@ None yet.
   the five-token `DatasetToken`, and `command.datasets` are unit-tested on both sides of the wire
   and covered by the ACC-03 parity suite, but the agent is inert (AGENT-01, no API credits) so no
   live utterance was ever issued. Re-run the 43-fixture eval once billing is funded.
-- [Phase 14] **`backend/tests/test_auth_upload.py::test_config_new_fields_default_keyless` fails
-  locally** because `backend/.env` sets `SITE_PASSWORD` and pydantic-settings reads it. Pre-existing
-  (confirmed on stashed code), unrelated to Phase 14, still worth fixing — the test should isolate
-  the environment rather than depend on a developer's `.env`.
+- ~~[Phase 14] **`backend/tests/test_auth_upload.py::test_config_new_fields_default_keyless` fails
+  locally** because `backend/.env` sets `SITE_PASSWORD` and pydantic-settings reads it.~~
+  **RESOLVED 2026-09-13 by quick 260913-gcv** (`f6d7345`). Fixed as diagnosed — the test now isolates
+  the environment instead of depending on a developer's `.env`. Two notes for the record: the isolation
+  had to run at `conftest.py` **module level**, not in an autouse fixture, because `app/db.py:8` calls
+  `get_settings()` at import and the test modules reach it during pytest *collection*; and a second test
+  (`test_health_ok_and_keyless_in_test_env`) shared the same root cause and was fixed alongside it.
+  Backend suite now runs 0 failures with a real `backend/.env` present.
 
 - [v1.0 → v2] **Agent inert in production — no API credits.** The Anthropic account behind the Railway key has $0 balance and no payment method, so every `/agent` Claude call returns a billing 400 and degrades to `unclear`. Phase 6 (Liveness) makes this failure *visible*, but does not fix it — funding is a v2/billing-only item, deferred by user decision.
 - [Phase 10 planning]: TTS vs. existing aria-live confirmation is an open product decision (does TTS coexist with aria-live, opt-in vs. default-on framing of the mute toggle) — JS cannot reliably detect screen-reader presence; decide explicitly during Phase 10 planning.
@@ -147,6 +168,7 @@ None yet.
 | 260828-4nj | Correct the 260828-2l6 chip fix (impeccable critique P1, re-critique): the chip rendered in Recharts' `zIndex-layer_100` (same as ReferenceArea's own layer), one layer *below* Line's `zIndex-layer_400`, so lines painted over the chip instead of the reverse. Split each labeled band into a background-tint ReferenceArea (unchanged, zIndex 100) + an invisible label-host ReferenceArea (`zIndex={DefaultZIndexes.axis}`, 500) carrying the chip — verified live via DOM zIndex-layer inspection + screenshot, not assumption | 2026-08-28 | 68ab665 | Verified | [260828-4nj-fix-bp-timeline-band-label-chip-z-order-](./quick/260828-4nj-fix-bp-timeline-band-label-chip-z-order-/) |
 | 260828-kbq | Fix GuideOverlay sticky-band text-clipping bug (impeccable critique P0, re-critique): the guide's scrollable region was `fixed inset-0` with only a computed paddingTop offset, so ordinary scrolling still passed content underneath the fixed CommandBar+banner band (z-60 above the guide's z-50) — changed the region to `fixed inset-x-0 bottom-0` starting at `top: clearanceAbove`, so scrolled content can never occupy the band's screen rectangle. Clipping fix confirmed correct via elementFromPoint sampling, but this change also removed the region's own full-viewport backdrop coverage — see 260828-kza | 2026-08-28 | a32c78c | Fixed clipping; introduced a backdrop regression — resolved by 260828-kza | [260828-kbq-fix-guideoverlay-sticky-band-text-clippi](./quick/260828-kbq-fix-guideoverlay-sticky-band-text-clippi/) |
 | 260828-kza | Correct the 260828-kbq GuideOverlay backdrop bleed-through regression (impeccable critique P0): split GuideOverlay's outer JSX into two siblings — a new, plain, always-`fixed inset-0` `aria-hidden="true"` backdrop restoring unconditional full-viewport opaque coverage, plus the existing `fixed inset-x-0 bottom-0` scrollable region (unchanged from kbq's clipping-safety fix). Live-verified via elementFromPoint sweep at two viewport widths and both an unstuck-band and a stuck-band window-scroll state: zero bleed-through, zero clipping regressions | 2026-08-28 | beef896 | Verified | [260828-kza-correct-guideoverlay-backdrop-bleed-thro](./quick/260828-kza-correct-guideoverlay-backdrop-bleed-thro/) |
+| 260913-gcv | Harden the shared-password gate against misconfiguration — 4 defects from a correctness review, each proven to fail first: (1) `/auth` issued a valid token for an EMPTY password when `SITE_PASSWORD` was unset, since `compare_digest("","")` is `True` — now fails closed; (2) a non-ASCII password raised `TypeError` from `compare_digest` and escaped as a 500 (no never-500 backstop on `/auth`) — now compares utf-8 bytes, returns 401; (3) `TOKEN_SECRET` defaulted to a value committed to this repo, allowing fully-offline Bearer-token forgery if a deploy set `SITE_PASSWORD` but forgot the secret — `Settings` now refuses to boot in that combination, with `hide_input_in_errors=True` so the failure cannot echo `SITE_PASSWORD` into deploy logs; (4) the suite inherited the developer's real `backend/.env` (green in CI, red locally) — now isolated at conftest module level. Production was confirmed to have both variables set in Railway, so **the deployed site was never exposed** — this is hardening, not incident response. 284 passed (from 277), 0 failed | 2026-09-13 | 3bda83c | Verified | [260913-gcv-fix-4-verified-auth-gate-and-test-isolat](./quick/260913-gcv-fix-4-verified-auth-gate-and-test-isolat/) |
 | 260913-fdm | Apply whole-repo over-engineering audit findings: collapsed 4 duplicated date-range filter classes into one `DateRangeFilters` base (backend/app/deps.py), switched both `transform()` row loops from `iterrows()` to `itertuples()` (backend/app/etl.py), merged 3 byte-identical overlay hooks into `useRecordEvents.ts`, extracted the 3×-copied D-08 pulse effect into `useAgentPulseFlash()`, single-sourced `joinWithAnd`/`fmtLongDateOnly`/`RATE_LIMIT_COPY`/`OFFLINE_COPY`, spread `OVERLAY_META` in datasetMeta, added a shared `TextField` primitive absorbing 17 inline input call sites, and dropped the never-imported `@fontsource/atkinson-hyperlegible` dep. Net −41 lines, zero test files touched. **9 of 10 items** — item 9 (removing the redundant per-render sorts in StatsStrip/ReadingsTable) deferred, see Blockers | 2026-09-13 | d63bd5f | Verified | [260913-fdm-apply-audit-findings-dedupe-filters-fiel](./quick/260913-fdm-apply-audit-findings-dedupe-filters-fiel/) |
 | 260828-ly8 | Close 4 motion-language gaps (impeccable animate survey): GuideOverlay open/close fade, ChartTooltip opacity+scale entrance (also caught and fixed a real pre-existing bug: the Close button was unclickable via real mouse input due to Recharts' `pointer-events: none`, and a second bug where the click bubbled into the chart's own onClick and undid the dismiss), DateRangePicker reveal fade-in, and AddRecordPage's Lab/Incident/Procedure field-swap transition (mirrors ChartDeck's proven FadeSwap pattern) — all reuse the app's existing motion-safe/motion-reduce-gated ≤250ms opacity/transform idiom, no new material. Ran as 4 independent plans in one parallel wave; all 4 live-verified individually plus a final independent spot-check of all four surfaces against the real dev server | 2026-08-28 | 9f54eff, c940aa6, b460dbc, 5495650 | Verified | [260828-ly8-close-4-motion-language-gaps-impeccable-](./quick/260828-ly8-close-4-motion-language-gaps-impeccable-/) |
 
