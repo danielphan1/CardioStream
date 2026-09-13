@@ -16,13 +16,43 @@ When the real files land in data/, re-verify this shape and update here.
 
 from __future__ import annotations
 
+import os
+
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+from app.config import Settings, get_settings
 from app.models import Base
+
+# --- Ambient-environment isolation (MUST stay at module level) ----------------
+# The suite must never read the developer's real backend/.env: doing so leaks a
+# real ANTHROPIC_API_KEY / SITE_PASSWORD into a test run and makes results
+# machine-dependent (e.g. test_config_new_fields_default_keyless asserts the
+# keyless default and fails the moment a local .env sets SITE_PASSWORD).
+#
+# WHY THIS IS NOT AN AUTOUSE FIXTURE — a fixture runs far too late.
+# `app/db.py` calls `get_settings()` at MODULE IMPORT time, and
+# `tests/test_auth_upload.py` imports `app.routers.agent` -> `app.deps` ->
+# `app.db` at module scope. So `Settings()` is constructed during pytest
+# COLLECTION, before any fixture body executes. conftest.py, by contrast, is
+# fully imported before any test module is collected, so this block is the
+# earliest hook that still beats that import chain. Do NOT "tidy" it into a
+# fixture: that silently reopens the hole.
+#
+# Neutralize the dotenv source for every bare `Settings()` / `get_settings()`
+# in the suite. Per-test `monkeypatch.setenv` still takes precedence over this
+# (env vars outrank the file source), so fixtures that need a value set one.
+Settings.model_config["env_file"] = None
+# Defensive: also drop the three secrets from the ambient process environment,
+# covering a developer who exports them in the shell rather than via .env.
+# DATABASE_URL / CORS_ORIGINS are deliberately NOT scrubbed — test_migrations.py
+# sets its own DATABASE_URL per test and .env's value matches the code default.
+for _secret in ("SITE_PASSWORD", "TOKEN_SECRET", "ANTHROPIC_API_KEY"):
+    os.environ.pop(_secret, None)
+get_settings.cache_clear()
 
 OMRON_COLUMNS = [
     "Date",
