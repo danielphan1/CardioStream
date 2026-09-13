@@ -75,6 +75,10 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 12. Visual Refresh | v1.1 | 8/8 | Complete    | 2026-08-27 |
 | 13. Visual Redesign (Nautical) | v1.1 | 12/12 | Complete    | 2026-09-04 |
 | 14. Show Panel & Combined Timeline | v1.1 | 6/6 | Complete    | 2026-09-12 |
+| 15. Unified Filter Surface | v1.2 | 0/0 | Not planned | — |
+| 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
+| 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
+| 18. Deep Query | v1.2 | 0/0 | Not planned | — |
 
 ### Phase 13: Visual Redesign — Nautical Minimalist Theme
 
@@ -131,3 +135,122 @@ Plans:
 **Wave 3** *(blocked on Wave 2)*
 
 - [x] 14-06-PLAN.md — ChartDeck view router, App wiring, agent mirror, voice vocabulary + guide (wave 3)
+
+### Phase 15: Unified Filter Surface — multi-select checkboxes, pulse category, time of day
+
+**Goal:** Chris can combine filters instead of picking one — "Stage 1 **and** Stage 2", "mornings **and** evenings" — through the same checkbox control model the Show panel already uses, plus two filters whose data already exists but has never been reachable.
+**Requirements**: Client-driven request (2026-09-13). Direct continuation of Phase 14, whose `14-CONTEXT.md` named the root cause as *"the dashboard runs two different control models side by side"* — Phase 14 converted the five datasets to real checkboxes but left FilterBar as single-select `aria-pressed` buttons. This finishes that job.
+**Depends on:** Phase 14
+**Plans:** 0 plans
+**UI hint**: yes
+
+Scope:
+
+- FilterBar AM/PM + BP category → **multi-select checkboxes** matching ShowPanel's control language.
+  Date presets deliberately stay exclusive buttons: a range cannot be "7 days AND 90 days", so a
+  checkbox there would promise a combination the data model cannot honour.
+- **New filter — pulse category** (Bradycardia / Normal / Tachycardia). Already in `models.py`,
+  computed by `derivations.classify_pulse()`, covered by `test_derivations.py` — and reachable by
+  exactly zero UI controls today. Pairs with the 60 bpm reference line the timeline already draws.
+- **New filter — time of day** finer than AM/PM (morning / afternoon / evening / night), derived
+  from the stored `datetime_` at query time. No schema change, no ETL change.
+
+**Key functional unlock:** single-select makes "Stage 1 AND Stage 2" — the clinically natural query
+for hypertension management — literally inexpressible today. This is a capability gain, not a
+click-convenience change.
+
+**Primary risk — cross-stack, NOT a UI swap.** Touches: `store/filters.ts` (`amPm` and `bpCategory`
+become multi-valued), a **v2→v3 localStorage persistence migration** (the existing v1→v2 migration is
+the precedent to follow), `backend/app/deps.py` `ReadingFilters` (`Literal` → list, `IN` clause),
+`backend/app/agent/schemas.py` (`bp_category` token is single-valued; `BP_TOKEN_TO_LABEL`), and
+`lib/agent.ts` `composeConfirmation` (the spoken echo must describe multiple selections grammatically —
+"Showing Stage 1 and Stage 2 readings", not a list dump).
+
+**Constraints:** every filter stays operable by voice (CLAUDE.md core value); ≥48px targets, ≥18px
+text, no drag or hover-only interactions.
+
+Plans:
+- [ ] TBD (run /gsd-ui-phase 15 for the design contract, then /gsd-plan-phase 15)
+
+### Phase 16: Trend Clarity and Chart Polish
+
+**Goal:** Chris can see which *direction* his health is moving, not just where each reading landed. No new chart types — this improves what already exists.
+**Requirements**: Client-driven request (2026-09-13), "better data visuals".
+**Depends on:** Phase 15
+**Plans:** 0 plans
+**UI hint**: yes
+
+Scope:
+
+- **Rolling average** (7-day or similar) drawn over the combined timeline's raw points. "All data" plots
+  ~1,500 individual dots, and day-to-day blood pressure is noisy enough that the trend is invisible in
+  them. *"Am I getting better or worse"* is the question this dashboard exists to answer and cannot
+  answer today.
+- **Readability pass** on `CombinedTimeline`, `CategoryBars`, `AmPmComparison` — density, labelling,
+  colour, and axis legibility.
+
+Per CLAUDE.md's impeccable + GSD convention: run an `impeccable` critique pass to inform the work, then
+let a GSD command execute and commit. `impeccable` never edits files itself.
+
+**Note:** the rolling average is a *derived medical-adjacent value*. Per CLAUDE.md's Quality constraint,
+the window arithmetic needs unit tests — including how it handles gaps in the series, which this dataset
+has (readings are not daily).
+
+Plans:
+- [ ] TBD (run /gsd-ui-phase 16 for the design contract, then /gsd-plan-phase 16)
+
+### Phase 17: Analytical Views — BP heatmap and event correlation
+
+**Goal:** Surface patterns a time-series line structurally cannot show — routine-driven daily rhythms, and what the vitals actually did around a hospital stay.
+**Requirements**: Client-driven request (2026-09-13), "better data visuals".
+**Depends on:** Phase 16 (and Phase 15 for the time-of-day buckets the heatmap reuses)
+**Plans:** 0 plans
+**UI hint**: yes
+
+Scope:
+
+- **Weekday × time-of-day heatmap** of average BP. Reuses Phase 15's time-of-day buckets rather than
+  inventing a second definition. Surfaces routine-driven patterns — consistently high weekday evenings,
+  say — that a chronological line cannot expose no matter how it is styled.
+- **Event-correlation view**: vitals in a window before and after an incident or procedure. Today an
+  incident renders as a single ▲ marker on a date, and the dashboard never connects it to what the
+  vitals were doing around it — arguably the most clinically interesting question in the dataset.
+
+**Both are new chart types** and want their own UI-SPEC design contract before planning.
+
+**Accessibility risk, non-negotiable:** a heatmap is the hardest chart type to make non-visual. Colour
+alone cannot carry the value (CLAUDE.md bans colour-only signalling), every cell must be keyboard
+reachable, and the whole view must be reachable and interpretable by voice. If it cannot meet that bar,
+it should not ship — design the accessible version first, not as a retrofit.
+
+Plans:
+- [ ] TBD (run /gsd-ui-phase 17 for the design contract, then /gsd-plan-phase 17)
+
+### Phase 18: Deep Query — value thresholds and notes search
+
+**Goal:** Filter by reading value and by what was written in the notes, without breaking the accessibility floor.
+**Requirements**: Client-driven request (2026-09-13), "more filtering options".
+**Depends on:** Phase 17; **and see the external dependency below**
+**Plans:** 0 plans
+**UI hint**: yes
+
+Scope:
+
+- **Value thresholds as PRESET CUT-POINTS, shipped as checkboxes** — "above 140", "above 180",
+  "below 90". Deliberately **not** free numeric entry. A number input fails the accessibility floor
+  twice over: it is a small precise target for a user with no reliable hand mobility, and spoken
+  numbers mis-transcribe ("one forty" vs "140") on exactly the input path that matters most. Preset
+  cut-points keep the checkbox affordance, stay clinically meaningful, and speak naturally —
+  "show me readings above 140".
+- **Notes / symptom text search** across the `notes` field, which renders today but cannot be
+  searched or filtered.
+
+**EXTERNAL DEPENDENCY — the reason this phase is sequenced last.** The genuinely useful version of
+notes search is voice-driven ("show me readings where I noted dizziness"), which routes through the
+agent. The agent is **inert in production** (AGENT-01, $0 Anthropic balance, live eval 4/35). Built
+before that is funded, notes search is a caregiver-only feature Chris cannot reach by voice — which
+inverts the product's core value rather than serving it. **Fund the API before starting this phase**,
+or accept that half of it ships unusable by its primary user.
+
+Plans:
+- [ ] TBD (run /gsd-ui-phase 18 for the design contract, then /gsd-plan-phase 18)

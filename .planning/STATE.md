@@ -83,6 +83,26 @@ Recent decisions affecting current work:
 
 ### Roadmap Evolution
 
+- Phases 15–18 added (2026-09-13): client-driven request to improve **filtering options and data
+  visuals**. Scoped as four phases rather than one because the user selected every option offered.
+  **15 — Unified Filter Surface**: FilterBar's AM/PM and BP-category groups become multi-select
+  checkboxes matching ShowPanel, plus two filters whose data is already stored, derived and
+  unit-tested but exposed nowhere (`pulse_category`; time-of-day finer than AM/PM). This is the
+  direct continuation of Phase 14 — that phase's own CONTEXT named "two different control models
+  side by side" as the root cause, converted the datasets, and left FilterBar untouched. Functional
+  unlock, not convenience: "Stage 1 AND Stage 2" is inexpressible under single-select. Cross-stack
+  (store, v2→v3 persistence migration, API `IN` clause, agent token vocabulary, spoken echo), which
+  is why it stays standalone.
+  **16 — Trend Clarity & Chart Polish**: rolling average over the timeline's ~1,500 raw points, plus
+  a readability pass. No new chart types.
+  **17 — Analytical Views**: weekday × time-of-day heatmap and an event-correlation window. Two new
+  chart types; the heatmap carries a real accessibility risk (colour-only signalling is banned) that
+  must be designed for up front, not retrofitted.
+  **18 — Deep Query**: value thresholds shipped as preset cut-point checkboxes — NOT free numeric
+  entry, which fails the accessibility floor on both target size and voice transcription — plus notes
+  text search. Sequenced last because its good version is voice-driven and therefore **blocked on
+  funding the Anthropic account** (AGENT-01); built before that, it is a caregiver-only feature Chris
+  cannot reach by voice, inverting the core value.
 - Phase 14 added: Unified Show Panel and Combined Timeline. Client-driven change request from Chris (2026-09-12 meeting, decisions confirmed): replace the mutually-exclusive chart deck + separate overlay row with ONE five-checkbox Show panel driving ONE dual-axis combined timeline. **Explicitly reverses Phase 9's locked decision** ("BP Timeline and Pulse Trend stay today's two separate hero charts, no new combined-metric chart" — `09-CONTEXT.md`); that scope call was correct at the time and is simply not what the client wants now. Design contract written and client-approved before planning. Full scope and locked decisions in `14-CONTEXT.md`. Next: `/gsd-plan-phase 14`.
 - Phase 13 added: Visual Redesign — Nautical Minimalist Theme. Full visual-identity replacement (not an evolution like Phase 12) — new palette/type/spacing/elevation/component language sitewide, carrying forward the existing nautical motif (`--color-foam`/`--color-sky`, wave-curve divider) with far more craft, rendered clean and minimalist. All existing functionality and the accessibility floor carry over unchanged. Direction gathered live via `impeccable`'s new-work intake (structural + genre reference images reviewed in-browser); full scope and locked decisions in `13-CONTEXT.md`. Next: `/gsd-ui-phase 13`.
 
