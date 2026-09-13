@@ -267,6 +267,13 @@ export const useFilters = create<FilterState>((set, get) => {
       set({ visibleDatasets: next });
       persistCurrent();
     },
+    // D-11 "show all data" / "start over" / "reset". Clearing filters is
+    // SUBTRACTIVE — stop hiding things — so this returns the datasets to their
+    // shipped default rather than switching every marker set on. An earlier
+    // Phase 14 revision turned all five on, which meant a caregiver saying
+    // "start over" got a busier screen than the app's own default (WR-01).
+    // The "Show everything" recovery button wants all five and calls
+    // showOnlyDatasets instead, so each action means what its name says.
     showAllData: () => {
       set({
         chartView: "timeline",
@@ -274,13 +281,7 @@ export const useFilters = create<FilterState>((set, get) => {
         customRange: { from: null, to: null },
         amPm: "all",
         bpCategory: "all",
-        visibleDatasets: {
-          blood_pressure: true,
-          pulse: true,
-          labs: true,
-          incidents: true,
-          procedures: true,
-        },
+        visibleDatasets: { ...DEFAULT_DATASETS },
       });
       persistCurrent();
     },

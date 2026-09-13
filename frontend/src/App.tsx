@@ -31,6 +31,7 @@ import { useLabs } from "./hooks/useLabs";
 import { useProcedures } from "./hooks/useProcedures";
 import { useReadings } from "./hooks/useReadings";
 import { useResolvedFilters, useStats } from "./hooks/useStats";
+import { hasVitals } from "./lib/datasetMeta";
 import { presetLabel } from "./lib/dates";
 import {
   incidentsToEvents,
@@ -144,6 +145,18 @@ function Dashboard() {
   const initialPending = readings.isPending || stats.isPending;
   const hasError = readings.isError || stats.isError;
 
+  // The chart region only consumes `readings` when it is plotting a vitals
+  // series or a summary chart. In the events-only and nothing-selected states
+  // it does not, so a zero-reading range must not suppress it (CR-01).
+  const chartView = useFilters((s) => s.chartView);
+  const regionNeedsReadings =
+    chartView !== "timeline" || hasVitals(visibleDatasets);
+  // Where the chart slot IS the event list, OverlayEventsList below would
+  // repeat the same rows under a second heading — announced twice to a screen
+  // reader (CR-02).
+  const eventsAreTheChart =
+    chartView === "timeline" && !hasVitals(visibleDatasets);
+
   let chartRegion: ReactNode;
   if (initialPending) {
     chartRegion = <ChartSkeleton />;
@@ -173,9 +186,17 @@ function Dashboard() {
         </button>
       </section>
     );
-  } else if ((readings.data ?? []).length === 0) {
+  } else if ((readings.data ?? []).length === 0 && regionNeedsReadings) {
     // Zero-result filters → guided empty state in place of the deck (D-11);
     // the FilterBar above stays visible so the user can adjust.
+    //
+    // `regionNeedsReadings` is load-bearing (CR-01). Before Phase 14 the chart
+    // region always needed blood-pressure readings, so a bare length check was
+    // right. It isn't any more: with no vitals selected the region renders the
+    // event list or the pick-something prompt, neither of which reads
+    // `readings`. Without the guard, asking for hospital stays over a window
+    // with no BP readings — exactly the periods worth looking at — showed
+    // "no readings" and hid the events entirely.
     chartRegion = (
       <EmptyState
         latestReading={latestReading}
@@ -246,6 +267,9 @@ function Dashboard() {
             </h2>
             <ReadingsTable readings={readings.data ?? []} />
           </section>
+          {/* Suppressed when the chart slot has become the event list — see
+              eventsAreTheChart (CR-02). */}
+          {!eventsAreTheChart && (
           <OverlayEventsList
             labs={{ enabled: visibleDatasets.labs, events: labsEvents, isError: labs.isError }}
             incidents={{
@@ -259,6 +283,7 @@ function Dashboard() {
               isError: procedures.isError,
             }}
           />
+          )}
         </div>
       </main>
     </div>

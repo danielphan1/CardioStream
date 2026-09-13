@@ -24,7 +24,7 @@ import type { ReactNode } from "react";
 import type { OverlayDataset, Reading, StatsSummary } from "../api/types";
 import { enabledEventTypes, hasVitals } from "../lib/datasetMeta";
 import type { OverlayEvent } from "../lib/overlayEvents";
-import { useFilters } from "../store/filters";
+import { DATASET_KEYS, useFilters } from "../store/filters";
 
 import { EventTimelineList } from "./EventTimelineList";
 import AmPmComparison from "./charts/AmPmComparison";
@@ -69,21 +69,27 @@ function FadeSwap({ children }: { children: ReactNode }) {
   );
 }
 
-/** D-06 — never a blank panel. One tap restores everything. */
+/** D-06 — never a blank panel. One tap restores everything.
+ *  Uses showOnlyDatasets rather than showAllData so the button does what it
+ *  says (turn every dataset on) without also resetting the date range the
+ *  user deliberately set (WR-01). */
 function NothingSelected() {
-  const showAllData = useFilters((s) => s.showAllData);
+  const showOnlyDatasets = useFilters((s) => s.showOnlyDatasets);
   return (
     <section
       aria-label="Nothing selected"
       className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-mist)] p-8 text-center shadow-[var(--shadow-elevation)]"
     >
-      <h2 className="text-heading leading-tight">Nothing selected</h2>
+      {/* No heading here — ChartDeck already renders "Nothing selected" as the
+          region title above, and EventTimelineList/CombinedTimeline likewise
+          leave the heading to the parent. Repeating it stacked the same text
+          twice on screen and announced it twice (found by ChartDeck.test). */}
       <p className="text-lg">
         Tick a box above to choose what to see — or show everything at once.
       </p>
       <button
         type="button"
-        onClick={showAllData}
+        onClick={() => showOnlyDatasets(DATASET_KEYS)}
         className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
       >
         Show everything

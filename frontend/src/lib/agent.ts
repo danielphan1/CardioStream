@@ -156,10 +156,12 @@ function joinWithAnd(items: string[]): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
-/** What the timeline is actually drawing, in fixed DATASET_ORDER. */
-function datasetsPhrase(visible: Record<SeriesDataset, boolean>): string {
+/** What the timeline is actually drawing, in fixed DATASET_ORDER. Returns
+ *  null when nothing is selected — "Showing nothing, all data" is grammatical
+ *  but reads as a glitch, and this string is spoken aloud (WR-02). */
+function datasetsPhrase(visible: Record<SeriesDataset, boolean>): string | null {
   const on = DATASET_ORDER.filter((d) => visible[d]);
-  if (on.length === 0) return "nothing";
+  if (on.length === 0) return null;
   return joinWithAnd(on.map((d) => DATASET_META[d].label.toLowerCase()));
 }
 
@@ -192,14 +194,20 @@ export function composeConfirmation(
   },
   _latestReading: string | null,
 ): string {
+  let chartPhrase: string;
   // On the timeline, name the DATASETS — that is what changed and what Chris
   // is looking at. On a summary view the datasets do not apply, so name the
   // view instead. Saying "showing the timeline" while he just asked for pulse
   // would be technically true and useless.
-  const chartPhrase =
-    state.chartView === "timeline"
-      ? datasetsPhrase(state.visibleDatasets)
-      : VIEW_PHRASE[state.chartView];
+  if (state.chartView === "timeline") {
+    const phrase = datasetsPhrase(state.visibleDatasets);
+    if (phrase === null) {
+      return "Nothing selected — pick a dataset to see it";
+    }
+    chartPhrase = phrase;
+  } else {
+    chartPhrase = VIEW_PHRASE[state.chartView];
+  }
 
   let rangePhrase: string;
   if (state.datePreset === "all") {

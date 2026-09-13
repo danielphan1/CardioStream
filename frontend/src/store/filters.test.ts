@@ -95,7 +95,7 @@ describe("chart view (D-08)", () => {
 });
 
 describe("showAllData (D-11)", () => {
-  it("clears every filter and turns all five datasets on", () => {
+  it("clears every filter and returns datasets to the shipped default", () => {
     const s0 = useFilters.getState();
     s0.setChartView("bp_categories");
     s0.setCustomRange("2025-03-01", "2025-03-31");
@@ -111,13 +111,24 @@ describe("showAllData (D-11)", () => {
     expect(s.customRange).toEqual({ from: null, to: null });
     expect(s.amPm).toBe("all");
     expect(s.bpCategory).toBe("all");
+    // WR-01: "start over" is subtractive. It must NOT switch on three marker
+    // sets the user never asked for — that hands a caregiver a busier screen
+    // than the app's own default.
     expect(s.visibleDatasets).toEqual({
       blood_pressure: true,
       pulse: true,
-      labs: true,
-      incidents: true,
-      procedures: true,
+      labs: false,
+      incidents: false,
+      procedures: false,
     });
+  });
+
+  it("restores the default even when the user had turned events on", () => {
+    useFilters.getState().showOnlyDatasets(["labs", "incidents", "procedures"]);
+    useFilters.getState().showAllData();
+    const v = useFilters.getState().visibleDatasets;
+    expect(v.blood_pressure).toBe(true);
+    expect(v.labs).toBe(false);
   });
 });
 
