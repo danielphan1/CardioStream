@@ -167,6 +167,42 @@ def test_auth_rate_limit_sixth_request_429(real_gate_client, auth_password) -> N
     assert sixth.status_code == 429
 
 
+# --- Quick 260913-gcv: the gate must fail CLOSED (T-GCV-01 / T-GCV-02) --------
+
+
+def test_auth_unconfigured_site_password_issues_no_token(real_gate_client, monkeypatch) -> None:
+    """SITE_PASSWORD unconfigured → NO token is issued, not even for an empty password.
+
+    Finding 1 (T-GCV-01). A deploy that forgets SITE_PASSWORD previously failed
+    OPEN: the field defaults to "", and ``hmac.compare_digest("", "")`` is True,
+    so ``POST /auth {"password": ""}`` handed a fully valid, non-expiring token
+    to any anonymous caller. Deliberately does NOT use the ``auth_password``
+    fixture — the whole point is the unconfigured state.
+    """
+    monkeypatch.delenv("SITE_PASSWORD", raising=False)
+    get_settings.cache_clear()
+    assert get_settings().site_password == ""  # precondition: genuinely unconfigured
+
+    resp = real_gate_client.post("/auth", json={"password": ""})
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "unauthorized"
+    assert "token" not in resp.json()
+    get_settings.cache_clear()
+
+
+def test_auth_non_ascii_password_401_never_500(real_gate_client, auth_password) -> None:
+    """A non-ASCII password candidate gets a clean 401, never a server error.
+
+    Finding 2 (T-GCV-02). ``hmac.compare_digest`` rejects ``str`` arguments that
+    are not ASCII-only, so a unicode password raised an uncaught TypeError out
+    of the route (a 500 + stack trace in prod). Comparing utf-8 BYTES on both
+    sides keeps the compare constant-time and makes this just another wrong
+    password.
+    """
+    resp = real_gate_client.post("/auth", json={"password": "pässwörd"})
+    assert resp.status_code == 401
+
+
 # --- Plan 05-03: POST /upload (gated, idempotent, never-500) -------------------
 # These reuse the real-verify_token `real_gate_client` (so the 401 gate is
 # genuinely exercised) plus the `omron_xlsx` fixture from conftest. `valid_token`
