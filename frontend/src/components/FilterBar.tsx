@@ -6,9 +6,9 @@
 // All filter state lives in the zustand store (store/filters.ts) — this
 // component only takes `latestReading` for the honest preset-anchor date
 // (RESEARCH Open Question 1: presets anchor to the newest reading).
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { useAgentPulse } from "../lib/agent";
+import { useAgentPulseFlash } from "../lib/agent";
 import type { PulseField } from "../lib/agent";
 import { fmtLongDate, presetLabel } from "../lib/dates";
 import type { DatePreset } from "../lib/dates";
@@ -54,21 +54,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
   // no focus-trap complexity, D-18).
   const [customOpen, setCustomOpen] = useState(false);
 
-  // D-08 pulse: when an agent command touches a filter group, the matching
-  // control group flashes briefly so the agent and the manual controls read as
-  // one system. `seq` bumps on every apply (even when the same fields repeat),
-  // so this effect re-fires reliably. The animation is gated behind
-  // `motion-safe:` — reduced-motion users get NO pulse — and a static
-  // `ring-2` fallback keeps the change perceivable without motion.
-  const pulseSeq = useAgentPulse((s) => s.seq);
-  const pulseFields = useAgentPulse((s) => s.fields);
-  const [pulsing, setPulsing] = useState<PulseField[]>([]);
-  useEffect(() => {
-    if (pulseSeq === 0) return; // no apply yet
-    setPulsing(pulseFields);
-    const t = setTimeout(() => setPulsing([]), 1500);
-    return () => clearTimeout(t);
-  }, [pulseSeq, pulseFields]);
+  const pulsing = useAgentPulseFlash();
 
   // Chart switches are intentionally NOT pulsed here — ChartDeck's keyed
   // mount-fade already signals agent-driven chart changes (CONTEXT).

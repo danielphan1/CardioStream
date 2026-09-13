@@ -7,8 +7,12 @@
 import type { SeriesDataset } from "../api/types";
 import { DATASET_META, DATASET_ORDER, hasVitals } from "./datasetMeta";
 
-/** "a" / "a and b" / "a, b and c" — no Oxford comma, because this is spoken. */
-function joinWithAnd(items: string[]): string {
+/** "a" / "a and b" / "a, b and c" — NO Oxford comma, because this string is
+ * spoken aloud. Do NOT "fix" it to Intl.ListFormat's conjunction form: that
+ * adds the comma. lib/agent.ts's spoken confirmation imports this same one.
+ * (Deliberate asymmetry with overlayEvents.ts's joinWithOr, which IS written
+ * text and therefore DOES take the Oxford comma.) */
+export function joinWithAnd(items: string[]): string {
   if (items.length <= 1) return items.join("");
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;

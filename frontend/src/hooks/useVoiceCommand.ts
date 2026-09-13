@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { ApiError } from "../api/client";
 import type { AgentReply } from "../api/types";
 import { applyAgentFilters, composeConfirmation } from "../lib/agent";
+import { OFFLINE_COPY, RATE_LIMIT_COPY } from "../lib/copy";
 import {
   classifyError,
   computeBackoff,
@@ -42,12 +43,10 @@ export type VoiceState =
   | "speaking"
   | "paused";
 
-// Fixed friendly copy for every client-visible failure (VOICE-07) — duplicated
-// from CommandBar's constants on purpose: raw error strings are NEVER rendered.
-const RATE_LIMIT_COPY =
-  "One moment — a lot of commands at once. Try again in a few seconds.";
-const OFFLINE_COPY =
-  "Couldn't reach the assistant — use the filters and buttons below instead.";
+// RATE_LIMIT_COPY / OFFLINE_COPY are single-sourced in lib/copy.ts and shared
+// with CommandBar (VOICE-07). Sharing the constant does not weaken the
+// invariant behind them: raw error strings and raw recognizer errors are still
+// NEVER rendered — only these fixed strings are.
 // D-14 fatal fallback: a mic-permission/hardware error closes the session until a
 // fresh start(). Fixed friendly copy only — the raw recognizer error NEVER renders.
 const PAUSED_COPY =
