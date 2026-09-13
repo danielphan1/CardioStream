@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: 14 (unified-show-panel-and-combined-timeline) — COMPLETE
 Plan: 6 of 6
 Status: Phase 14 verified + code-reviewed (14-VERIFICATION.md passed; 14-REVIEW.md / 14-REVIEW-FIX.md, 5/5 findings fixed)
-Last activity: 2026-09-12 -- Phase 14 code review complete; 1 critical + 4 lesser findings fixed and re-verified live
+Last activity: 2026-09-13 -- Completed quick task 260913-fdm: applied 9 of 10 over-engineering audit findings (net -41 lines, zero test files touched); item 9 deferred to Blockers
 
 ## Performance Metrics
 
@@ -92,6 +92,23 @@ None yet.
 
 ### Blockers/Concerns
 
+- [Quick 260913-fdm, 2026-09-13]: **Deferred audit item — redundant per-render sorts.** `StatsStrip.tsx`
+  and `ReadingsTable.tsx` each re-sort the `readings` array on every render, even though `/readings`
+  already serves datetime-ascending (`routers/readings.py` `order_by(Reading.datetime_)`). Removing them
+  was blocked by `ReadingsTable.test.tsx`'s "sorts newest-first regardless of input order", which feeds a
+  deliberately shuffled array — so the component's contract today is *defensive*, not *API-order-dependent*.
+  Landing this needs a decision first: is the API's ascending order a contract the frontend may rely on?
+  If yes, that test is asserting the wrong thing and should be changed deliberately, not incidentally.
+  Both halves were reverted together on purpose — keeping only the untested StatsStrip half would have left
+  two sibling components making opposite assumptions about the same array with nothing guarding the
+  unprotected one. Low value (a few thousand rows at most); listed so it isn't rediscovered as "new".
+
+- [Quick 260913-fdm, 2026-09-13]: Worth knowing for future worktree-isolated work — a fresh worktree has no
+  `.venv`, and the main repo's editable install of `app` registers a **meta-path finder** that outranks
+  `sys.path`, so a worktree test run can silently import the *unmodified main-repo source* and report green
+  against code it never executed. The executor caught this and asserted `app.deps.__file__` resolved inside
+  the worktree before trusting any result. Any future worktree task touching the backend must do the same.
+
 - [Phase 14 review, 2026-09-12]: Code review found a **critical** regression the phase's own
   tests and live walkthrough both missed — `App.tsx`'s `readings.length === 0` EmptyState guard
   predated the phase and silently swallowed the events-only view on any range without BP readings.
@@ -130,6 +147,7 @@ None yet.
 | 260828-4nj | Correct the 260828-2l6 chip fix (impeccable critique P1, re-critique): the chip rendered in Recharts' `zIndex-layer_100` (same as ReferenceArea's own layer), one layer *below* Line's `zIndex-layer_400`, so lines painted over the chip instead of the reverse. Split each labeled band into a background-tint ReferenceArea (unchanged, zIndex 100) + an invisible label-host ReferenceArea (`zIndex={DefaultZIndexes.axis}`, 500) carrying the chip — verified live via DOM zIndex-layer inspection + screenshot, not assumption | 2026-08-28 | 68ab665 | Verified | [260828-4nj-fix-bp-timeline-band-label-chip-z-order-](./quick/260828-4nj-fix-bp-timeline-band-label-chip-z-order-/) |
 | 260828-kbq | Fix GuideOverlay sticky-band text-clipping bug (impeccable critique P0, re-critique): the guide's scrollable region was `fixed inset-0` with only a computed paddingTop offset, so ordinary scrolling still passed content underneath the fixed CommandBar+banner band (z-60 above the guide's z-50) — changed the region to `fixed inset-x-0 bottom-0` starting at `top: clearanceAbove`, so scrolled content can never occupy the band's screen rectangle. Clipping fix confirmed correct via elementFromPoint sampling, but this change also removed the region's own full-viewport backdrop coverage — see 260828-kza | 2026-08-28 | a32c78c | Fixed clipping; introduced a backdrop regression — resolved by 260828-kza | [260828-kbq-fix-guideoverlay-sticky-band-text-clippi](./quick/260828-kbq-fix-guideoverlay-sticky-band-text-clippi/) |
 | 260828-kza | Correct the 260828-kbq GuideOverlay backdrop bleed-through regression (impeccable critique P0): split GuideOverlay's outer JSX into two siblings — a new, plain, always-`fixed inset-0` `aria-hidden="true"` backdrop restoring unconditional full-viewport opaque coverage, plus the existing `fixed inset-x-0 bottom-0` scrollable region (unchanged from kbq's clipping-safety fix). Live-verified via elementFromPoint sweep at two viewport widths and both an unstuck-band and a stuck-band window-scroll state: zero bleed-through, zero clipping regressions | 2026-08-28 | beef896 | Verified | [260828-kza-correct-guideoverlay-backdrop-bleed-thro](./quick/260828-kza-correct-guideoverlay-backdrop-bleed-thro/) |
+| 260913-fdm | Apply whole-repo over-engineering audit findings: collapsed 4 duplicated date-range filter classes into one `DateRangeFilters` base (backend/app/deps.py), switched both `transform()` row loops from `iterrows()` to `itertuples()` (backend/app/etl.py), merged 3 byte-identical overlay hooks into `useRecordEvents.ts`, extracted the 3×-copied D-08 pulse effect into `useAgentPulseFlash()`, single-sourced `joinWithAnd`/`fmtLongDateOnly`/`RATE_LIMIT_COPY`/`OFFLINE_COPY`, spread `OVERLAY_META` in datasetMeta, added a shared `TextField` primitive absorbing 17 inline input call sites, and dropped the never-imported `@fontsource/atkinson-hyperlegible` dep. Net −41 lines, zero test files touched. **9 of 10 items** — item 9 (removing the redundant per-render sorts in StatsStrip/ReadingsTable) deferred, see Blockers | 2026-09-13 | d63bd5f | Verified | [260913-fdm-apply-audit-findings-dedupe-filters-fiel](./quick/260913-fdm-apply-audit-findings-dedupe-filters-fiel/) |
 | 260828-ly8 | Close 4 motion-language gaps (impeccable animate survey): GuideOverlay open/close fade, ChartTooltip opacity+scale entrance (also caught and fixed a real pre-existing bug: the Close button was unclickable via real mouse input due to Recharts' `pointer-events: none`, and a second bug where the click bubbled into the chart's own onClick and undid the dismiss), DateRangePicker reveal fade-in, and AddRecordPage's Lab/Incident/Procedure field-swap transition (mirrors ChartDeck's proven FadeSwap pattern) — all reuse the app's existing motion-safe/motion-reduce-gated ≤250ms opacity/transform idiom, no new material. Ran as 4 independent plans in one parallel wave; all 4 live-verified individually plus a final independent spot-check of all four surfaces against the real dev server | 2026-08-28 | 9f54eff, c940aa6, b460dbc, 5495650 | Verified | [260828-ly8-close-4-motion-language-gaps-impeccable-](./quick/260828-ly8-close-4-motion-language-gaps-impeccable-/) |
 
 ## Deferred Items
