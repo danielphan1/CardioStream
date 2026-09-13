@@ -12,7 +12,12 @@ __pycache__/
 *.egg-info/
 
 # Environment / secrets
+# `.env` alone left sibling files exposed — a `.env.bak`, `.env.local`, or
+# `.env.prod` was fully trackable and one `git add .` from being committed.
+# The negation keeps the (deliberately tracked, placeholder-only) .env.example.
 .env
+.env.*
+!.env.example
 
 # OS
 .DS_Store
