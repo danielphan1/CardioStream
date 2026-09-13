@@ -9,6 +9,8 @@ import type { DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 
 import { formatDateParam, isValidDateText, parseDateOnly } from "../lib/dates";
+import { TextField } from "./fields";
+import { rdpSizing } from "./rdpSizing";
 
 type DateRangePickerProps = {
   from: string | null;
@@ -16,16 +18,7 @@ type DateRangePickerProps = {
   onApply: (from: string, to: string) => void;
 };
 
-// v9 CSS custom properties — day cells at the 48px target floor, selected-day
-// styling on the accent tokens (theme-aware via index.css).
-const rdpSizing = {
-  "--rdp-day-width": "48px",
-  "--rdp-day-height": "48px",
-  "--rdp-day_button-width": "48px",
-  "--rdp-day_button-height": "48px",
-  "--rdp-accent-color": "var(--color-brass)",
-  "--rdp-accent-background-color": "var(--color-mist)",
-} as React.CSSProperties;
+const DATE_ERROR_COPY = "Enter a date like 2025-06-13";
 
 export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
   const [fromText, setFromText] = useState(from ?? "");
@@ -73,48 +66,29 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
     onApply(fromText, toText);
   }
 
-  const inputClass =
-    "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
-
   return (
     <div
       className={`flex flex-col gap-4 transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0"}`}
     >
       <div className="flex flex-wrap gap-4">
-        <label className="flex flex-col gap-1 text-label text-[var(--color-depth)]">
-          From
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="YYYY-MM-DD"
-            value={fromText}
-            onChange={(e) => setFromText(e.target.value)}
-            aria-invalid={fromError}
-            className={inputClass}
-          />
-          {fromError && (
-            <span role="alert" className="text-[18px] font-normal">
-              Enter a date like 2025-06-13
-            </span>
-          )}
-        </label>
-        <label className="flex flex-col gap-1 text-label text-[var(--color-depth)]">
-          To
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="YYYY-MM-DD"
-            value={toText}
-            onChange={(e) => setToText(e.target.value)}
-            aria-invalid={toError}
-            className={inputClass}
-          />
-          {toError && (
-            <span role="alert" className="text-[18px] font-normal">
-              Enter a date like 2025-06-13
-            </span>
-          )}
-        </label>
+        <TextField
+          label="From"
+          inputMode="numeric"
+          placeholder="YYYY-MM-DD"
+          value={fromText}
+          onChange={setFromText}
+          invalid={fromError}
+          error={fromError ? DATE_ERROR_COPY : undefined}
+        />
+        <TextField
+          label="To"
+          inputMode="numeric"
+          placeholder="YYYY-MM-DD"
+          value={toText}
+          onChange={setToText}
+          invalid={toError}
+          error={toError ? DATE_ERROR_COPY : undefined}
+        />
       </div>
 
       <div style={rdpSizing} className="text-[18px] text-[var(--color-depth)]">

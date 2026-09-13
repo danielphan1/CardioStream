@@ -9,15 +9,12 @@ import { Stethoscope } from "lucide-react";
 
 import { isValidDateText } from "../../lib/dates";
 import type { ProcedureCreate } from "../../api/types";
+import { TextField } from "../fields";
 import { SingleDateField } from "./SingleDateField";
 
 type ProcedureFieldsProps = {
   onDraftChange: (body: ProcedureCreate | null) => void;
 };
-
-const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
-const labelClass = "flex flex-col gap-1 text-label text-[var(--color-depth)]";
 
 export function ProcedureFields({ onDraftChange }: ProcedureFieldsProps) {
   const [dateText, setDateText] = useState("");
@@ -54,52 +51,38 @@ export function ProcedureFields({ onDraftChange }: ProcedureFieldsProps) {
 
       <SingleDateField label="Date" value={dateText} onChange={setDateText} />
 
-      <label className={labelClass}>
-        Procedure name
-        <input
-          type="text"
-          maxLength={200}
-          placeholder="e.g. MRI, Catheter change"
-          value={procedureName}
-          onChange={(e) => setProcedureName(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Procedure name"
+        maxLength={200}
+        placeholder="e.g. MRI, Catheter change"
+        value={procedureName}
+        onChange={setProcedureName}
+      />
 
-      <label className={labelClass}>
-        Location
-        <input
-          type="text"
-          maxLength={200}
-          placeholder="e.g. City Hospital"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Location"
+        maxLength={200}
+        placeholder="e.g. City Hospital"
+        value={location}
+        onChange={setLocation}
+      />
 
-      <label className={labelClass}>
-        Outcome
-        <input
-          type="text"
-          maxLength={200}
-          placeholder="e.g. Completed without complications"
-          value={outcome}
-          onChange={(e) => setOutcome(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Outcome"
+        maxLength={200}
+        placeholder="e.g. Completed without complications"
+        value={outcome}
+        onChange={setOutcome}
+      />
 
-      <label className={labelClass}>
-        Notes
-        <textarea
-          maxLength={1000}
-          placeholder="Optional notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className={inputClass + " min-h-24 py-2"}
-        />
-      </label>
+      <TextField
+        label="Notes"
+        multiline
+        maxLength={1000}
+        placeholder="Optional notes"
+        value={notes}
+        onChange={setNotes}
+      />
     </div>
   );
 }

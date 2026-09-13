@@ -208,12 +208,17 @@ class RejectedRow:
     reason: str
 
 
-def _validate_row(row: pd.Series) -> str | None:
-    """Return a rejection reason for a raw row, or None if the row is valid."""
-    if pd.isna(row["datetime"]):
+def _validate_row(row) -> str | None:
+    """Return a rejection reason for a raw row, or None if the row is valid.
+
+    ``row`` is an ``itertuples`` namedtuple (attribute access), not a Series —
+    private helper with exactly one caller, so the signature is free to follow
+    ``transform``'s loop.
+    """
+    if pd.isna(row.datetime):
         return "datetime: missing or unparseable"
     for field in ("systolic", "diastolic", "pulse"):
-        val = row[field]
+        val = getattr(row, field)
         if val is None or pd.isna(val):
             return f"{field}: missing"
         try:
@@ -266,14 +271,15 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
     """
     rejected: list[RejectedRow] = []
 
-    # D-08: per-row validation first.
+    # D-08: per-row validation first. Safe to walk via itertuples: the five raw
+    # columns are all valid Python identifiers, so no positional ``_N`` fallback.
     keep: list[int] = []
-    for idx, row in raw_df.iterrows():
+    for row in raw_df.itertuples(index=True):
         reason = _validate_row(row)
         if reason is not None:
-            rejected.append(RejectedRow(int(idx), reason))
+            rejected.append(RejectedRow(int(row.Index), reason))
         else:
-            keep.append(idx)
+            keep.append(row.Index)
     valid = raw_df.loc[keep]
 
     # D-07: last-wins dedupe at minute granularity; record displaced indices
@@ -292,17 +298,17 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
     # Derive via app.derivations only — never re-implement thresholds here.
     records = []
     notes_values: list[str | None] = []
-    for _, row in valid.iterrows():
+    for row in valid.itertuples(index=False):
         # Coerce through the validated float so the loop is structurally
         # unable to raise on any value the gate passed (text "118" ->
         # float 118.0 -> int 118) — gate and coercion agree by construction.
-        sbp = int(float(row["systolic"]))
-        dbp = int(float(row["diastolic"]))
-        pulse = int(float(row["pulse"]))
-        dt = row["datetime"].to_pydatetime()
+        sbp = int(float(row.systolic))
+        dbp = int(float(row.diastolic))
+        pulse = int(float(row.pulse))
+        dt = row.datetime.to_pydatetime()
         records.append(
             {
-                "datetime": row["datetime"],
+                "datetime": row.datetime,
                 "systolic": sbp,
                 "diastolic": dbp,
                 "pulse": pulse,
@@ -314,7 +320,7 @@ def transform(raw_df: pd.DataFrame) -> tuple[pd.DataFrame, list[RejectedRow]]:
                 "notes": None,  # placeholder; object-dtype column set below
             }
         )
-        notes_values.append(None if pd.isna(row["notes"]) else str(row["notes"]))
+        notes_values.append(None if pd.isna(row.notes) else str(row.notes))
 
     clean = pd.DataFrame(records, columns=_CLEAN_COLUMNS)
     if clean.empty:

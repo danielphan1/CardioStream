@@ -8,11 +8,8 @@
 //
 // Reuses FilterBar's exact active/inactive class pair so the switcher reads as
 // the same control family as the date and AM/PM segments beside it.
-import { useEffect, useState } from "react";
-
 import type { ChartView } from "../api/types";
-import { useAgentPulse } from "../lib/agent";
-import type { PulseField } from "../lib/agent";
+import { useAgentPulseFlash } from "../lib/agent";
 import { useFilters } from "../store/filters";
 
 const inactiveClass =
@@ -30,15 +27,7 @@ export function ChartViewSwitcher() {
   const chartView = useFilters((s) => s.chartView);
   const setChartView = useFilters((s) => s.setChartView);
 
-  const pulseSeq = useAgentPulse((s) => s.seq);
-  const pulseFields = useAgentPulse((s) => s.fields);
-  const [pulsing, setPulsing] = useState<PulseField[]>([]);
-  useEffect(() => {
-    if (pulseSeq === 0) return;
-    setPulsing(pulseFields);
-    const t = setTimeout(() => setPulsing([]), 1500);
-    return () => clearTimeout(t);
-  }, [pulseSeq, pulseFields]);
+  const pulsing = useAgentPulseFlash();
   const pulseClass = pulsing.includes("chart")
     ? " rounded-lg ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
     : "";

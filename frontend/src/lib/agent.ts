@@ -5,6 +5,7 @@
 // Trust boundary (T-03-07): only server-composed AppliedFilters fields —
 // closed TS unions — reach the store actions here. Unknown fields are ignored
 // by construction; nothing model-authored is executed.
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 
 import type {
@@ -14,8 +15,9 @@ import type {
   SeriesDataset,
 } from "../api/types";
 import type { DatePreset } from "./dates";
-import { parseDateOnly, presetLabel } from "./dates";
+import { fmtLongDateOnly, presetLabel } from "./dates";
 import { DATASET_META, DATASET_ORDER } from "./datasetMeta";
+import { joinWithAnd } from "./showSentence";
 import { useFilters } from "../store/filters";
 import { useGuide } from "../store/guide";
 import { useSpeech } from "../store/speech";
@@ -42,6 +44,30 @@ export const useAgentPulse = create<{
   fields: [],
   mark: (fields) => set((st) => ({ seq: st.seq + 1, fields })),
 }));
+
+/**
+ * The D-08 pulse flash, shared by every control group that highlights on an
+ * agent command (FilterBar, ShowPanel, ChartViewSwitcher).
+ *
+ * When an agent command touches a filter group, the matching control group
+ * flashes briefly so the agent and the manual controls read as one system.
+ * `seq` bumps on every apply (even when the same fields repeat), so this
+ * effect re-fires reliably. Call sites gate the animation behind
+ * `motion-safe:` — reduced-motion users get NO pulse — and a static `ring-2`
+ * fallback keeps the change perceivable without motion.
+ */
+export function useAgentPulseFlash(): PulseField[] {
+  const pulseSeq = useAgentPulse((s) => s.seq);
+  const pulseFields = useAgentPulse((s) => s.fields);
+  const [pulsing, setPulsing] = useState<PulseField[]>([]);
+  useEffect(() => {
+    if (pulseSeq === 0) return; // no apply yet
+    setPulsing(pulseFields);
+    const t = setTimeout(() => setPulsing([]), 1500);
+    return () => clearTimeout(t);
+  }, [pulseSeq, pulseFields]);
+  return pulsing;
+}
 
 /**
  * Apply a server-composed filter delta to the zustand store from OUTSIDE the
@@ -149,13 +175,6 @@ const VIEW_PHRASE: Record<ChartView, string> = {
   am_pm_comparison: "the AM vs PM comparison",
 };
 
-/** "a" / "a and b" / "a, b and c" — spoken, so no Oxford comma. */
-function joinWithAnd(items: string[]): string {
-  if (items.length <= 1) return items.join("");
-  if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-}
-
 /** What the timeline is actually drawing, in fixed DATASET_ORDER. Returns
  *  null when nothing is selected — "Showing nothing, all data" is grammatical
  *  but reads as a glitch, and this string is spoken aloud (WR-02). */
@@ -163,16 +182,6 @@ function datasetsPhrase(visible: Record<SeriesDataset, boolean>): string | null 
   const on = DATASET_ORDER.filter((d) => visible[d]);
   if (on.length === 0) return null;
   return joinWithAnd(on.map((d) => DATASET_META[d].label.toLowerCase()));
-}
-
-// parseDateOnly-safe long-date form — NEVER new Date("YYYY-MM-DD") (Pitfall 7,
-// UTC-midnight off-by-one). Mirrors dates.ts fmtLongDate output, safely.
-function fmtLongDateOnly(dateOnly: string): string {
-  return parseDateOnly(dateOnly).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 /**

@@ -12,15 +12,12 @@ import { FlaskConical } from "lucide-react";
 
 import { isValidDateText } from "../../lib/dates";
 import type { LabResultCreate } from "../../api/types";
+import { TextField } from "../fields";
 import { SingleDateField } from "./SingleDateField";
 
 type LabFieldsProps = {
   onDraftChange: (body: LabResultCreate | null) => void;
 };
-
-const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
-const labelClass = "flex flex-col gap-1 text-label text-[var(--color-depth)]";
 
 /** Empty (or whitespace-only) string is valid (field untouched/optional); otherwise must parse
  * as a finite number (Pitfall 3 guard — never let a non-empty-but-non-numeric value silently
@@ -75,76 +72,54 @@ export function LabFields({ onDraftChange }: LabFieldsProps) {
 
       <SingleDateField label="Date" value={dateText} onChange={setDateText} />
 
-      <label className={labelClass}>
-        Test name
-        <input
-          type="text"
-          maxLength={200}
-          placeholder="e.g. A1C, Cholesterol panel"
-          value={testName}
-          onChange={(e) => setTestName(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Test name"
+        maxLength={200}
+        placeholder="e.g. A1C, Cholesterol panel"
+        value={testName}
+        onChange={setTestName}
+      />
 
-      <label className={labelClass}>
-        Result
-        <input
-          type="text"
-          inputMode="decimal"
-          placeholder="e.g. 5.4"
-          value={resultText}
-          onChange={(e) => setResultText(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Result"
+        inputMode="decimal"
+        placeholder="e.g. 5.4"
+        value={resultText}
+        onChange={setResultText}
+      />
 
-      <label className={labelClass}>
-        Unit
-        <input
-          type="text"
-          maxLength={20}
-          placeholder="e.g. mg/dL"
-          value={unit}
-          onChange={(e) => setUnit(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Unit"
+        maxLength={20}
+        placeholder="e.g. mg/dL"
+        value={unit}
+        onChange={setUnit}
+      />
 
-      <label className={labelClass}>
-        Normal range — low
-        <input
-          type="text"
-          inputMode="decimal"
-          placeholder="e.g. 4.0"
-          value={rangeLowText}
-          onChange={(e) => setRangeLowText(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Normal range — low"
+        inputMode="decimal"
+        placeholder="e.g. 4.0"
+        value={rangeLowText}
+        onChange={setRangeLowText}
+      />
 
-      <label className={labelClass}>
-        Normal range — high
-        <input
-          type="text"
-          inputMode="decimal"
-          placeholder="e.g. 6.0"
-          value={rangeHighText}
-          onChange={(e) => setRangeHighText(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Normal range — high"
+        inputMode="decimal"
+        placeholder="e.g. 6.0"
+        value={rangeHighText}
+        onChange={setRangeHighText}
+      />
 
-      <label className={labelClass}>
-        Notes
-        <textarea
-          maxLength={1000}
-          placeholder="Optional notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className={inputClass + " min-h-24 py-2"}
-        />
-      </label>
+      <TextField
+        label="Notes"
+        multiline
+        maxLength={1000}
+        placeholder="Optional notes"
+        value={notes}
+        onChange={setNotes}
+      />
     </div>
   );
 }

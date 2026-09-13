@@ -14,7 +14,7 @@
  * through plain `new Date()`, matching toTimePoints' existing convention.
  */
 import type { Incident, LabResult, OverlayDataset, Procedure } from "../api/types";
-import { fmtLongDate, parseDateOnly } from "./dates";
+import { fmtLongDate, fmtLongDateOnly, parseDateOnly } from "./dates";
 import { OVERLAY_META, OVERLAY_ORDER } from "./overlayMeta";
 
 /** One shaped overlay event — chart `ReferenceLine` markers (Plan 09-05)
@@ -27,18 +27,6 @@ export type OverlayEvent = {
   whatHappened: string;
   notes: string | null;
 };
-
-/** "June 3, 2025" from a date-only "YYYY-MM-DD" string (Pitfall 1 — routes
- * through parseDateOnly, never bare `new Date()`). Mirrors the pattern
- * already used by ReadingsTable.tsx's fmtDateCell / lib/agent.ts's
- * fmtLongDateOnly. */
-function fmtLongDateOnly(dateOnly: string): string {
-  return parseDateOnly(dateOnly).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 export function labsToEvents(labs: LabResult[]): OverlayEvent[] {
   return labs.map((l) => ({
@@ -95,12 +83,12 @@ export function mergeOverlayEvents(
   return [...labs, ...incidents, ...procedures].sort((a, b) => b.ts - a.ts);
 }
 
-/** Joins plural nouns with "or" for 2 items, Oxford-comma+"or" for 3+. */
-function joinWithOr(items: string[]): string {
-  if (items.length <= 1) return items.join("");
-  if (items.length === 2) return `${items[0]} or ${items[1]}`;
-  return `${items.slice(0, -1).join(", ")}, or ${items[items.length - 1]}`;
-}
+/** Joins plural nouns with "or" for 2 items, Oxford-comma+"or" for 3+.
+ * Deliberate asymmetry with showSentence.ts's hand-rolled joinWithAnd: this
+ * message is READ, so it takes the Oxford comma Intl supplies; joinWithAnd is
+ * SPOKEN, so it must not. */
+const joinWithOr = (items: string[]): string =>
+  new Intl.ListFormat("en", { type: "disjunction" }).format(items);
 
 /** "No labs recorded in this date range." / "No labs or incidents recorded
  * in this date range." / "No labs, incidents, or procedures recorded in

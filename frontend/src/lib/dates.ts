@@ -72,6 +72,18 @@ export function fmtLongDate(iso: string): string {
   });
 }
 
+/** "June 13, 2025" from a date-only "YYYY-MM-DD" string. Same output as
+ * fmtLongDate, but routed through parseDateOnly — NEVER bare
+ * `new Date("YYYY-MM-DD")`, which parses as UTC midnight and is off by one day
+ * in negative-offset timezones (Pitfall 7/1). */
+export function fmtLongDateOnly(dateOnly: string): string {
+  return parseDateOnly(dateOnly).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 /** "Jun 13" — axis tick form from epoch ms. */
 export function fmtShortDate(ts: number): string {
   return new Date(ts).toLocaleDateString("en-US", {

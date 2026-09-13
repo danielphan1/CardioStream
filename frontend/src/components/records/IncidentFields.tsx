@@ -17,15 +17,12 @@ import { Siren } from "lucide-react";
 
 import { combineLocalDateTime, isValidDateText } from "../../lib/dates";
 import type { IncidentCreate } from "../../api/types";
+import { TextField } from "../fields";
 import { SingleDateField } from "./SingleDateField";
 
 type IncidentFieldsProps = {
   onDraftChange: (body: IncidentCreate | null) => void;
 };
-
-const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
-const labelClass = "flex flex-col gap-1 text-label text-[var(--color-depth)]";
 
 export function IncidentFields({ onDraftChange }: IncidentFieldsProps) {
   const [dateText, setDateText] = useState("");
@@ -70,50 +67,37 @@ export function IncidentFields({ onDraftChange }: IncidentFieldsProps) {
 
       <SingleDateField label="Date" value={dateText} onChange={setDateText} />
 
-      <label className={labelClass}>
-        Time
-        <input
-          type="time"
-          value={timeText}
-          onChange={(e) => setTimeText(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Time"
+        type="time"
+        value={timeText}
+        onChange={setTimeText}
+      />
 
-      <label className={labelClass}>
-        What happened
-        <input
-          type="text"
-          maxLength={200}
-          placeholder="e.g. Fall, Hospitalization, Seizure"
-          value={incidentType}
-          onChange={(e) => setIncidentType(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="What happened"
+        maxLength={200}
+        placeholder="e.g. Fall, Hospitalization, Seizure"
+        value={incidentType}
+        onChange={setIncidentType}
+      />
 
-      <label className={labelClass}>
-        Duration
-        <input
-          type="text"
-          maxLength={100}
-          placeholder="e.g. 2 hours, 3 days"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          className={inputClass}
-        />
-      </label>
+      <TextField
+        label="Duration"
+        maxLength={100}
+        placeholder="e.g. 2 hours, 3 days"
+        value={duration}
+        onChange={setDuration}
+      />
 
-      <label className={labelClass}>
-        Notes
-        <textarea
-          maxLength={1000}
-          placeholder="Optional notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className={inputClass + " min-h-24 py-2"}
-        />
-      </label>
+      <TextField
+        label="Notes"
+        multiline
+        maxLength={1000}
+        placeholder="Optional notes"
+        value={notes}
+        onChange={setNotes}
+      />
     </div>
   );
 }

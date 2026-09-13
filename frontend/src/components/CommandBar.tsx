@@ -34,6 +34,7 @@ import type { AgentReply, ClarifyContext } from "../api/types";
 import { useAgent } from "../hooks/useAgent";
 import { useVoiceCommand } from "../hooks/useVoiceCommand";
 import { applyAgentFilters, composeConfirmation } from "../lib/agent";
+import { OFFLINE_COPY, RATE_LIMIT_COPY } from "../lib/copy";
 import { WAKE_WORD } from "../lib/voice";
 import { EXAMPLES } from "../lib/voiceCommands";
 import { useAgentStatus } from "../store/agentStatus";
@@ -46,12 +47,6 @@ type CommandBarProps = {
 
 type Status = "idle" | "working" | "confirmed" | "clarify" | "error";
 
-// Fixed friendly copy for every client-visible failure (VOICE-07). error.message
-// (which may leak status/stack) is NEVER rendered — only these strings are.
-const RATE_LIMIT_COPY =
-  "One moment — a lot of commands at once. Try again in a few seconds.";
-const OFFLINE_COPY =
-  "Couldn't reach the assistant — use the filters and buttons below instead.";
 // D-14 hard-failure fallback: shown when voice enters the fatal paused state
 // (mic denied/revoked, no hardware, restart-loop exhausted). The hook's
 // voiceMessage (PAUSED_COPY in useVoiceCommand.ts) is the single source of

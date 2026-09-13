@@ -53,30 +53,15 @@ export const DATASET_META: Record<SeriesDataset, DatasetEntry> = {
     color: "var(--line-pulse)",
     dash: "9 5",
   },
-  labs: {
-    label: OVERLAY_META.labs.label,
-    kind: "event",
-    Icon: OVERLAY_META.labs.Icon,
-    color: OVERLAY_META.labs.color,
-    glyph: OVERLAY_META.labs.glyph,
-  },
+  labs: { ...OVERLAY_META.labs, kind: "event" },
   incidents: {
     // Stays "Incidents", not "Hospital stays" (D-07): this dataset also holds
     // falls and seizures, so Chris's phrase would mislabel them. His wording
     // still reaches it by voice — prompt.py maps "hospital stays" to incidents.
-    label: OVERLAY_META.incidents.label,
+    ...OVERLAY_META.incidents,
     kind: "event",
-    Icon: OVERLAY_META.incidents.Icon,
-    color: OVERLAY_META.incidents.color,
-    glyph: OVERLAY_META.incidents.glyph,
   },
-  procedures: {
-    label: OVERLAY_META.procedures.label,
-    kind: "event",
-    Icon: OVERLAY_META.procedures.Icon,
-    color: OVERLAY_META.procedures.color,
-    glyph: OVERLAY_META.procedures.glyph,
-  },
+  procedures: { ...OVERLAY_META.procedures, kind: "event" },
 };
 
 /** The three event types, in DATASET_ORDER, that are currently switched on. */

@@ -16,10 +16,7 @@
 // a summary view that can't render them — a caregiver can pre-set datasets
 // before switching back to the timeline. The note below is a visible
 // indicator only, never a functional gate.
-import { useEffect, useState } from "react";
-
-import { useAgentPulse } from "../lib/agent";
-import type { PulseField } from "../lib/agent";
+import { useAgentPulseFlash } from "../lib/agent";
 import { DATASET_META, DATASET_ORDER } from "../lib/datasetMeta";
 import { buildShowSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
@@ -43,15 +40,7 @@ export function ShowPanel() {
 
   // D-08 pulse — identical treatment to FilterBar's own groups so an
   // agent-driven selection change reads as the same system as a manual click.
-  const pulseSeq = useAgentPulse((s) => s.seq);
-  const pulseFields = useAgentPulse((s) => s.fields);
-  const [pulsing, setPulsing] = useState<PulseField[]>([]);
-  useEffect(() => {
-    if (pulseSeq === 0) return; // no apply yet
-    setPulsing(pulseFields);
-    const t = setTimeout(() => setPulsing([]), 1500);
-    return () => clearTimeout(t);
-  }, [pulseSeq, pulseFields]);
+  const pulsing = useAgentPulseFlash();
   const pulseClass = pulsing.includes("datasets")
     ? " rounded-lg ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
     : "";

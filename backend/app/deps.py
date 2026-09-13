@@ -22,7 +22,7 @@ from datetime import date, datetime
 from typing import Annotated, Literal
 
 from fastapi import Query
-from sqlalchemy import Select
+from sqlalchemy import DateTime, Select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
@@ -40,12 +40,74 @@ def get_db() -> Iterator[Session]:
         yield session
 
 
-class ReadingFilters:
+class DateRangeFilters:
+    """Shared ``start_date``/``end_date`` filter set — the ONE date-range
+    semantics behind /readings, /labs, /incidents and /procedures.
+
+    Subclasses declare the target column as ``_model`` (the declarative class)
+    plus ``_field`` (the attribute NAME, as a ``str``). The name, never the
+    ``InstrumentedAttribute`` itself: that attribute is a descriptor, so
+    holding it as a plain class attribute makes ``self._column`` invoke its
+    ``__get__`` with the *filter* instance and raise
+    ``AttributeError: 'NoneType' object has no attribute
+    'supports_population'``. Resolving via ``getattr(self._model, ...)`` reads
+    it off the model CLASS, where ``__get__`` correctly returns the attribute.
+
+    ``end_date`` is INCLUSIVE on both column kinds:
+      - ``DateTime`` columns (``Reading.datetime_``, ``Incident.datetime_``)
+        compare ``<=`` the end of day (``23:59:59.999999``), so a 23:xx row ON
+        the end date is kept (RESEARCH Pitfall 4). End-of-day comparison (not
+        ``end_date + 1 day``) is deliberate: it cannot overflow at ``date.max``
+        (``9999-12-31``), which must return 200, never 500.
+      - ``Date`` columns (``LabResult.date``, ``Procedure.date``) are already
+        inclusive under a plain ``<=``.
+
+    FastAPI resolves ``__init__`` through the MRO, so subclasses that add no
+    params of their own inherit a signature it still introspects and validates
+    (asserted against the generated OpenAPI schema, not assumed).
+    """
+
+    _model: type
+    _field: str
+
+    def __init__(
+        self,
+        start_date: Annotated[date | None, Query()] = None,
+        end_date: Annotated[date | None, Query()] = None,
+    ) -> None:
+        self.start_date = start_date
+        self.end_date = end_date
+
+    def apply(self, stmt: Select) -> Select:
+        """Add where-clauses for every provided filter to ``stmt``."""
+        column = getattr(self._model, self._field)
+        is_datetime = isinstance(column.type, DateTime)
+        if self.start_date:
+            start = (
+                datetime.combine(self.start_date, datetime.min.time())
+                if is_datetime
+                else self.start_date
+            )
+            stmt = stmt.where(column >= start)
+        if self.end_date:  # inclusive end date — Pitfall 4, safe at date.max
+            end = (
+                datetime.combine(self.end_date, datetime.max.time())
+                if is_datetime
+                else self.end_date
+            )
+            stmt = stmt.where(column <= end)
+        return stmt
+
+
+class ReadingFilters(DateRangeFilters):
     """Shared query-param filter set for /readings and /stats/summary.
 
     FastAPI parses/validates each param (``Literal`` values 422 on bad input);
     ``apply`` adds the corresponding where-clauses to any Reading select.
     """
+
+    _model = Reading
+    _field = "datetime_"
 
     def __init__(
         self,
@@ -54,21 +116,13 @@ class ReadingFilters:
         am_pm: Annotated[Literal["AM", "PM"] | None, Query()] = None,
         bp_category: Annotated[BPCategory | None, Query()] = None,
     ) -> None:
-        self.start_date = start_date
-        self.end_date = end_date
+        super().__init__(start_date, end_date)
         self.am_pm = am_pm
         self.bp_category = bp_category
 
     def apply(self, stmt: Select) -> Select:
         """Add where-clauses for every provided filter to ``stmt``."""
-        if self.start_date:
-            stmt = stmt.where(
-                Reading.datetime_ >= datetime.combine(self.start_date, datetime.min.time())
-            )
-        if self.end_date:  # inclusive end date — Pitfall 4, safe at date.max
-            stmt = stmt.where(
-                Reading.datetime_ <= datetime.combine(self.end_date, datetime.max.time())
-            )
+        stmt = super().apply(stmt)
         if self.am_pm:
             stmt = stmt.where(Reading.am_pm == self.am_pm)
         if self.bp_category:
@@ -76,70 +130,27 @@ class ReadingFilters:
         return stmt
 
 
-class LabFilters:
+class LabFilters(DateRangeFilters):
     """Date-range query-param filter set for /labs (D-04: date-range only)."""
 
-    def __init__(
-        self,
-        start_date: Annotated[date | None, Query()] = None,
-        end_date: Annotated[date | None, Query()] = None,
-    ) -> None:
-        self.start_date = start_date
-        self.end_date = end_date
-
-    def apply(self, stmt: Select) -> Select:
-        """Add where-clauses for every provided filter to ``stmt``."""
-        if self.start_date:
-            stmt = stmt.where(LabResult.date >= self.start_date)
-        if self.end_date:
-            stmt = stmt.where(LabResult.date <= self.end_date)
-        return stmt
+    _model = LabResult
+    _field = "date"
 
 
-class ProcedureFilters:
+class ProcedureFilters(DateRangeFilters):
     """Date-range query-param filter set for /procedures (D-04: date-range only)."""
 
-    def __init__(
-        self,
-        start_date: Annotated[date | None, Query()] = None,
-        end_date: Annotated[date | None, Query()] = None,
-    ) -> None:
-        self.start_date = start_date
-        self.end_date = end_date
-
-    def apply(self, stmt: Select) -> Select:
-        """Add where-clauses for every provided filter to ``stmt``."""
-        if self.start_date:
-            stmt = stmt.where(Procedure.date >= self.start_date)
-        if self.end_date:
-            stmt = stmt.where(Procedure.date <= self.end_date)
-        return stmt
+    _model = Procedure
+    _field = "date"
 
 
-class IncidentFilters:
+class IncidentFilters(DateRangeFilters):
     """Date-range query-param filter set for /incidents (D-04: date-range only).
 
     ``Incident.datetime_`` is a ``DateTime`` column (not ``Date``), same as
-    ``Reading.datetime_`` — mirrors ``ReadingFilters.apply``'s inclusive
-    end-of-day comparison verbatim (Pitfall 4).
+    ``Reading.datetime_`` — so the base applies the inclusive end-of-day
+    comparison here, not the plain ``<=`` used for /labs and /procedures.
     """
 
-    def __init__(
-        self,
-        start_date: Annotated[date | None, Query()] = None,
-        end_date: Annotated[date | None, Query()] = None,
-    ) -> None:
-        self.start_date = start_date
-        self.end_date = end_date
-
-    def apply(self, stmt: Select) -> Select:
-        """Add where-clauses for every provided filter to ``stmt``."""
-        if self.start_date:
-            stmt = stmt.where(
-                Incident.datetime_ >= datetime.combine(self.start_date, datetime.min.time())
-            )
-        if self.end_date:  # inclusive end date — Pitfall 4, safe at date.max
-            stmt = stmt.where(
-                Incident.datetime_ <= datetime.combine(self.end_date, datetime.max.time())
-            )
-        return stmt
+    _model = Incident
+    _field = "datetime_"
