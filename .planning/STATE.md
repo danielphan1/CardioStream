@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 
 Phase: 14 (unified-show-panel-and-combined-timeline) — COMPLETE
 Plan: 6 of 6
-Status: Phase 14 verified (14-VERIFICATION.md, status: passed)
-Last activity: 2026-09-12 -- Phase 14 executed and verified live in-browser
+Status: Phase 14 verified + code-reviewed (14-VERIFICATION.md passed; 14-REVIEW.md / 14-REVIEW-FIX.md, 5/5 findings fixed)
+Last activity: 2026-09-12 -- Phase 14 code review complete; 1 critical + 4 lesser findings fixed and re-verified live
 
 ## Performance Metrics
 
@@ -92,6 +92,12 @@ None yet.
 
 ### Blockers/Concerns
 
+- [Phase 14 review, 2026-09-12]: Code review found a **critical** regression the phase's own
+  tests and live walkthrough both missed — `App.tsx`'s `readings.length === 0` EmptyState guard
+  predated the phase and silently swallowed the events-only view on any range without BP readings.
+  Lesson worth carrying: when a phase changes what a region *consumes*, re-examine the guards in
+  its **caller**, not just the component. Two further findings (duplicate event rendering, a
+  duplicated heading) were also caller-side or cross-component, invisible in component-level tests.
 - [Phase 14] **Voice path for the new vocabulary is untested against a real model.** `show_only`,
   the five-token `DatasetToken`, and `command.datasets` are unit-tested on both sides of the wire
   and covered by the ACC-03 parity suite, but the agent is inert (AGENT-01, no API credits) so no
