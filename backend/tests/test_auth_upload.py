@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from app.config import Settings, get_settings
 from app.routers.agent import limiter
@@ -78,6 +79,36 @@ def test_config_leaves_already_normalized_url_unchanged() -> None:
     assert s.database_url == "postgresql+psycopg://u:p@host/db"
 
 
+def test_config_rejects_dev_token_secret_when_password_configured() -> None:
+    """A real deployment that forgot TOKEN_SECRET refuses to BOOT (T-GCV-03).
+
+    Finding 3. ``dev-insecure-secret`` is public (it is committed in config.py),
+    so anyone could forge a valid Bearer token for a deploy still running on it
+    — the password gate would be decorative. site_password non-empty means "a
+    real deployment", so the pairing is rejected at construction time, loudly,
+    rather than failing open at request time.
+    """
+    with pytest.raises(ValidationError) as excinfo:
+        Settings(site_password="anything")
+    message = str(excinfo.value)
+    assert "TOKEN_SECRET" in message
+    assert "secrets.token_urlsafe(32)" in message  # the fix is in the message
+
+
+def test_config_keyless_boot_keeps_dev_token_secret() -> None:
+    """No site_password → the dev default is fine; local/test boot stays keyless."""
+    s = Settings()
+    assert s.site_password == ""
+    assert s.token_secret == "dev-insecure-secret"
+
+
+def test_config_password_with_real_secret_constructs() -> None:
+    """A configured deployment that DID set TOKEN_SECRET constructs normally."""
+    s = Settings(site_password="x", token_secret="a-real-secret")
+    assert s.site_password == "x"
+    assert s.token_secret == "a-real-secret"
+
+
 def test_serializer_round_trip_signs_and_verifies() -> None:
     """_serializer signs a token that the same serializer verifies (D-02)."""
     get_settings.cache_clear()
@@ -129,8 +160,14 @@ def auth_password(monkeypatch):
 
     Mirrors the existing env-override discipline: cache_clear() before and after
     so the module-level get_settings() lru_cache reflects the patched env.
+
+    TOKEN_SECRET is set explicitly because a non-empty SITE_PASSWORD marks this
+    as a "real deployment" to the boot-time guard in config.py, which refuses
+    the insecure dev default in that pairing (T-GCV-03). A test must not lean
+    on an insecure default to pass — it sets a real one, like a deploy would.
     """
     monkeypatch.setenv("SITE_PASSWORD", "correct-horse")
+    monkeypatch.setenv("TOKEN_SECRET", "test-only-not-the-dev-default")
     get_settings.cache_clear()
     yield "correct-horse"
     get_settings.cache_clear()
