@@ -52,6 +52,7 @@ import {
   estimateChipWidth,
   isDotCrowded,
   prefersReducedMotion,
+  resolveLabelY,
   toTimePoints,
 } from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
@@ -126,21 +127,57 @@ type EndLabelGlyphProps = {
   index?: number;
 };
 
-/** D-07 / A4: direct line-end label at the series' final point only. */
-function makeEndLabel(lastIndex: number, text: string, fill: string) {
+const END_LABEL_HEIGHT = CHIP_FONT_SIZE + CHIP_PAD_Y * 2;
+
+/** D-07 / A4: direct line-end label at the series' final point only.
+ *  Same solid-pill treatment as makeBandLabelChip and for the same reason —
+ *  when filtering narrows the plotted range, series' end values converge and
+ *  bare colored text overlaps itself or reads poorly over a band tint. A pill
+ *  keeps each label legible and its own series' color regardless of what's
+ *  behind or beside it.
+ *
+ *  Convergence doesn't stop at the line: with fewer points on screen the
+ *  pills themselves can end up close enough to overlap each other (live-
+ *  verified — "Pulse" clipped the top of "Systolic" at a 7-day filter).
+ *  `placedYs` is one array shared by all three series' EndLabel instances via
+ *  closure — CombinedTimeline creates it fresh per render and every
+ *  makeEndLabel call for that render pushes into the same array — so each
+ *  later label nudges down past every earlier one already placed. */
+function makeEndLabel(
+  lastIndex: number,
+  text: string,
+  color: string,
+  placedYs: number[],
+) {
   return function EndLabel({ x, y, index }: EndLabelGlyphProps) {
     if (index !== lastIndex || x === undefined || y === undefined) return null;
+    const labelY = resolveLabelY(Number(y), placedYs);
+    placedYs.push(labelY);
+    const chipWidth = estimateChipWidth(text, CHIP_FONT_SIZE) + CHIP_PAD_X * 2;
+    const chipX = Number(x) + CHIP_OFFSET;
+    const chipTop = labelY - END_LABEL_HEIGHT / 2;
     return (
-      <text
-        x={Number(x) + 12}
-        y={Number(y)}
-        fontSize={20}
-        fontWeight={600}
-        fill={fill}
-        dominantBaseline="middle"
-      >
-        {text}
-      </text>
+      <g>
+        <rect
+          x={chipX}
+          y={chipTop}
+          width={chipWidth}
+          height={END_LABEL_HEIGHT}
+          rx={END_LABEL_HEIGHT / 2}
+          fill={color}
+        />
+        <text
+          x={chipX + chipWidth / 2}
+          y={labelY}
+          fontSize={CHIP_FONT_SIZE}
+          fontWeight={600}
+          fill={CHIP_TEXT}
+          textAnchor="middle"
+          dominantBaseline="middle"
+        >
+          {text}
+        </text>
+      </g>
     );
   };
 }
@@ -175,6 +212,11 @@ export default function CombinedTimeline({
   // the mmHg fallback keeps the id valid even if that ever stops holding.
   const markerAxis = showBP ? MMHG : showPulse ? BPM : MMHG;
 
+  // Shared across all three end-label pills for THIS render only — see
+  // makeEndLabel's collision-avoidance note. Recreated fresh every render;
+  // never persisted across renders.
+  const endLabelYs: number[] = [];
+
   return (
     // Click or arrow-key move onto a (new) point re-shows the tooltip;
     // Close/Escape set dismissed (D-09 persistence contract). The keydown
@@ -193,7 +235,9 @@ export default function CombinedTimeline({
           data={points}
           accessibilityLayer
           onClick={() => setDismissed(false)}
-          margin={{ top: 8, right: 96, bottom: 8, left: 0 }}
+          // right: fits the widest end-label pill ("Diastolic" ≈ 96px) with
+          // headroom so it never clips against the SVG edge.
+          margin={{ top: 8, right: 112, bottom: 8, left: 0 }}
         >
           {/* Bands FIRST — behind the lines (Pitfall 7). Blood-pressure
               context, so they follow the blood_pressure dataset (D-04). */}
@@ -288,7 +332,7 @@ export default function CombinedTimeline({
               isAnimationActive={animate}
             >
               <LabelList
-                content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)")}
+                content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
               />
             </Line>
           )}
@@ -303,7 +347,7 @@ export default function CombinedTimeline({
               isAnimationActive={animate}
             >
               <LabelList
-                content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)")}
+                content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
               />
             </Line>
           )}
@@ -323,7 +367,7 @@ export default function CombinedTimeline({
               isAnimationActive={animate}
             >
               <LabelList
-                content={makeEndLabel(lastIndex, "Pulse", "var(--line-pulse)")}
+                content={makeEndLabel(lastIndex, "Pulse", "var(--line-pulse)", endLabelYs)}
               />
             </Line>
           )}

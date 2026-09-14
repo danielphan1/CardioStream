@@ -12,6 +12,7 @@ import {
   groupAmPm,
   isDotCrowded,
   prefersReducedMotion,
+  resolveLabelY,
   toTimePoints,
 } from "./chartData";
 
@@ -227,5 +228,42 @@ describe("estimateChipWidth", () => {
 
   it("returns 0 for the degenerate empty string", () => {
     expect(estimateChipWidth("", 14)).toBe(0);
+  });
+});
+
+// CombinedTimeline's Systolic/Diastolic/Pulse end-label pills converge in
+// pixel space once filtering narrows the plotted range far enough —
+// live-verified at a 7-day filter, where "Pulse" clipped the top of
+// "Systolic". This is the collision math that fixes it.
+describe("resolveLabelY", () => {
+  const GAP = 20; // CombinedTimeline's END_LABEL_HEIGHT: 14px font + 3px pad*2
+
+  it("passes a y through unchanged when nothing is placed yet", () => {
+    expect(resolveLabelY(100, [])).toBe(100);
+  });
+
+  it("passes a y through unchanged when it doesn't collide with anything placed", () => {
+    expect(resolveLabelY(100, [200])).toBe(100);
+  });
+
+  it("pushes down exactly one gap when it collides with one placed label", () => {
+    expect(resolveLabelY(100, [95])).toBe(95 + GAP);
+  });
+
+  it("cascades: pushing past one collision can require pushing past a second", () => {
+    // 100 collides with 95 -> becomes 115, which then collides with 110.
+    expect(resolveLabelY(100, [95, 110])).toBe(110 + GAP);
+  });
+
+  it("is order-independent — same placed set, different order, same result", () => {
+    expect(resolveLabelY(100, [95, 110])).toBe(resolveLabelY(100, [110, 95]));
+  });
+
+  it("never returns a value within GAP of any placed label", () => {
+    const placed = [50, 52, 200];
+    const result = resolveLabelY(51, placed);
+    for (const p of placed) {
+      expect(Math.abs(result - p)).toBeGreaterThanOrEqual(GAP);
+    }
   });
 });

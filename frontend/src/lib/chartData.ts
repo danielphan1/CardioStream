@@ -153,3 +153,32 @@ const CHIP_CHAR_WIDTH_FACTOR = 0.62;
 export function estimateChipWidth(text: string, fontSize: number): number {
   return Math.round(text.length * fontSize * CHIP_CHAR_WIDTH_FACTOR);
 }
+
+/** Matches CombinedTimeline.tsx's END_LABEL_HEIGHT (its 14px chip font + 3px
+ *  vertical padding on each side) — kept here, not there, so the function and
+ *  its one constant don't trip oxlint's react(only-export-components) (same
+ *  reason components/rdpSizing.ts exists as its own module). */
+const END_LABEL_HEIGHT = 20;
+
+/**
+ * Pushes `y` down past any already-placed label it would overlap, looping
+ * because pushing past one can land on another. CombinedTimeline's line-end
+ * pills (Systolic/Diastolic/Pulse) converge in pixel space once filtering
+ * narrows the plotted range far enough — live-verified at a 7-day filter,
+ * where "Pulse" clipped the top of "Systolic". At most 3 labels ever exist,
+ * so this always settles in a couple of passes.
+ */
+export function resolveLabelY(y: number, placed: number[]): number {
+  let candidate = y;
+  let moved = true;
+  while (moved) {
+    moved = false;
+    for (const other of placed) {
+      if (Math.abs(candidate - other) < END_LABEL_HEIGHT) {
+        candidate = other + END_LABEL_HEIGHT;
+        moved = true;
+      }
+    }
+  }
+  return candidate;
+}

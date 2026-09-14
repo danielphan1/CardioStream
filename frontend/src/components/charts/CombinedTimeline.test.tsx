@@ -227,6 +227,45 @@ describe("CombinedTimeline conditional chrome (D-04)", () => {
     expect(container.textContent).toContain("Diastolic");
     expect(container.textContent).toContain("Pulse");
   });
+
+  // A bare <text> end label reads poorly once filtering narrows the range and
+  // series converge — same illegibility the band-chip pills were built to
+  // fix. Each end label needs an opaque pill behind it, not just text.
+  it("draws each end label on a solid pill, not bare text", () => {
+    const { container } = render(
+      <CombinedTimeline readings={READINGS} showBP showPulse />,
+    );
+    // One rect per visible series label, each filled with that series' own
+    // colour (not the shared category-band fill).
+    const pillFills = Array.from(container.querySelectorAll("rect"))
+      .map((r) => r.getAttribute("fill"))
+      .filter((f): f is string => f !== null);
+    expect(pillFills).toContain("var(--line-systolic)");
+    expect(pillFills).toContain("var(--line-diastolic)");
+    expect(pillFills).toContain("var(--line-pulse)");
+  });
+
+  // Live-verified regression: at a 7-day filter, Systolic/Diastolic/Pulse's
+  // end values converged in pixel space and the "Pulse" pill clipped the top
+  // of "Systolic" — solid pills fixed *legibility*, not *collision*.
+  it("never lets two end-label pills overlap, regardless of how close their values land", () => {
+    const { container } = render(
+      <CombinedTimeline readings={READINGS} showBP showPulse />,
+    );
+    const seriesColors = [
+      "var(--line-systolic)",
+      "var(--line-diastolic)",
+      "var(--line-pulse)",
+    ];
+    const centers = Array.from(container.querySelectorAll("rect"))
+      .filter((r) => seriesColors.includes(r.getAttribute("fill") ?? ""))
+      .map((r) => Number(r.getAttribute("y")) + Number(r.getAttribute("height")) / 2)
+      .sort((a, b) => a - b);
+    expect(centers).toHaveLength(3);
+    for (let i = 1; i < centers.length; i++) {
+      expect(centers[i] - centers[i - 1]).toBeGreaterThanOrEqual(20 - 0.01);
+    }
+  });
 });
 
 describe("CombinedTimeline domains stay fixed (D-05 / DASH-06)", () => {
