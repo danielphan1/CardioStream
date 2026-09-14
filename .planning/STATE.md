@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 Phase: 14 (unified-show-panel-and-combined-timeline) — COMPLETE
 Plan: 6 of 6
 Status: Phase 14 verified + code-reviewed (14-VERIFICATION.md passed; 14-REVIEW.md / 14-REVIEW-FIX.md, 5/5 findings fixed)
-Last activity: 2026-09-14 -- Completed quick task 260914-kz3: replaced the favicon with a flat sailboat-on-water icon
+Last activity: 2026-09-14 -- Completed quick task 260914-lff: restyled the favicon sailboat to white-fill/navy-outline with a wavier water line
 
 ## Performance Metrics
 
@@ -189,6 +189,7 @@ None yet.
 | 260913-fdm | Apply whole-repo over-engineering audit findings: collapsed 4 duplicated date-range filter classes into one `DateRangeFilters` base (backend/app/deps.py), switched both `transform()` row loops from `iterrows()` to `itertuples()` (backend/app/etl.py), merged 3 byte-identical overlay hooks into `useRecordEvents.ts`, extracted the 3×-copied D-08 pulse effect into `useAgentPulseFlash()`, single-sourced `joinWithAnd`/`fmtLongDateOnly`/`RATE_LIMIT_COPY`/`OFFLINE_COPY`, spread `OVERLAY_META` in datasetMeta, added a shared `TextField` primitive absorbing 17 inline input call sites, and dropped the never-imported `@fontsource/atkinson-hyperlegible` dep. Net −41 lines, zero test files touched. **9 of 10 items** — item 9 (redundant sorts) resolved separately, commit 348b78d, 2026-09-14 | 2026-09-13 | d63bd5f | Verified | [260913-fdm-apply-audit-findings-dedupe-filters-fiel](./quick/260913-fdm-apply-audit-findings-dedupe-filters-fiel/) |
 | 260828-ly8 | Close 4 motion-language gaps (impeccable animate survey): GuideOverlay open/close fade, ChartTooltip opacity+scale entrance (also caught and fixed a real pre-existing bug: the Close button was unclickable via real mouse input due to Recharts' `pointer-events: none`, and a second bug where the click bubbled into the chart's own onClick and undid the dismiss), DateRangePicker reveal fade-in, and AddRecordPage's Lab/Incident/Procedure field-swap transition (mirrors ChartDeck's proven FadeSwap pattern) — all reuse the app's existing motion-safe/motion-reduce-gated ≤250ms opacity/transform idiom, no new material. Ran as 4 independent plans in one parallel wave; all 4 live-verified individually plus a final independent spot-check of all four surfaces against the real dev server | 2026-08-28 | 9f54eff, c940aa6, b460dbc, 5495650 | Verified | [260828-ly8-close-4-motion-language-gaps-impeccable-](./quick/260828-ly8-close-4-motion-language-gaps-impeccable-/) |
 | 260914-kz3 | Replace favicon with a sailboat-on-water icon | 2026-09-14 | 685fae4 | | [260914-kz3-replace-favicon-with-a-sailboat-on-water](./quick/260914-kz3-replace-favicon-with-a-sailboat-on-water/) |
+| 260914-lff | Restyle favicon sailboat: white fills with navy blue outline, wavier water line | 2026-09-14 | a16c900 | | [260914-lff-restyle-favicon-sailboat-white-fills-wit](./quick/260914-lff-restyle-favicon-sailboat-white-fills-wit/) |
 
 ## Deferred Items
 
