@@ -61,17 +61,13 @@ test("renders 20 rows, then 40, then all 45 via Show 20 more; button disappears"
   expect(screen.getByText("Showing all 45 readings")).toBeInTheDocument();
 });
 
-test("sorts newest-first regardless of input order", () => {
-  // Newest reading (largest datetime) has a distinctive BP so we can spot it.
-  const newest = makeReading(44, { systolic: 199, diastolic: 99 });
-  const shuffled = [
-    makeReading(7),
-    newest,
-    makeReading(0),
-    makeReading(30),
-    makeReading(12),
-  ];
-  render(<ReadingsTable readings={shuffled} />);
+test("reverses the caller's ascending order to show newest-first", () => {
+  // Backend returns readings ascending by datetime (readings.py ORDER BY);
+  // the component reverses rather than re-sorting — locks that it reverses
+  // positionally, not that it re-derives order from the data.
+  const newest = makeReading(30, { systolic: 199, diastolic: 99 });
+  const ascending = [makeReading(0), makeReading(7), newest];
+  render(<ReadingsTable readings={ascending} />);
 
   const rows = screen.getAllByRole("row");
   // rows[0] is the header; rows[1] is the first data row.

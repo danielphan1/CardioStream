@@ -112,10 +112,10 @@ export function StatsStrip({ stats, isLoading, readings }: StatsStripProps) {
     return null;
   }
 
-  // Oldest-to-newest, matching the main chart's time axis direction (the
-  // sparkline should read left-to-right forward in time) — same ascending
-  // sort convention as ReadingsTable.tsx, just not reversed.
-  const chronological = [...readings].sort((a, b) => a.datetime.localeCompare(b.datetime));
+  // `readings` already arrives oldest-to-newest (backend `ORDER BY
+  // datetime_` — readings.py) — sparkline reads left-to-right forward in
+  // time for free, no client sort needed.
+  const chronological = readings;
   // Drives the status pill — only Systolic/Diastolic show it (BP category is
   // a joint systolic+diastolic classification; Pulse has no AHA category
   // ladder, only a bradycardia reference line; Readings count isn't a vital).

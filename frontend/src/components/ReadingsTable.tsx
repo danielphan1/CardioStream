@@ -66,10 +66,9 @@ export function ReadingsTable({ readings }: ReadingsTableProps) {
     setVisible(PAGE_SIZE);
   }, [readings]);
 
-  // Naive local ISO strings sort chronologically — string compare is safe.
-  const sorted = [...readings].sort((a, b) =>
-    b.datetime.localeCompare(a.datetime),
-  );
+  // `readings` arrives ascending (backend `ORDER BY datetime_` — readings.py)
+  // and this is the only caller (App.tsx); reverse, don't re-sort.
+  const sorted = [...readings].reverse();
   const shown = sorted.slice(0, visible);
   const allShown = visible >= sorted.length;
 
