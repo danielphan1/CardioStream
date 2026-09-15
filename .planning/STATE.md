@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: verifying
-last_updated: "2026-09-15T19:20:56.941Z"
+last_updated: "2026-09-15T23:07:54.841Z"
 last_activity: "2026-09-14 -- Completed quick task 260914-lff: restyled the favicon sailboat to white-fill/navy-outline with a wavier water line"
 progress:
   total_phases: 7
@@ -222,10 +222,10 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-15T19:20:56.935Z
-Stopped at: Phase 19 context gathered
+Last session: 2026-09-15T23:07:54.835Z
+Stopped at: Phase 19 UI-SPEC approved
 Next action: close out v1.1 with /gsd-complete-milestone, or start the next milestone
-Resume file: .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-CONTEXT.md
+Resume file: .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-UI-SPEC.md
 
 ## Operator Next Steps
 
