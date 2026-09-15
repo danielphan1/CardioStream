@@ -254,3 +254,18 @@ or accept that half of it ships unusable by its primary user.
 
 Plans:
 - [ ] TBD (run /gsd-ui-phase 18 for the design contract, then /gsd-plan-phase 18)
+
+### Phase 19: Guest Demo Mode
+
+**Goal:** A visitor to the portfolio project can log into a separate, isolated demo deployment with a
+guest username+password (distinct from Chris's real shared-password gate), explore the dashboard against
+synthetic seed data by click or voice, and cannot write to it — the 4 mutating routes (upload, labs,
+incidents, procedures) reject guest tokens with a friendly 403; all GET routes and the /agent
+voice-command endpoint stay fully usable.
+**Requirements**: Client-driven request (2026-09-15), "add a working demo version that people who are
+viewing can use".
+**Depends on:** Phase 5 (the shared-password auth gate this layers onto) — no dependency on Phases 6-18.
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 19 to break down)
