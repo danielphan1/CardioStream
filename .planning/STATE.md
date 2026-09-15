@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
-status: executing
-last_updated: "2026-09-04T18:51:31.444Z"
-last_activity: 2026-09-04 -- Phase 13 execution started
+status: verifying
+last_updated: "2026-09-15T19:20:56.941Z"
+last_activity: "2026-09-14 -- Completed quick task 260914-lff: restyled the favicon sailboat to white-fill/navy-outline with a wavier water line"
 progress:
   total_phases: 7
   completed_phases: 7
@@ -89,6 +89,7 @@ Recent decisions affecting current work:
   from the existing synthetic sample pipeline (`backend/sample_data/omron_sample.xlsx`), read-only for
   guests (upload/labs/incidents/procedures POST routes reject guest tokens; all reads + the /agent
   voice-command endpoint stay open). Layers onto the Phase 5 auth gate; no dependency on Phases 6-18.
+
 - Phases 15–18 added (2026-09-13): client-driven request to improve **filtering options and data
   visuals**. Scoped as four phases rather than one because the user selected every option offered.
   **15 — Unified Filter Surface**: FilterBar's AM/PM and BP-category groups become multi-select
@@ -109,6 +110,7 @@ Recent decisions affecting current work:
   text search. Sequenced last because its good version is voice-driven and therefore **blocked on
   funding the Anthropic account** (AGENT-01); built before that, it is a caregiver-only feature Chris
   cannot reach by voice, inverting the core value.
+
 - Phase 14 added: Unified Show Panel and Combined Timeline. Client-driven change request from Chris (2026-09-12 meeting, decisions confirmed): replace the mutually-exclusive chart deck + separate overlay row with ONE five-checkbox Show panel driving ONE dual-axis combined timeline. **Explicitly reverses Phase 9's locked decision** ("BP Timeline and Pulse Trend stay today's two separate hero charts, no new combined-metric chart" — `09-CONTEXT.md`); that scope call was correct at the time and is simply not what the client wants now. Design contract written and client-approved before planning. Full scope and locked decisions in `14-CONTEXT.md`. Next: `/gsd-plan-phase 14`.
 - Phase 13 added: Visual Redesign — Nautical Minimalist Theme. Full visual-identity replacement (not an evolution like Phase 12) — new palette/type/spacing/elevation/component language sitewide, carrying forward the existing nautical motif (`--color-foam`/`--color-sky`, wave-curve divider) with far more craft, rendered clean and minimalist. All existing functionality and the accessibility floor carry over unchanged. Direction gathered live via `impeccable`'s new-work intake (structural + genre reference images reviewed in-browser); full scope and locked decisions in `13-CONTEXT.md`. Next: `/gsd-ui-phase 13`.
 
@@ -155,10 +157,12 @@ None yet.
   Lesson worth carrying: when a phase changes what a region *consumes*, re-examine the guards in
   its **caller**, not just the component. Two further findings (duplicate event rendering, a
   duplicated heading) were also caller-side or cross-component, invisible in component-level tests.
+
 - [Phase 14] **Voice path for the new vocabulary is untested against a real model.** `show_only`,
   the five-token `DatasetToken`, and `command.datasets` are unit-tested on both sides of the wire
   and covered by the ACC-03 parity suite, but the agent is inert (AGENT-01, no API credits) so no
   live utterance was ever issued. Re-run the 43-fixture eval once billing is funded.
+
 - ~~[Phase 14] **`backend/tests/test_auth_upload.py::test_config_new_fields_default_keyless` fails
   locally** because `backend/.env` sets `SITE_PASSWORD` and pydantic-settings reads it.~~
   **RESOLVED 2026-09-13 by quick 260913-gcv** (`f6d7345`). Fixed as diagnosed — the test now isolates
@@ -218,10 +222,10 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-12T00:00:00.000Z
-Stopped at: Phase 14 complete — client change request (unified dataset checkboxes + combined timeline) built, tested, and verified live
+Last session: 2026-09-15T19:20:56.935Z
+Stopped at: Phase 19 context gathered
 Next action: close out v1.1 with /gsd-complete-milestone, or start the next milestone
-Resume file: .planning/phases/14-unified-show-panel-and-combined-timeline/14-VERIFICATION.md
+Resume file: .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-CONTEXT.md
 
 ## Operator Next Steps
 
