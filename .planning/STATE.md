@@ -83,6 +83,12 @@ Recent decisions affecting current work:
 
 ### Roadmap Evolution
 
+- Phase 19 added (2026-09-15): Guest Demo Mode. Client-driven request, "add a working demo version that
+  people who are viewing can use" — a public portfolio demo behind its own guest username+password,
+  isolated deployment (separate Railway service + demo Postgres DB, not shared-DB row-tagging), seeded
+  from the existing synthetic sample pipeline (`backend/sample_data/omron_sample.xlsx`), read-only for
+  guests (upload/labs/incidents/procedures POST routes reject guest tokens; all reads + the /agent
+  voice-command endpoint stay open). Layers onto the Phase 5 auth gate; no dependency on Phases 6-18.
 - Phases 15–18 added (2026-09-13): client-driven request to improve **filtering options and data
   visuals**. Scoped as four phases rather than one because the user selected every option offered.
   **15 — Unified Filter Surface**: FilterBar's AM/PM and BP-category groups become multi-select
