@@ -43,5 +43,17 @@ echo "start.sh: using interpreter $PYTHON"
 echo "start.sh: running database migrations (alembic upgrade head)..."
 "$PYTHON" -m alembic upgrade head
 
+# Boot-time auto-seed, gated STRICTLY on SITE_USERNAME (demo deployments only).
+# Never a second, independently-set flag: SITE_USERNAME already means "demo
+# deployment" everywhere else (auth, /health), so gating on it here makes this
+# dead code on Chris's real deployment (which never sets it) rather than a
+# second flag someone could forget to unset. A fresh container's gitignored
+# data/ dir is always absent, so an ungated seed would silently inject
+# synthetic data into a real production DB on every restart (RESEARCH Pitfall 1).
+if [ -n "${SITE_USERNAME:-}" ]; then
+  echo "start.sh: SITE_USERNAME is set (demo deployment) — seeding demo data..."
+  "$PYTHON" -m app.seed || echo "start.sh: WARNING seed step failed (continuing boot)"
+fi
+
 echo "start.sh: starting uvicorn on port ${PORT:-8000}..."
 exec "$PYTHON" -m uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
