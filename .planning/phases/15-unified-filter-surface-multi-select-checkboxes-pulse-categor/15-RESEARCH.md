@@ -17,7 +17,12 @@ Everything else — the store migration shape, the Pydantic list-of-`Literal` ag
 
 **Primary recommendation:** Treat this as two backend-foundation tasks (IN-clause `ReadingFilters` + time-of-day derivation, each independently unit/integration-testable with zero frontend dependency) that unblock everything downstream, followed by a frontend store-shape conversion (with its v2→v3 migration) that unblocks the UI and agent-response wiring. `pulse_category` is the "free" addition in both stacks (column and Literal type already exist — it's a pure mirror of `bp_category`'s existing treatment); `time_of_day` is the phase's one genuinely novel piece of engineering and should not be scheduled casually alongside the mechanical conversions.
 
-**One unresolved product decision blocks store-shape lock-in:** UI-SPEC §10 flags that AM/PM and the new Time of Day group can produce a logically-guaranteed-empty combination (e.g., `AM` + `Evening`) and recommends **Option B — replace AM/PM with Time of Day entirely** — but ships **Option A — both coexist** as the default pending explicit human sign-off. This must be resolved (or explicitly deferred with a documented reason) before the store shape in `store/filters.ts` is finalized, because Option B changes the store shape itself (drops the `amPm` map).
+**RESOLVED 2026-09-16 — Option B (replace AM/PM with Time of Day entirely).** UI-SPEC §10 flagged
+that AM/PM and the new Time of Day group can produce a logically-guaranteed-empty combination (e.g.,
+`AM` + `Evening`) and recommended replacing AM/PM outright rather than shipping both; the user was
+asked directly and confirmed Option B before planning. The `amPm` field is dropped from
+`store/filters.ts` entirely — it does NOT need a v2→v3 migration entry. See Open Questions §1 for
+full detail and the `prompt.py` vocabulary implication.
 
 ## Architectural Responsibility Map
 
@@ -448,7 +453,14 @@ Not applicable — this phase introduces **zero new external packages** (UI-SPEC
 
 ## Open Questions
 
-1. **AM/PM vs. Time of Day coexistence (UI-SPEC §10) — blocks store-shape lock-in.**
+1. ~~**AM/PM vs. Time of Day coexistence (UI-SPEC §10) — blocks store-shape lock-in.**~~ **RESOLVED
+   2026-09-16.** Asked the user directly before planning: **Option B — Time of Day replaces AM/PM
+   entirely.** Drop the `amPm` group and its store field outright; the four-bucket Time of Day filter
+   (§11) is the one time-of-day control. The planner MUST NOT carry `amPm` forward into the v2→v3
+   store migration — the migration only needs to handle `bpCategory` becoming multi-valued (single
+   string → array), with no `amPm` field to migrate at all. `prompt.py`'s existing "mornings"→am,
+   "evenings"→pm vocabulary routes to the new `time_of_day` tokens (`morning`/`evening`) instead.
+   Original framing kept below for traceability.
    - What we know: UI-SPEC ships "Option A — coexist" as the shipped default (citing `ROADMAP.md`'s framing of `amPm` becoming multi-valued, read together with its "Primary risk" section, as stronger evidence of an intended two-group design), but its own author recommends "Option B — replace" as simpler, trap-free, and a smaller diff, and explicitly asks for a human yes/no before the store shape locks.
    - What's unclear: whether Chris (the actual end user) has an opinion on this, or whether "no strong opinion, ship the recommended option" is an acceptable path for `/gsd-plan-phase 15` to take unilaterally.
    - Recommendation: surface this exact question to the user before or during planning (per the UI-SPEC's own instruction), since it changes the store shape (`store/filters.ts`'s field count), the agent's `prompt.py` vocabulary for "mornings"/"evenings" routing, and the live-sentence segment count — a decision reversed *after* implementation starts is a real rework cost, not a cosmetic one.
