@@ -11,26 +11,42 @@
 //
 // Nautical card + accent button styling copied from EmptyState.tsx; all colors
 // are index.css design tokens — no hex values.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sailboat, TriangleAlert } from "lucide-react";
 
-import { postAuth } from "../api/client";
+import { getHealth, postAuth } from "../api/client";
 import { useAuth } from "../store/auth";
 
 export function LoginGate() {
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [submitting, setSubmitting] = useState(false);
   // A rejected login shows friendly copy ONLY — never a status code (D-10).
   const [rejected, setRejected] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Guest-demo detection (Phase 19, D-01/D-08): the ONLY pre-auth fetch this
+  // component makes, scoped to /health (T-05-10 preserved). This is a plain
+  // useEffect + the raw getHealth() client function, NOT useHealth()'s
+  // TanStack Query hook — LoginGate renders standalone in unit tests with no
+  // QueryClientProvider ancestor. A failed fetch is treated as "assume real
+  // deployment": the form still works, worst case the username field never
+  // appears.
+  const [demoMode, setDemoMode] = useState(false);
+  useEffect(() => {
+    getHealth()
+      .then((h) => setDemoMode(h.demo))
+      .catch(() => {});
+  }, []);
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (password.trim() === "" || submitting) return;
+    if ((demoMode && username.trim() === "") || password.trim() === "" || submitting)
+      return;
     setSubmitting(true);
     setRejected(false);
     try {
-      const { token } = await postAuth(password);
+      const { token } = await postAuth(password, demoMode ? username : undefined);
       // Persist + flip the gate open (D-02 no-expiry via the store).
       useAuth.getState().login(token);
     } catch {
@@ -61,9 +77,32 @@ export function LoginGate() {
             Chris's Health Dashboard
           </h1>
           <h2 className="text-heading leading-tight text-[var(--color-depth)]">
-            Enter the password to continue
+            {demoMode
+              ? "Enter your guest credentials to continue"
+              : "Enter the password to continue"}
           </h2>
         </div>
+
+        {demoMode && (
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="login-username"
+              className="text-label text-[var(--color-depth)]"
+            >
+              Username
+            </label>
+            <input
+              id="login-username"
+              name="username"
+              type="text"
+              autoFocus
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="min-h-12 w-full rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-lg text-[var(--color-depth)]"
+            />
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <label
@@ -77,7 +116,7 @@ export function LoginGate() {
             id="login-password"
             name="password"
             type="password"
-            autoFocus
+            autoFocus={!demoMode}
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -99,7 +138,11 @@ export function LoginGate() {
               className="mt-0.5 shrink-0"
             />
             <p>
-              <span className="font-semibold">That password didn't work.</span>{" "}
+              <span className="font-semibold">
+                {demoMode
+                  ? "That username or password didn't work."
+                  : "That password didn't work."}
+              </span>{" "}
               Please try again.
             </p>
           </div>
@@ -107,7 +150,11 @@ export function LoginGate() {
 
         <button
           type="submit"
-          disabled={password.trim() === "" || submitting}
+          disabled={
+            (demoMode && username.trim() === "") ||
+            password.trim() === "" ||
+            submitting
+          }
           className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:opacity-50"
         >
           Enter
