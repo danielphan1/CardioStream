@@ -19,7 +19,13 @@ vi.mock("../api/client", async (importOriginal) => {
 const mockGetHealth = getHealth as unknown as Mock;
 
 function health(overrides: Partial<HealthStatus> = {}): HealthStatus {
-  return { status: "ok", agent_configured: true, agent_reachable: true, ...overrides };
+  return {
+    status: "ok",
+    agent_configured: true,
+    agent_reachable: true,
+    demo: false,
+    ...overrides,
+  };
 }
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -51,6 +57,7 @@ describe("useHealth (LIVE-03 proactive page-load check)", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual({
       status: "ok",
+      demo: false,
       agent_configured: false,
       agent_reachable: null,
     });

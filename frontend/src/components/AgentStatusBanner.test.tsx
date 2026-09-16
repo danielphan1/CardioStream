@@ -22,7 +22,13 @@ vi.mock("../api/client", async (importOriginal) => {
 const mockGetHealth = getHealth as unknown as Mock;
 
 function health(overrides: Partial<HealthStatus> = {}): HealthStatus {
-  return { status: "ok", agent_configured: true, agent_reachable: true, ...overrides };
+  return {
+    status: "ok",
+    agent_configured: true,
+    agent_reachable: true,
+    demo: false,
+    ...overrides,
+  };
 }
 
 function renderBanner() {
