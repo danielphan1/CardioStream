@@ -686,7 +686,7 @@ just a new call site that bypasses the `useHealth()` hook's TanStack Query wrapp
 | A2 | Railway's private networking (`postgres.railway.internal`) is scoped per-PROJECT, not per-account, making a second service inside Chris's existing project share network reachability to his real Postgres | Standard Stack / Second-Deployment Mechanics | If wrong (e.g., it's actually per-account-scoped and a new project offers no additional isolation), the "use a new project, not a new service" recommendation is over-cautious but still strictly safer — no downside to following it even if the extra isolation turns out to be unnecessary |
 | A3 | Railway's dashboard does not offer a pure in-browser one-off shell/command runner without the `railway` CLI being installed somewhere (verified ambiguous in this session's WebSearch) | Second-Deployment Mechanics | This is exactly why the boot-time auto-seed (gated on `SITE_USERNAME`) is the PRIMARY recommendation rather than "open a shell and run the seed command" — if Railway's dashboard shell turns out to be more accessible than this research found, the manual path is still documented as a fallback, so being wrong here costs nothing |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Which `railway.json` (root vs `backend/`) does the existing production service actually read?**
    - What we know: the two files are byte-identical today.
