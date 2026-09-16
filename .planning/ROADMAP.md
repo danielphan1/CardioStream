@@ -79,7 +79,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
-| 19. Guest Demo Mode | v1.2 | 3/7 | In Progress|  |
+| 19. Guest Demo Mode | v1.2 | 6/7 | In Progress|  |
 
 ### Phase 13: Visual Redesign — Nautical Minimalist Theme
 
@@ -266,7 +266,7 @@ voice-command endpoint stay fully usable.
 **Requirements**: Client-driven request (2026-09-15), "add a working demo version that people who are
 viewing can use".
 **Depends on:** Phase 5 (the shared-password auth gate this layers onto) — no dependency on Phases 6-18.
-**Plans:** 3/7 plans executed
+**Plans:** 6/7 plans executed
 
 Plans:
 **Wave 1**
@@ -277,9 +277,9 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 19-02-PLAN.md — Wire reject_if_demo onto the 4 write routes + test_demo_guard.py (wave 2)
-- [ ] 19-04-PLAN.md — seed_records() + boot-time auto-seed gate in start.sh + .env.example (wave 2)
-- [ ] 19-06-PLAN.md — LoginGate guest-username field + Header demo badge/hidden write buttons (wave 2)
+- [x] 19-02-PLAN.md — Wire reject_if_demo onto the 4 write routes + test_demo_guard.py (wave 2)
+- [x] 19-04-PLAN.md — seed_records() + boot-time auto-seed gate in start.sh + .env.example (wave 2)
+- [x] 19-06-PLAN.md — LoginGate guest-username field + Header demo badge/hidden write buttons (wave 2)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
