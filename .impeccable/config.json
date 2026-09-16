@@ -8,6 +8,12 @@
         "value": "inter",
         "createdAt": "2026-09-04T18:55:03.782Z",
         "reason": "13-UI-SPEC.md Typography table locks Inter (body/label/heading) + Space Grotesk (display) as the new Phase 13 font system, replacing Atkinson Hyperlegible; DESIGN.md update is a separate later plan"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-09-14T21:18:52.884Z",
+        "reason": "Locked Phase 13 typography decision, 13-02-PLAN.md: Inter+Space Grotesk installed as a deliberate self-hosted pairing (13-CONTEXT.md design contract), not an incidental default"
       }
     ]
   }
