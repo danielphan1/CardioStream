@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     # Shared-password gate (SEC-01). Empty default keeps local/test boot
     # KEYLESS, exactly like anthropic_api_key; prod sets SITE_PASSWORD via env.
     site_password: str = ""
+    # Guest-demo-deployment companion to site_password (Phase 19). Empty default
+    # keeps Chris's real deployment's behavior byte-for-byte unchanged (D-10) —
+    # /auth's username requirement stays off, reject_if_demo's write-guard stays
+    # off, /health.demo stays false. A non-empty value is the SINGLE source of
+    # truth driving all three; never introduce a second, independently-set flag
+    # for "is this the demo deployment" (19-CONTEXT.md anti-drift warning).
+    site_username: str = ""
     # itsdangerous signing secret for the Bearer token. The dev default keeps
     # tests deterministic; prod MUST override via TOKEN_SECRET (never shipped
     # to the client — SEC-01, threat T-05-02). Enforced by the boot-time guard

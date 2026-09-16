@@ -56,13 +56,19 @@ def health() -> dict[str, str | bool | None]:
     no active probe, no token cost, and this route carries no ``@limiter.limit``
     decorator so it never shares ``/agent``'s 20/minute budget.
 
-    Both fields are BOOLEAN-OR-NULL only, never a reason string or enum — an
-    unauthenticated caller can learn "up/down", never "why" (SEC-02, T-06-01).
+    ``demo`` (Phase 19) is `bool(get_settings().site_username)` — the single
+    source of truth for "this is the guest-demo deployment", read pre-auth by
+    the frontend to decide whether to show the demo badge / hide write UI.
+
+    All three dynamic fields are BOOLEAN-OR-NULL only, never a reason string,
+    enum, or the literal value — an unauthenticated caller can learn "up/down"
+    or "on/off", never "why" (SEC-02, T-06-01).
     """
     return {
         "status": "ok",
         "agent_configured": bool(get_settings().anthropic_api_key),
         "agent_reachable": agent_reachable(),
+        "demo": bool(get_settings().site_username),
     }
 
 

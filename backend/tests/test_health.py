@@ -29,7 +29,9 @@ def test_health_reports_configured_when_key_present(client, monkeypatch) -> None
     import app.main as main
 
     monkeypatch.setattr(
-        main, "get_settings", lambda: SimpleNamespace(anthropic_api_key="sk-ant-test")
+        main,
+        "get_settings",
+        lambda: SimpleNamespace(anthropic_api_key="sk-ant-test", site_username=""),
     )
     assert client.get("/health").json()["agent_configured"] is True
 
@@ -40,7 +42,9 @@ def test_health_never_leaks_the_key(client, monkeypatch) -> None:
 
     secret = "sk-ant-super-secret-value-must-not-leak"
     monkeypatch.setattr(
-        main, "get_settings", lambda: SimpleNamespace(anthropic_api_key=secret)
+        main,
+        "get_settings",
+        lambda: SimpleNamespace(anthropic_api_key=secret, site_username=""),
     )
     resp = client.get("/health")
     assert secret not in resp.text
@@ -69,3 +73,18 @@ def test_health_agent_reachable_never_rate_limited(client) -> None:
     for _ in range(25):
         resp = client.get("/health")
         assert resp.status_code == 200
+
+
+def test_health_reports_demo_false_when_keyless(client) -> None:
+    """Default test env (no SITE_USERNAME set) -> demo is false."""
+    assert client.get("/health").json()["demo"] is False
+
+
+def test_health_reports_demo_true_when_site_username_set(client, monkeypatch) -> None:
+    """SITE_USERNAME configured -> demo is true (Phase 19 single source of truth)."""
+    from app.config import get_settings
+
+    monkeypatch.setenv("SITE_USERNAME", "guest-chris")
+    get_settings.cache_clear()
+    assert client.get("/health").json()["demo"] is True
+    get_settings.cache_clear()
