@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: executing
-last_updated: "2026-09-16T07:47:38.903Z"
-last_activity: 2026-09-16 -- Phase 19 execution started
+last_updated: "2026-09-16T19:58:17.000Z"
+last_activity: 2026-09-16 -- Completed quick task 260916-hu8: updated PROJECT.md milestone tracking
 progress:
   total_phases: 7
   completed_phases: 7
@@ -202,6 +202,7 @@ None yet.
 | 260828-ly8 | Close 4 motion-language gaps (impeccable animate survey): GuideOverlay open/close fade, ChartTooltip opacity+scale entrance (also caught and fixed a real pre-existing bug: the Close button was unclickable via real mouse input due to Recharts' `pointer-events: none`, and a second bug where the click bubbled into the chart's own onClick and undid the dismiss), DateRangePicker reveal fade-in, and AddRecordPage's Lab/Incident/Procedure field-swap transition (mirrors ChartDeck's proven FadeSwap pattern) — all reuse the app's existing motion-safe/motion-reduce-gated ≤250ms opacity/transform idiom, no new material. Ran as 4 independent plans in one parallel wave; all 4 live-verified individually plus a final independent spot-check of all four surfaces against the real dev server | 2026-08-28 | 9f54eff, c940aa6, b460dbc, 5495650 | Verified | [260828-ly8-close-4-motion-language-gaps-impeccable-](./quick/260828-ly8-close-4-motion-language-gaps-impeccable-/) |
 | 260914-kz3 | Replace favicon with a sailboat-on-water icon | 2026-09-14 | 685fae4 | | [260914-kz3-replace-favicon-with-a-sailboat-on-water](./quick/260914-kz3-replace-favicon-with-a-sailboat-on-water/) |
 | 260914-lff | Restyle favicon sailboat: white fills with navy blue outline, wavier water line | 2026-09-14 | a16c900 | | [260914-lff-restyle-favicon-sailboat-white-fills-wit](./quick/260914-lff-restyle-favicon-sailboat-white-fills-wit/) |
+| 260916-hu8 | Update PROJECT.md Requirements → Validated section (Phases 13, 14, 19) and correct the stale "no milestone currently in progress" Active/Next Milestone framing to name Phases 15-18 as the open continuation work | 2026-09-16 | d90d86e | | [260916-hu8-update-project-md-requirements-validated](./quick/260916-hu8-update-project-md-requirements-validated/) |
 
 ## Deferred Items
 
