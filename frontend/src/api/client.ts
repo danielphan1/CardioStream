@@ -140,12 +140,17 @@ export function postAgent(body: AgentRequest): Promise<AgentReply> {
   return postJson<AgentRequest, AgentReply>("/agent", body);
 }
 
-// Exchange the shared password for a signed Bearer token (SEC-01). Mirrors
-// postAgent — one typed wrapper over the generic postJson path.
-export function postAuth(password: string): Promise<{ token: string }> {
-  return postJson<{ password: string }, { token: string }>("/auth", {
-    password,
-  });
+// Exchange the shared password (and, on the demo deployment, a username — Phase
+// 19, D-01) for a signed Bearer token (SEC-01). Mirrors postAgent — one typed
+// wrapper over the generic postJson path. `username` passes through
+// unconditionally: when the caller omits it, JSON.stringify drops the
+// `undefined` key entirely, matching the backend's `username: str | None =
+// None` default with no special-casing needed on either side.
+export function postAuth(password: string, username?: string): Promise<{ token: string }> {
+  return postJson<{ password: string; username?: string }, { token: string }>(
+    "/auth",
+    { password, username },
+  );
 }
 
 export function getReadings(filters: ResolvedFilters): Promise<Reading[]> {

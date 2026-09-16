@@ -205,13 +205,16 @@ export type AgentReply = {
   context: ClarifyContext | null;
 };
 
-// GET /health response (Phase 6, LIVE-03/LIVE-04) — byte-for-byte mirror of
-// backend Plan 06-01's extended `/health` handler in main.py. agent_reachable
-// is a plain tri-state: `null` = untested this boot (passive-only breaker has
-// no active probe), `true`/`false` = the real outcome of the most recent
-// `/agent` call. Never a reason string (Pitfall 3 — /health is unauthenticated).
+// GET /health response (Phase 6, LIVE-03/LIVE-04; Phase 19, D-08) — byte-for-byte
+// mirror of backend Plan 06-01's extended `/health` handler in main.py, plus
+// Plan 19-01's `demo` extension. agent_reachable is a plain tri-state: `null` =
+// untested this boot (passive-only breaker has no active probe), `true`/`false`
+// = the real outcome of the most recent `/agent` call. Never a reason string
+// (Pitfall 3 — /health is unauthenticated). `demo` mirrors
+// `bool(site_username)` — never a secret, just the guest-deployment flag.
 export type HealthStatus = {
   status: string;
   agent_configured: boolean;
   agent_reachable: boolean | null;
+  demo: boolean;
 };
