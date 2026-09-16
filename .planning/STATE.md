@@ -20,15 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Phase 19 — guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u
+**Current focus:** Phase 19 — guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u (COMPLETE)
 
 ## Current Position
 
-Phase: 19 (guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u) — CODE COMPLETE, pending human UAT
-Plan: 7 of 7 (all merged)
-Status: Blocked on one human action — user is deploying the actual second (demo) Railway/Vercel
-  instance per DEPLOY.md; `19-HUMAN-UAT.md` has 1 pending test awaiting that confirmation.
-Last activity: 2026-09-16 -- persisted human verification items as UAT (aa531da)
+Phase: 19 (guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u) — COMPLETE
+Plan: 7 of 7 (all merged), Human UAT passed
+Status: Demo deployment live and verified at https://health-dashboard-demo.vercel.app (guest_demo/
+  demo_test_pass) — Railway project "friendly-rebirth" (service CardioStream + Postgres) + Vercel project
+  health-dashboard-demo. 19-HUMAN-UAT.md's one test passed; see that file for full verification detail.
+Last activity: 2026-09-16 -- stood up and verified the live guest demo deployment end-to-end
 
 ## Performance Metrics
 
@@ -223,16 +224,15 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-16 (resumed)
-Stopped at: Phase 19 all 7 plans merged; user deploying the real second (demo) instance per DEPLOY.md
-Next action: once the demo deployment is live, confirm it against 19-HUMAN-UAT.md's one pending test,
-  then close out Phase 19 and decide between planning Phase 15 or scoping a milestone wrapper for 13-19
-Resume file: DEPLOY.md (literal deploy steps), .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-HUMAN-UAT.md
+Last session: 2026-09-16
+Stopped at: Phase 19 complete — demo deployment live, verified, and recorded in 19-HUMAN-UAT.md
+Next action: Phase 15 (Unified Filter Surface) has a UI-SPEC ready to plan; no formal milestone currently
+  wraps phases 13-19 (v1.1 already shipped 2026-08-27) — consider scoping one, or continue straight to
+  Phase 15 planning
+Resume file: .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-HUMAN-UAT.md
 
 ## Operator Next Steps
 
-- Follow DEPLOY.md to stand up the second Railway + Vercel instance, then report back so the UAT result
-  can be recorded and Phase 19 closed out
-- Two uncommitted files from the last session still need a commit: .impeccable/config.json, 19-VERIFICATION.md
-- After Phase 19 closes: Phase 15 (Unified Filter Surface) has a UI-SPEC ready to plan; no formal
-  milestone currently wraps phases 13-19 (v1.1 already shipped 2026-08-27)
+- Phase 19 done. Plan Phase 15 (/gsd-plan-phase 15) or scope/name a milestone for 13-19 first.
+- Guest demo credentials (demo_guest / demo_test_pass) are stored only in Railway's env vars and this
+  session's chat history — write them down somewhere durable if they need to be shared with portfolio viewers.

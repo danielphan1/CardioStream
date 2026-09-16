@@ -267,6 +267,8 @@ voice-command endpoint stay fully usable.
 viewing can use".
 **Depends on:** Phase 5 (the shared-password auth gate this layers onto) — no dependency on Phases 6-18.
 **Plans:** 7/7 plans complete
+**Status:** COMPLETE — live demo verified at https://health-dashboard-demo.vercel.app (2026-09-16, full
+detail in `19-HUMAN-UAT.md`).
 
 Plans:
 **Wave 1**
