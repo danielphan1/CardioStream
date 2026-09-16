@@ -37,6 +37,7 @@ router = APIRouter()
 
 class AuthRequest(BaseModel):
     password: str
+    username: str | None = None
 
 
 class AuthResponse(BaseModel):
@@ -46,12 +47,25 @@ class AuthResponse(BaseModel):
 @router.post("/auth", response_model=AuthResponse)
 @limiter.limit("5/minute")  # brute-force guard (Pitfall 5 order rules apply)
 def auth(request: Request, body: AuthRequest) -> AuthResponse:  # noqa: ARG001
-    """Check the shared password in constant time; issue a signed token on match."""
-    configured = get_settings().site_password
-    # Unconfigured gate -> refuse outright (never issue a token); otherwise
-    # compare utf-8 bytes so a non-ASCII candidate can't raise TypeError.
-    if not configured or not hmac.compare_digest(
-        body.password.encode("utf-8"), configured.encode("utf-8")
-    ):
+    """Check the shared password (and, on a demo deployment, username) in constant
+    time; issue a signed token on match.
+
+    Guest-demo deployments (Phase 19, D-03/D-10) additionally require a matching
+    ``site_username``. ``user_ok`` is trivially true when ``site_username`` is
+    unconfigured (today's real deployment) so a stray ``username`` field a
+    misdirected caller sends is silently ignored — byte-for-byte backward
+    compatible. Both checks fold into ONE gate so wrong-username, wrong-password,
+    and missing-username all collapse into the identical opaque 401 (D-10) —
+    never a field-specific hint.
+    """
+    configured_user = get_settings().site_username
+    configured_pass = get_settings().site_password
+    user_ok = not configured_user or hmac.compare_digest(
+        (body.username or "").encode("utf-8"), configured_user.encode("utf-8")
+    )
+    pass_ok = bool(configured_pass) and hmac.compare_digest(
+        body.password.encode("utf-8"), configured_pass.encode("utf-8")
+    )
+    if not (user_ok and pass_ok):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
     return AuthResponse(token=_serializer().dumps("authorized"))
