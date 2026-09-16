@@ -76,7 +76,7 @@ def seed_records(session: Session) -> dict[str, int]:
 
     for model, key in ((LabResult, "labs"), (Incident, "incidents"), (Procedure, "procedures")):
         existing = session.scalar(select(func.count()).select_from(model))
-        if existing and existing > 0:
+        if existing:
             counts[key] = 0
             continue
 

@@ -250,8 +250,8 @@ export function Header() {
               non-dashboard view shows exactly one "Back to dashboard" button.
               Phase 13 (D-06): no 48px carve-out — unconditional floor applies. */}
           {onDashboard ? (
-            <>
-              {!demoMode && (
+            !demoMode && (
+              <>
                 <button
                   type="button"
                   onClick={() => go("upload")}
@@ -260,8 +260,6 @@ export function Header() {
                   <Upload aria-hidden="true" size={24} />
                   Upload
                 </button>
-              )}
-              {!demoMode && (
                 <button
                   type="button"
                   onClick={() => go("records")}
@@ -270,8 +268,8 @@ export function Header() {
                   <ClipboardPlus aria-hidden="true" size={24} />
                   Add Record
                 </button>
-              )}
-            </>
+              </>
+            )
           ) : (
             <button
               type="button"
