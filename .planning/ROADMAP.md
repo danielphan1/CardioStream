@@ -79,7 +79,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
-| 19. Guest Demo Mode | v1.2 | 0/7 | Planned | — |
+| 19. Guest Demo Mode | v1.2 | 3/7 | In Progress|  |
 
 ### Phase 13: Visual Redesign — Nautical Minimalist Theme
 
@@ -266,14 +266,14 @@ voice-command endpoint stay fully usable.
 **Requirements**: Client-driven request (2026-09-15), "add a working demo version that people who are
 viewing can use".
 **Depends on:** Phase 5 (the shared-password auth gate this layers onto) — no dependency on Phases 6-18.
-**Plans:** 7 plans in 3 waves
+**Plans:** 3/7 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 19-01-PLAN.md — Backend Settings.site_username + reject_if_demo dependency + /auth username compare + /health demo field (wave 1)
-- [ ] 19-03-PLAN.md — Synthetic labs/incidents/procedures data generator + committed fixture (wave 1)
-- [ ] 19-05-PLAN.md — Frontend HealthStatus.demo + postAuth(username) contract (wave 1)
+- [x] 19-01-PLAN.md — Backend Settings.site_username + reject_if_demo dependency + /auth username compare + /health demo field (wave 1)
+- [x] 19-03-PLAN.md — Synthetic labs/incidents/procedures data generator + committed fixture (wave 1)
+- [x] 19-05-PLAN.md — Frontend HealthStatus.demo + postAuth(username) contract (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
