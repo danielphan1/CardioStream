@@ -26,15 +26,46 @@ const mockPostAuth = postAuth as unknown as Mock;
 
 let fetchMock: Mock;
 
-beforeEach(() => {
-  mockPostAuth.mockReset();
-  fetchMock = vi.fn(() =>
-    Promise.resolve({
+// Default /health stub: demo: false, preserving every existing test's
+// current (non-demo-aware) behavior. Per-test override via mockHealthDemo.
+function healthResponse(demo: boolean) {
+  return Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () =>
+      Promise.resolve({
+        demo,
+        status: "ok",
+        agent_configured: true,
+        agent_reachable: true,
+      }),
+  } as Response);
+}
+
+// Per-test override: reassign fetchMock's implementation so /health resolves
+// demo: true for that one test while any other URL still falls through to the
+// default (non-/health) stub below.
+function mockHealthDemo(demo: boolean) {
+  fetchMock.mockImplementation((input: RequestInfo | URL) => {
+    if (String(input).includes("/health")) return healthResponse(demo);
+    return Promise.resolve({
       ok: true,
       status: 200,
       json: () => Promise.resolve([]),
-    } as Response),
-  );
+    } as Response);
+  });
+}
+
+beforeEach(() => {
+  mockPostAuth.mockReset();
+  fetchMock = vi.fn((input: RequestInfo | URL) => {
+    if (String(input).includes("/health")) return healthResponse(false);
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([]),
+    } as Response);
+  });
   vi.stubGlobal("fetch", fetchMock);
   try {
     localStorage.removeItem("hv-token");
@@ -64,7 +95,7 @@ describe("App auth gate (D-01, T-05-10)", () => {
     );
   }
 
-  it("renders ONLY the LoginGate and fires NO data fetch when no token exists", () => {
+  it("renders ONLY the LoginGate and fires exactly one /health fetch (never a PHI route) when no token exists", async () => {
     renderApp();
 
     // The password field proves the gate is up.
@@ -73,8 +104,19 @@ describe("App auth gate (D-01, T-05-10)", () => {
     expect(
       screen.queryByRole("textbox", { name: "Type a dashboard command" }),
     ).not.toBeInTheDocument();
-    // The hard D-01 guarantee: no data hook mounted → fetch never called.
-    expect(fetchMock).not.toHaveBeenCalled();
+    // The precise D-01/D-11 guarantee: LoginGate's one pre-auth fetch is
+    // scoped to /health only — not a blanket "zero fetches" assertion.
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/health");
+  });
+
+  it("fail-first regression (D-11): every fetch LoginGate makes targets /health, never a PHI-bearing route", async () => {
+    renderApp();
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(
+      fetchMock.mock.calls.every((c) => String(c[0]).includes("/health")),
+    ).toBe(true);
   });
 
   it("renders the dashboard (not the gate) once a token is present", async () => {
@@ -148,5 +190,59 @@ describe("LoginGate keyboard ritual (D-04, SEC-01)", () => {
     // Token stays null; focus returns to the input for a retry.
     expect(useAuth.getState().token).toBeNull();
     await waitFor(() => expect(document.activeElement).toBe(input));
+  });
+});
+
+describe("LoginGate demo mode (D-04, D-08, D-11)", () => {
+  it("shows a Username field only when /health resolves demo: true", async () => {
+    mockHealthDemo(true);
+    render(<LoginGate />);
+
+    expect(await screen.findByLabelText("Username")).toBeInTheDocument();
+  });
+
+  it("never shows a Username field when /health resolves demo: false (default)", async () => {
+    render(<LoginGate />);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(screen.queryByLabelText("Username")).not.toBeInTheDocument();
+  });
+
+  it("gates submit on both fields, and calls postAuth with password and username in demo mode", async () => {
+    mockHealthDemo(true);
+    mockPostAuth.mockResolvedValue({ token: "issued-token" });
+    render(<LoginGate />);
+
+    const username = await screen.findByLabelText("Username");
+    const enter = screen.getByRole("button", { name: "Enter" });
+    expect(enter).toBeDisabled();
+
+    fireEvent.change(passwordInput(), { target: { value: "hunter2" } });
+    expect(enter).toBeDisabled(); // username still empty
+
+    fireEvent.change(username, { target: { value: "guest" } });
+    expect(enter).not.toBeDisabled();
+
+    fireEvent.click(enter);
+
+    await waitFor(() =>
+      expect(mockPostAuth).toHaveBeenCalledWith("hunter2", "guest"),
+    );
+  });
+
+  it("shows the username-or-password rejection copy in demo mode", async () => {
+    mockHealthDemo(true);
+    mockPostAuth.mockRejectedValue(new ApiError(401, "/auth"));
+    render(<LoginGate />);
+
+    const username = await screen.findByLabelText("Username");
+    fireEvent.change(username, { target: { value: "guest" } });
+    fireEvent.change(passwordInput(), { target: { value: "wrong" } });
+    fireEvent.click(screen.getByRole("button", { name: "Enter" }));
+
+    const notice = await screen.findByRole("alert");
+    expect(notice.textContent).toContain(
+      "That username or password didn't work. Please try again.",
+    );
   });
 });
