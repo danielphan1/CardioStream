@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth import reject_if_demo
 from app.deps import ProcedureFilters, get_db
 from app.models import Procedure
 from app.schemas import ProcedureCreate, ProcedureOut
@@ -38,7 +39,7 @@ def list_procedures(
     return list(db.scalars(stmt).all())
 
 
-@router.post("/procedures", response_model=ProcedureOut)
+@router.post("/procedures", response_model=ProcedureOut, dependencies=[Depends(reject_if_demo)])
 def create_procedure(
     body: ProcedureCreate,
     db: Annotated[Session, Depends(get_db)],

@@ -23,13 +23,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+from app.auth import reject_if_demo
 from app.deps import get_db
 from app.etl import IngestSummary, merge_readings, parse_omron, transform
 
 router = APIRouter()
 
 
-@router.post("/upload", response_model=IngestSummary)
+@router.post("/upload", response_model=IngestSummary, dependencies=[Depends(reject_if_demo)])
 def upload(file: UploadFile, db: Annotated[Session, Depends(get_db)]) -> IngestSummary:
     """Ingest an OMRON .xlsx export via the shared ETL, returning IngestSummary.
 

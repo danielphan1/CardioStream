@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth import reject_if_demo
 from app.deps import LabFilters, get_db
 from app.models import LabResult
 from app.schemas import LabResultCreate, LabResultOut
@@ -38,7 +39,7 @@ def list_labs(
     return list(db.scalars(stmt).all())
 
 
-@router.post("/labs", response_model=LabResultOut)
+@router.post("/labs", response_model=LabResultOut, dependencies=[Depends(reject_if_demo)])
 def create_lab(
     body: LabResultCreate,
     db: Annotated[Session, Depends(get_db)],

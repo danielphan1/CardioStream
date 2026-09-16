@@ -61,13 +61,24 @@ def _auth(token: str) -> dict:
 
 # --- 403 on every write route under demo mode ---------------------------------
 
-_WRITE_ROUTES = ["/labs", "/incidents", "/procedures"]
 
-
-@pytest.mark.parametrize("path", _WRITE_ROUTES)
-def test_write_route_403_under_demo_mode(real_gate_client, demo_mode, valid_token, path) -> None:
+def test_labs_post_403_under_demo_mode(real_gate_client, demo_mode, valid_token) -> None:
     """A validly-authenticated caller gets 403 on a demo deployment, not 500."""
-    resp = real_gate_client.post(path, json={}, headers=_auth(valid_token))
+    resp = real_gate_client.post("/labs", json={}, headers=_auth(valid_token))
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == "Guest accounts can't make changes to this demo."
+
+
+def test_incidents_post_403_under_demo_mode(real_gate_client, demo_mode, valid_token) -> None:
+    """A validly-authenticated caller gets 403 on a demo deployment, not 500."""
+    resp = real_gate_client.post("/incidents", json={}, headers=_auth(valid_token))
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == "Guest accounts can't make changes to this demo."
+
+
+def test_procedures_post_403_under_demo_mode(real_gate_client, demo_mode, valid_token) -> None:
+    """A validly-authenticated caller gets 403 on a demo deployment, not 500."""
+    resp = real_gate_client.post("/procedures", json={}, headers=_auth(valid_token))
     assert resp.status_code == 403
     assert resp.json()["detail"] == "Guest accounts can't make changes to this demo."
 

@@ -27,6 +27,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth import reject_if_demo
 from app.deps import IncidentFilters, get_db
 from app.models import Incident
 from app.schemas import IncidentCreate, IncidentOut
@@ -44,7 +45,7 @@ def list_incidents(
     return list(db.scalars(stmt).all())
 
 
-@router.post("/incidents", response_model=IncidentOut)
+@router.post("/incidents", response_model=IncidentOut, dependencies=[Depends(reject_if_demo)])
 def create_incident(
     body: IncidentCreate,
     db: Annotated[Session, Depends(get_db)],
