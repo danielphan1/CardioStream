@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   ClipboardPlus,
+  Info,
   LogOut,
   Moon,
   Sailboat,
@@ -24,6 +25,7 @@ import {
   VolumeX,
 } from "lucide-react";
 
+import { useHealth } from "../hooks/useHealth";
 import { useAuth } from "../store/auth";
 import { useGuide } from "../store/guide";
 import { useSpeech } from "../store/speech";
@@ -133,6 +135,11 @@ export function Header() {
   const view = useView((s) => s.view);
   const go = useView((s) => s.go);
   const logout = useAuth((s) => s.logout);
+  // Guest-demo detection (Phase 19, D-08): Header is always mounted deep
+  // inside the authed, QueryClientProvider-wrapped tree, so it safely reuses
+  // the existing useHealth() hook (already polling /health every 60s for
+  // AgentStatusBanner) — zero new fetch call.
+  const demoMode = useHealth().data?.demo ?? false;
 
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   // Return focus to the "Log out" control when the dialog closes (D-03).
@@ -154,7 +161,7 @@ export function Header() {
   return (
     <header className="bg-[var(--color-deck)]">
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Sailboat
             aria-hidden="true"
             size={32}
@@ -163,6 +170,15 @@ export function Header() {
           <h1 className="text-heading leading-tight text-[var(--color-depth)]">
             Chris's Health Dashboard
           </h1>
+          {demoMode && (
+            <span
+              role="status"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-3 py-1 text-[18px] text-[var(--color-depth)]"
+            >
+              <Info aria-hidden="true" size={18} />
+              Guest Demo · Synthetic Data
+            </span>
+          )}
         </div>
 
         {/* Header-right controls: theme toggle + the D-06 caregiver zone. Every
@@ -235,22 +251,26 @@ export function Header() {
               Phase 13 (D-06): no 48px carve-out — unconditional floor applies. */}
           {onDashboard ? (
             <>
-              <button
-                type="button"
-                onClick={() => go("upload")}
-                className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
-              >
-                <Upload aria-hidden="true" size={24} />
-                Upload
-              </button>
-              <button
-                type="button"
-                onClick={() => go("records")}
-                className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
-              >
-                <ClipboardPlus aria-hidden="true" size={24} />
-                Add Record
-              </button>
+              {!demoMode && (
+                <button
+                  type="button"
+                  onClick={() => go("upload")}
+                  className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
+                >
+                  <Upload aria-hidden="true" size={24} />
+                  Upload
+                </button>
+              )}
+              {!demoMode && (
+                <button
+                  type="button"
+                  onClick={() => go("records")}
+                  className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]"
+                >
+                  <ClipboardPlus aria-hidden="true" size={24} />
+                  Add Record
+                </button>
+              )}
             </>
           ) : (
             <button
