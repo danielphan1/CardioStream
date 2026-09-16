@@ -156,7 +156,9 @@ describe("LoginGate keyboard ritual (D-04, SEC-01)", () => {
     await waitFor(() =>
       expect(useAuth.getState().token).toBe("issued-token"),
     );
-    expect(mockPostAuth).toHaveBeenCalledWith("hunter2");
+    // Non-demo mode: username arg is always undefined (D-01, matches the
+    // backend's username: str | None = None default).
+    expect(mockPostAuth).toHaveBeenCalledWith("hunter2", undefined);
   });
 
   it("submits on the Enter key (form submit === clicking Enter)", async () => {
@@ -167,7 +169,9 @@ describe("LoginGate keyboard ritual (D-04, SEC-01)", () => {
     fireEvent.change(input, { target: { value: "hunter2" } });
     fireEvent.submit(input.closest("form")!);
 
-    await waitFor(() => expect(mockPostAuth).toHaveBeenCalledWith("hunter2"));
+    await waitFor(() =>
+      expect(mockPostAuth).toHaveBeenCalledWith("hunter2", undefined),
+    );
   });
 
   it("shows friendly wrong-password copy (never a status code) and refocuses", async () => {
