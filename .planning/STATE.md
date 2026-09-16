@@ -24,10 +24,11 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 
 ## Current Position
 
-Phase: 19 (guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u) — EXECUTING
-Plan: 1 of 7
-Status: Executing Phase 19
-Last activity: 2026-09-16 -- Phase 19 execution started
+Phase: 19 (guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u) — CODE COMPLETE, pending human UAT
+Plan: 7 of 7 (all merged)
+Status: Blocked on one human action — user is deploying the actual second (demo) Railway/Vercel
+  instance per DEPLOY.md; `19-HUMAN-UAT.md` has 1 pending test awaiting that confirmation.
+Last activity: 2026-09-16 -- persisted human verification items as UAT (aa531da)
 
 ## Performance Metrics
 
@@ -222,11 +223,16 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-15T23:07:54.835Z
-Stopped at: Phase 19 UI-SPEC approved
-Next action: close out v1.1 with /gsd-complete-milestone, or start the next milestone
-Resume file: .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-UI-SPEC.md
+Last session: 2026-09-16 (resumed)
+Stopped at: Phase 19 all 7 plans merged; user deploying the real second (demo) instance per DEPLOY.md
+Next action: once the demo deployment is live, confirm it against 19-HUMAN-UAT.md's one pending test,
+  then close out Phase 19 and decide between planning Phase 15 or scoping a milestone wrapper for 13-19
+Resume file: DEPLOY.md (literal deploy steps), .planning/phases/19-guest-demo-mode-public-demo-with-synthetic-seed-data-guest-u/19-HUMAN-UAT.md
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Follow DEPLOY.md to stand up the second Railway + Vercel instance, then report back so the UAT result
+  can be recorded and Phase 19 closed out
+- Two uncommitted files from the last session still need a commit: .impeccable/config.json, 19-VERIFICATION.md
+- After Phase 19 closes: Phase 15 (Unified Filter Surface) has a UI-SPEC ready to plan; no formal
+  milestone currently wraps phases 13-19 (v1.1 already shipped 2026-08-27)
