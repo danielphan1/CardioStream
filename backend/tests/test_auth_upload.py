@@ -204,6 +204,60 @@ def test_auth_rate_limit_sixth_request_429(real_gate_client, auth_password) -> N
     assert sixth.status_code == 429
 
 
+@pytest.fixture
+def demo_credentials(monkeypatch):
+    """Set a known SITE_USERNAME + SITE_PASSWORD pair for the demo-mode /auth tests.
+
+    Mirrors ``auth_password``'s exact shape, plus SITE_USERNAME — the guest-demo
+    deployment's second required credential (Phase 19, D-03/D-10).
+    """
+    monkeypatch.setenv("SITE_PASSWORD", "correct-horse")
+    monkeypatch.setenv("SITE_USERNAME", "guest-chris")
+    monkeypatch.setenv("TOKEN_SECRET", "test-only-not-the-dev-default")
+    get_settings.cache_clear()
+    yield ("guest-chris", "correct-horse")
+    get_settings.cache_clear()
+
+
+def test_auth_demo_correct_user_and_pass_issues_token_unlocks_gated(
+    real_gate_client, demo_credentials
+) -> None:
+    """Correct username + password on a demo deployment → 200, token unlocks a gated route."""
+    username, password = demo_credentials
+    resp = real_gate_client.post("/auth", json={"username": username, "password": password})
+    assert resp.status_code == 200
+    token = resp.json()["token"]
+    assert token
+
+    gated = real_gate_client.get("/readings", headers={"Authorization": f"Bearer {token}"})
+    assert gated.status_code == 200
+
+
+def test_auth_demo_wrong_username_same_opaque_401(real_gate_client, demo_credentials) -> None:
+    """Correct password, WRONG username → 401 with the SAME opaque message (no hint)."""
+    _, password = demo_credentials
+    resp = real_gate_client.post("/auth", json={"username": "not-guest-chris", "password": password})
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "unauthorized"
+
+
+def test_auth_demo_missing_username_401(real_gate_client, demo_credentials) -> None:
+    """Username field OMITTED entirely from the body → clean 401, never a 422."""
+    _, password = demo_credentials
+    resp = real_gate_client.post("/auth", json={"password": password})
+    assert resp.status_code == 401
+    assert resp.json()["detail"] == "unauthorized"
+
+
+def test_auth_real_deployment_ignores_stray_username_field(real_gate_client, auth_password) -> None:
+    """SITE_USERNAME unset (today's real deployment) → a stray username field is ignored;
+    the existing password-only check still governs (D-10 backward compatibility)."""
+    resp = real_gate_client.post(
+        "/auth", json={"username": "anything-at-all", "password": auth_password}
+    )
+    assert resp.status_code == 200
+
+
 # --- Quick 260913-gcv: the gate must fail CLOSED (T-GCV-01 / T-GCV-02) --------
 
 
