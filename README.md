@@ -57,6 +57,11 @@ cd backend && python scripts/generate_sample.py
 
 It matches the real data's documented statistical character (row count, date span, ~88% bradycardia share, all six BP categories) and serves as the seeder fallback, the CI/dev dataset, and the upload demo file.
 
+## Deploying a Second (Demo) Instance
+
+Standing up a separate, read-only guest-demo deployment — its own login, its own database,
+synthetic data only — is documented in [DEPLOY.md](DEPLOY.md).
+
 ## Privacy
 
 Real health data lives in the gitignored `data/` directory and is **never committed** to this repository. Only the synthetic sample described above is committed for development, tests, and demos.
