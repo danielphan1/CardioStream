@@ -79,6 +79,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
+| 19. Guest Demo Mode | v1.2 | 0/7 | Planned | — |
 
 ### Phase 13: Visual Redesign — Nautical Minimalist Theme
 
@@ -265,7 +266,21 @@ voice-command endpoint stay fully usable.
 **Requirements**: Client-driven request (2026-09-15), "add a working demo version that people who are
 viewing can use".
 **Depends on:** Phase 5 (the shared-password auth gate this layers onto) — no dependency on Phases 6-18.
-**Plans:** 0 plans
+**Plans:** 7 plans in 3 waves
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 19 to break down)
+**Wave 1**
+
+- [ ] 19-01-PLAN.md — Backend Settings.site_username + reject_if_demo dependency + /auth username compare + /health demo field (wave 1)
+- [ ] 19-03-PLAN.md — Synthetic labs/incidents/procedures data generator + committed fixture (wave 1)
+- [ ] 19-05-PLAN.md — Frontend HealthStatus.demo + postAuth(username) contract (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 19-02-PLAN.md — Wire reject_if_demo onto the 4 write routes + test_demo_guard.py (wave 2)
+- [ ] 19-04-PLAN.md — seed_records() + boot-time auto-seed gate in start.sh + .env.example (wave 2)
+- [ ] 19-06-PLAN.md — LoginGate guest-username field + Header demo badge/hidden write buttons (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 19-07-PLAN.md — DEPLOY.md literal second-deployment instructions + README pointer (wave 3)
