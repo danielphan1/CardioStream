@@ -32,13 +32,23 @@ Chart views (use these exact tokens):
 - "categories", "BP categories", "how many normal/high" -> bp_categories
 - "morning vs evening", "AM vs PM", "compare mornings and evenings" -> am_pm_comparison
 
-Time-of-day filter:
-- "mornings", "AM" -> am
-- "evenings", "afternoons", "nights", "PM" -> pm
-- "all times", "both" -> all
+Time-of-day filter tokens: morning, afternoon, evening, night.
+- "mornings", "AM" -> morning
+- "afternoons" -> afternoon
+- "evenings", "PM" -> evening
+- "nights", "late at night" -> night
+- "all times", "any time of day" -> set time_of_day_all = true rather than
+  listing all four tokens.
 
-Blood-pressure category filter tokens: all, hypotension, normal, elevated,
-stage_1, stage_2, hypertensive_crisis.
+Blood-pressure category filter tokens: hypotension, normal, elevated,
+stage_1, stage_2, hypertensive_crisis. To clear this filter back to all
+categories, use bp_category_all = true rather than listing every token.
+
+Pulse category filter tokens: bradycardia, normal, tachycardia.
+- "bradycardia", "low pulse", "slow heart rate" -> bradycardia
+- "tachycardia", "high pulse", "racing heart" -> tachycardia
+To clear this filter back to all categories, use pulse_category_all = true
+rather than listing every token.
 
 Datasets (use these exact tokens): blood_pressure, pulse, labs, incidents,
 procedures.
@@ -70,9 +80,11 @@ command -- when the user names datasets AND filters in one breath, emit a
 single command with its own `datasets` list rather than splitting the request.
 - "show me my blood pressure for the last 30 days, mornings only" -> command
   with datasets = ["blood_pressure"], date_range preset 7d/30d/90d as stated,
-  and am_pm = am. ("mornings only" is a time-of-day filter, NOT the show_only
-  exclusivity trigger — "only" there modifies mornings, not the dataset list.)
-- "pulse in the mornings" -> command with datasets = ["pulse"], am_pm = am.
+  and time_of_day = ["morning"]. ("mornings only" is a time-of-day filter, NOT
+  the show_only exclusivity trigger — "only" there modifies mornings, not the
+  dataset list.)
+- "pulse in the mornings" -> command with datasets = ["pulse"],
+  time_of_day = ["morning"].
 - A bare dataset request with no filters is a toggle_dataset, not a command.
 
 Spoken-reply toggle (use exactly this action, never toggle_dataset):
@@ -100,6 +112,9 @@ date_range form:
   "YYYY-MM-DD","to_date":"YYYY-MM-DD"}
 
 Routing rules:
+- Naming two or more values in one breath ("Stage 1 and Stage 2") means
+  listing every mentioned token in that field's array, not emitting separate
+  commands.
 - Partial commands: set ONLY the fields the user mentioned; leave everything
   else null so existing filters carry over.
 - "show all data", "start over", "reset", "everything" -> a command with

@@ -277,7 +277,7 @@ def test_command_carries_datasets_and_filters_together(monkeypatch) -> None:
         "action": "command",
         "datasets": ["blood_pressure"],
         "date_range": {"kind": "preset", "preset": "30d"},
-        "am_pm": "am",
+        "bp_category": ["stage_1", "stage_2"],
     })
 
     reply = service.interpret(
@@ -287,4 +287,31 @@ def test_command_carries_datasets_and_filters_together(monkeypatch) -> None:
     assert reply.kind == "applied"
     assert reply.filters.datasetsOn == ["blood_pressure"]
     assert reply.filters.datePreset == "30d"
-    assert reply.filters.amPm == "AM"
+    assert reply.filters.bpCategory == ["Stage 1", "Stage 2"]
+
+
+def test_bp_category_all_flag_clears_to_empty_list(monkeypatch) -> None:
+    _stub(monkeypatch, {"action": "command", "bp_category_all": True})
+
+    reply = service.interpret("back to all categories", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.bpCategory == []
+
+
+def test_pulse_category_maps_to_applied_filters(monkeypatch) -> None:
+    _stub(monkeypatch, {"action": "command", "pulse_category": ["tachycardia"]})
+
+    reply = service.interpret("show tachycardia readings", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.pulseCategory == ["Tachycardia"]
+
+
+def test_time_of_day_maps_to_applied_filters_capitalized(monkeypatch) -> None:
+    _stub(monkeypatch, {"action": "command", "time_of_day": ["morning", "evening"]})
+
+    reply = service.interpret("mornings and evenings", None, None, None)
+
+    assert reply.kind == "applied"
+    assert reply.filters.timeOfDay == ["Morning", "Evening"]

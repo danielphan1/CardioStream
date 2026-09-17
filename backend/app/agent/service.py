@@ -47,8 +47,8 @@ from app.agent.copy import (
 from app.agent.prompt import SYSTEM_PROMPT, build_messages
 from app.agent.resolver import InvalidRange, ResolvedDates, resolve_date_range
 from app.agent.schemas import (
-    AMPM_TOKEN_TO_LABEL,
     BP_TOKEN_TO_LABEL,
+    PULSE_TOKEN_TO_LABEL,
     AgentOutput,
     AgentReply,
     AppliedFilters,
@@ -206,10 +206,28 @@ def _apply_command(
         return AgentReply(kind="unclear", message=UNCLEAR_MESSAGE)
     _resolved_to_filters(resolved, filters)
 
-    if cmd.am_pm is not None:
-        filters.amPm = AMPM_TOKEN_TO_LABEL[cmd.am_pm]  # type: ignore[assignment]
-    if cmd.bp_category is not None:
-        filters.bpCategory = BP_TOKEN_TO_LABEL[cmd.bp_category]  # type: ignore[assignment]
+    # `_all` takes precedence over any co-present list value (PD-01): it maps
+    # to the empty-list "clear to no restriction" state the store expects.
+    if cmd.bp_category_all:
+        filters.bpCategory = []
+    elif cmd.bp_category is not None:
+        # De-dup mirrors the `cmd.datasets` de-dup precedent below.
+        filters.bpCategory = [BP_TOKEN_TO_LABEL[t] for t in dict.fromkeys(cmd.bp_category)]  # type: ignore[assignment]
+
+    if cmd.pulse_category_all:
+        filters.pulseCategory = []
+    elif cmd.pulse_category is not None:
+        filters.pulseCategory = [
+            PULSE_TOKEN_TO_LABEL[t] for t in dict.fromkeys(cmd.pulse_category)
+        ]  # type: ignore[assignment]
+
+    if cmd.time_of_day_all:
+        filters.timeOfDay = []
+    elif cmd.time_of_day is not None:
+        # No dict lookup — see schemas.py's note on why time-of-day tokens
+        # don't get a TOKEN_TO_LABEL map (str.capitalize() is sufficient).
+        filters.timeOfDay = [t.capitalize() for t in dict.fromkeys(cmd.time_of_day)]  # type: ignore[assignment]
+
     if cmd.datasets:
         # De-duplicated; additive (see DashboardCommand.datasets). An empty
         # list is simply "no datasets mentioned" here — unlike ShowOnly, where

@@ -21,8 +21,8 @@ from app.agent import copy as agent_copy
 from app.agent import prompt
 from app.agent.prompt import SYSTEM_PROMPT, build_messages
 from app.agent.schemas import (
-    AMPM_TOKEN_TO_LABEL,
     BP_TOKEN_TO_LABEL,
+    PULSE_TOKEN_TO_LABEL,
     AgentOutput,
     AgentRequest,
     ClarifyContext,
@@ -47,11 +47,11 @@ from app.deps import BPCategory
 
 def test_command_variant_parses():
     out = AgentOutput.model_validate(
-        {"result": {"action": "command", "chart": "timeline", "am_pm": "am"}}
+        {"result": {"action": "command", "chart": "timeline", "bp_category": ["stage_1"]}}
     )
     assert isinstance(out.result, DashboardCommand)
     assert out.result.chart == "timeline"
-    assert out.result.am_pm == "am"
+    assert out.result.bp_category == ["stage_1"]
     assert out.result.reset is False
 
 
@@ -127,9 +127,9 @@ def test_command_with_nested_date_ranges_parse():
 @pytest.mark.parametrize(
     "raw, expected_category",
     [
-        ({"action": "command", "bp_category": "Stage_1"}, "stage_1"),
-        ({"action": "command", "bp_category": "HYPERTENSIVE_CRISIS"}, "hypertensive_crisis"),
-        ({"action": "command", "bp_category": "Normal"}, "normal"),
+        ({"action": "command", "bp_category": ["Stage_1"]}, ["stage_1"]),
+        ({"action": "command", "bp_category": ["HYPERTENSIVE_CRISIS"]}, ["hypertensive_crisis"]),
+        ({"action": "command", "bp_category": ["Stage_1", "NORMAL"]}, ["stage_1", "normal"]),
     ],
 )
 def test_bp_category_case_drift_normalizes(raw, expected_category):
@@ -137,10 +137,38 @@ def test_bp_category_case_drift_normalizes(raw, expected_category):
     assert out.result.bp_category == expected_category
 
 
-def test_am_pm_case_drift_normalizes():
-    out = AgentOutput.model_validate({"result": {"action": "Command", "am_pm": "AM"}})
-    assert isinstance(out.result, DashboardCommand)
-    assert out.result.am_pm == "am"
+def test_pulse_category_and_time_of_day_parse_as_lists_and_lowercase():
+    out = AgentOutput.model_validate(
+        {"result": {
+            "action": "command",
+            "pulse_category": ["Tachycardia", "BRADYCARDIA"],
+            "time_of_day": ["Morning", "EVENING"],
+        }}
+    )
+    assert out.result.pulse_category == ["tachycardia", "bradycardia"]
+    assert out.result.time_of_day == ["morning", "evening"]
+
+
+def test_all_flags_default_false_and_settable_independently_of_list_field():
+    out = AgentOutput.model_validate(
+        {"result": {
+            "action": "command",
+            "bp_category_all": True,
+            "pulse_category_all": True,
+            "time_of_day_all": True,
+        }}
+    )
+    assert out.result.bp_category_all is True
+    assert out.result.bp_category is None
+    assert out.result.pulse_category_all is True
+    assert out.result.pulse_category is None
+    assert out.result.time_of_day_all is True
+    assert out.result.time_of_day is None
+
+    default = AgentOutput.model_validate({"result": {"action": "command"}})
+    assert default.result.bp_category_all is False
+    assert default.result.pulse_category_all is False
+    assert default.result.time_of_day_all is False
 
 
 def test_toggle_dataset_case_drift_normalizes():
@@ -252,12 +280,16 @@ def test_custom_range_accepts_from_alias_on_input():
 
 def test_bp_token_map_values_match_deps_bpcategory():
     canonical = set(get_args(BPCategory))
-    mapped = set(BP_TOKEN_TO_LABEL.values()) - {"all"}
+    mapped = set(BP_TOKEN_TO_LABEL.values())
     assert mapped == canonical
 
 
-def test_ampm_token_map():
-    assert AMPM_TOKEN_TO_LABEL == {"all": "all", "am": "AM", "pm": "PM"}
+def test_pulse_token_map_values():
+    assert PULSE_TOKEN_TO_LABEL == {
+        "bradycardia": "Bradycardia",
+        "normal": "Normal",
+        "tachycardia": "Tachycardia",
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -386,11 +418,11 @@ def test_command_carries_datasets_alongside_filters():
             "action": "command",
             "datasets": ["blood_pressure"],
             "date_range": {"kind": "preset", "preset": "30d"},
-            "am_pm": "am",
+            "time_of_day": ["morning"],
         }}
     )
     assert out.result.datasets == ["blood_pressure"]
-    assert out.result.am_pm == "am"
+    assert out.result.time_of_day == ["morning"]
 
 
 def test_dataset_phrases_cover_all_five_tokens():

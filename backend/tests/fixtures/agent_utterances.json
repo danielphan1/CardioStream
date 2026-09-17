@@ -89,7 +89,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "amPm": "AM"
+      "timeOfDay": ["Morning"]
     }
   },
   {
@@ -98,7 +98,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "amPm": "PM"
+      "timeOfDay": ["Evening"]
     }
   },
   {
@@ -108,7 +108,7 @@
     "expect": {
       "kind": "applied",
       "datePreset": "30d",
-      "amPm": "AM",
+      "timeOfDay": ["Morning"],
       "datasetsOn": [
         "blood_pressure"
       ]
@@ -120,7 +120,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "amPm": "AM",
+      "timeOfDay": ["Morning"],
       "datasetsOn": [
         "pulse"
       ]
@@ -132,7 +132,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "bpCategory": "Hypertensive Crisis"
+      "bpCategory": ["Hypertensive Crisis"]
     }
   },
   {
@@ -141,7 +141,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "bpCategory": "Stage 2"
+      "bpCategory": ["Stage 2"]
     }
   },
   {
@@ -150,7 +150,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "bpCategory": "Normal"
+      "bpCategory": ["Normal"]
     }
   },
   {
@@ -232,7 +232,7 @@
         "applied",
         "clarify"
       ],
-      "amPm": "AM"
+      "timeOfDay": ["Morning"]
     }
   },
   {
@@ -423,7 +423,7 @@
     "context": null,
     "expect": {
       "kind": "applied",
-      "amPm": "AM"
+      "timeOfDay": ["Morning"]
     }
   },
   {
