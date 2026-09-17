@@ -99,6 +99,44 @@ describe("applyAgentFilters", () => {
     expect(s.timeOfDay.Morning).toBe(true); // survived
   });
 
+  it("applies list-typed bpCategory/pulseCategory/timeOfDay deltas as a full replace", () => {
+    applyAgentFilters({
+      bpCategory: ["Stage 1", "Stage 2"],
+      pulseCategory: ["Tachycardia"],
+      timeOfDay: ["Morning", "Evening"],
+    });
+
+    const s = useFilters.getState();
+    expect(s.bpCategory).toEqual({
+      ...ALL_FALSE_BP,
+      "Stage 1": true,
+      "Stage 2": true,
+    });
+    expect(s.pulseCategory).toEqual({ ...ALL_FALSE_PULSE, Tachycardia: true });
+    expect(s.timeOfDay).toEqual({
+      ...ALL_FALSE_TOD,
+      Morning: true,
+      Evening: true,
+    });
+  });
+
+  it("an explicit empty-array delta clears the group (!= null, not truthy)", () => {
+    useFilters.setState({
+      bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
+      pulseCategory: { ...ALL_FALSE_PULSE, Tachycardia: true },
+      timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+    });
+
+    applyAgentFilters({ bpCategory: [], pulseCategory: [], timeOfDay: [] });
+
+    const s = useFilters.getState();
+    expect(Object.values(s.bpCategory).every((v) => v === false)).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => v === false)).toBe(
+      true,
+    );
+    expect(Object.values(s.timeOfDay).every((v) => v === false)).toBe(true);
+  });
+
   it("reset returns the store to defaults", () => {
     useFilters.setState({
       datePreset: "30d",
