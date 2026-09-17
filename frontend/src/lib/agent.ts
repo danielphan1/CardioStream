@@ -27,8 +27,9 @@ import { useSpeech } from "../store/speech";
 export type PulseField =
   | "chart"
   | "dateRange"
-  | "amPm"
   | "bpCategory"
+  | "pulseCategory"
+  | "timeOfDay"
   | "datasets";
 
 // Tiny zustand signal store: `mark` bumps `seq` and replaces `fields`, so a
@@ -92,8 +93,9 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
     f.chartView != null ||
     f.datePreset != null ||
     (f.customRange?.from != null && f.customRange?.to != null) ||
-    f.amPm != null ||
     f.bpCategory != null ||
+    f.pulseCategory != null ||
+    f.timeOfDay != null ||
     (f.overlayDataset != null && f.overlayState != null) ||
     (f.datasetsOn != null && f.datasetsOn.length > 0) ||
     (f.showOnly != null && f.showOnly.length > 0) ||
@@ -103,11 +105,12 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
   }
 
   if (f.reset) {
-    s.showAllData(); // view/date/amPm/category/datasets → defaults
+    s.showAllData(); // view/date/category/datasets → defaults
     touched.add("chart");
     touched.add("dateRange");
-    touched.add("amPm");
     touched.add("bpCategory");
+    touched.add("timeOfDay");
+    touched.add("pulseCategory");
     touched.add("datasets");
   }
 
@@ -126,13 +129,17 @@ export function applyAgentFilters(f: AppliedFilters): PulseField[] {
     s.setCustomRange(f.customRange.from, f.customRange.to);
     touched.add("dateRange");
   }
-  if (f.amPm != null) {
-    s.setAmPm(f.amPm);
-    touched.add("amPm");
-  }
   if (f.bpCategory != null) {
     s.setBpCategory(f.bpCategory);
     touched.add("bpCategory");
+  }
+  if (f.pulseCategory != null) {
+    s.setPulseCategory(f.pulseCategory);
+    touched.add("pulseCategory");
+  }
+  if (f.timeOfDay != null) {
+    s.setTimeOfDay(f.timeOfDay);
+    touched.add("timeOfDay");
   }
   // Three dataset paths, deliberately distinct (see backend schemas.py):
   //   overlayDataset + overlayState  one dataset, additive  "show my pulse"
