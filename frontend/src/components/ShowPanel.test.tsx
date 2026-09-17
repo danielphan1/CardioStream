@@ -14,8 +14,16 @@ const INITIAL_FILTERS = {
   chartView: "timeline" as const,
   datePreset: "all" as const,
   customRange: { from: null, to: null },
-  amPm: "all" as const,
-  bpCategory: "all" as const,
+  bpCategory: {
+    Hypotension: false,
+    Normal: false,
+    Elevated: false,
+    "Stage 1": false,
+    "Stage 2": false,
+    "Hypertensive Crisis": false,
+  },
+  pulseCategory: { Bradycardia: false, Normal: false, Tachycardia: false },
+  timeOfDay: { Morning: false, Afternoon: false, Evening: false, Night: false },
   visibleDatasets: {
     blood_pressure: true,
     pulse: true,
@@ -217,7 +225,7 @@ describe("agent pulse parity (D-08)", () => {
   it("does not ring for an unrelated field", () => {
     const { container } = render(<ShowPanel />);
     act(() => {
-      useAgentPulse.getState().mark(["amPm"]);
+      useAgentPulse.getState().mark(["bpCategory"]);
     });
     expect(container.innerHTML).not.toContain("ring-[var(--color-brass)]");
   });

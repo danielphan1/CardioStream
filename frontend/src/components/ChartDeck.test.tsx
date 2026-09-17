@@ -16,8 +16,16 @@ const INITIAL = {
   chartView: "timeline" as const,
   datePreset: "all" as const,
   customRange: { from: null, to: null },
-  amPm: "all" as const,
-  bpCategory: "all" as const,
+  bpCategory: {
+    Hypotension: false,
+    Normal: false,
+    Elevated: false,
+    "Stage 1": false,
+    "Stage 2": false,
+    "Hypertensive Crisis": false,
+  },
+  pulseCategory: { Bradycardia: false, Normal: false, Tachycardia: false },
+  timeOfDay: { Morning: false, Afternoon: false, Evening: false, Night: false },
   visibleDatasets: {
     blood_pressure: true,
     pulse: true,
