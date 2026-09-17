@@ -75,7 +75,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 12. Visual Refresh | v1.1 | 8/8 | Complete    | 2026-08-27 |
 | 13. Visual Redesign (Nautical) | v1.1 | 12/12 | Complete    | 2026-09-04 |
 | 14. Show Panel & Combined Timeline | v1.1 | 6/6 | Complete    | 2026-09-12 |
-| 15. Unified Filter Surface | v1.2 | 8/8 | Complete   | 2026-09-17 |
+| 15. Unified Filter Surface | v1.2 | 8/8 | Complete    | 2026-09-17 |
 | 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
