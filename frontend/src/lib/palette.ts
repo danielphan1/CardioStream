@@ -4,7 +4,7 @@
 //
 // NO hex values in this file — every color is a CSS var defined in
 // index.css for both themes; light/dark flips via the `.dark` class (D-15).
-import type { BPCategory } from "../api/types";
+import type { BPCategory, PulseCategory } from "../api/types";
 
 /** Six canonical labels in clinical order — matches backend CLINICAL_ORDER. */
 export const CLINICAL_ORDER: BPCategory[] = [
@@ -32,3 +32,21 @@ export function categoryColor(cat: BPCategory): string {
 
 /** Text color on category-colored chips (contrast pair in index.css). */
 export const CHIP_TEXT = "var(--cat-chip-text)";
+
+/** Three canonical Pulse Category labels in clinical order. */
+export const PULSE_CLINICAL_ORDER: PulseCategory[] = [
+  "Bradycardia",
+  "Normal",
+  "Tachycardia",
+];
+
+const PULSE_CATEGORY_VARS: Record<PulseCategory, string> = {
+  Bradycardia: "var(--ref-bradycardia)",
+  Normal: "var(--cat-normal)",
+  Tachycardia: "var(--cat-elevated)",
+};
+
+/** CSS var string for a Pulse Category — reuses existing CSS vars, no new ones. */
+export function pulseCategoryColor(cat: PulseCategory): string {
+  return PULSE_CATEGORY_VARS[cat];
+}

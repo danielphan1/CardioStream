@@ -12,6 +12,10 @@ export type BPCategory =
   | "Stage 2"
   | "Hypertensive Crisis";
 
+export type PulseCategory = "Bradycardia" | "Normal" | "Tachycardia";
+
+export type TimeOfDayBucket = "Morning" | "Afternoon" | "Evening" | "Night";
+
 export type Reading = {
   id: number;
   datetime: string; // naive local ISO, no Z/offset (DATA-05)
@@ -20,7 +24,7 @@ export type Reading = {
   pulse: number;
   am_pm: "AM" | "PM";
   bp_category: BPCategory;
-  pulse_category: string;
+  pulse_category: PulseCategory;
   map: number;
   pulse_pressure: number;
   notes: string | null;
@@ -133,8 +137,9 @@ export type ChartView = "timeline" | "bp_categories" | "am_pm_comparison";
 export type ResolvedFilters = {
   start_date?: string; // "YYYY-MM-DD"
   end_date?: string; // "YYYY-MM-DD" (inclusive — backend handles exclusivity)
-  am_pm?: "AM" | "PM";
-  bp_category?: BPCategory;
+  bp_category?: BPCategory[];
+  pulse_category?: PulseCategory[];
+  time_of_day?: TimeOfDayBucket[];
 };
 
 // ── Agent wire contract (API-04/VOICE-08) — byte-identical mirror of backend
@@ -173,8 +178,9 @@ export type AppliedFilters = {
   chartView?: ChartView | null;
   datePreset?: "7d" | "30d" | "90d" | "all" | null;
   customRange?: { from: string; to: string } | null;
-  amPm?: "all" | "AM" | "PM" | null;
-  bpCategory?: "all" | BPCategory | null;
+  bpCategory?: BPCategory[] | null;
+  pulseCategory?: PulseCategory[] | null;
+  timeOfDay?: TimeOfDayBucket[] | null;
   // Additive single-dataset toggle ("show my pulse") — leaves every other
   // dataset untouched.
   overlayDataset?: SeriesDataset | null;
