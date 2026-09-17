@@ -20,10 +20,12 @@ Two model families with deliberately different rules:
      fine. These bound the HTTP surface (``max_length`` on text — DoS/cost) and
      shape the store-facing reply.
 
-Token → canonical-label maps (``BP_TOKEN_TO_LABEL``, ``AMPM_TOKEN_TO_LABEL``) are
+Token → canonical-label maps (``BP_TOKEN_TO_LABEL``, ``PULSE_TOKEN_TO_LABEL``) are
 the SINGLE translation point from wire tokens to the canonical labels the read
-API uses (verbatim from ``app.deps`` BPCategory / "AM"/"PM"). Chart tokens equal
-the frontend ``ChartId`` verbatim and pass through unmapped.
+API uses (verbatim from ``app.deps`` BPCategory / PulseCategory). Chart tokens
+equal the frontend ``ChartId`` verbatim and pass through unmapped. Time-of-day
+tokens have no map — ``str.capitalize()`` is sufficient (see the comment above
+``BP_TOKEN_TO_LABEL`` below).
 """
 
 from typing import Literal
@@ -40,8 +42,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 ChartToken = Literal["timeline", "bp_categories", "am_pm_comparison"]
 
 BPCategoryToken = Literal[
-    "all", "hypotension", "normal", "elevated", "stage_1", "stage_2", "hypertensive_crisis"
+    "hypotension", "normal", "elevated", "stage_1", "stage_2", "hypertensive_crisis"
 ]
+
+PulseCategoryToken = Literal["bradycardia", "normal", "tachycardia"]
+
+TimeOfDayToken = Literal["morning", "afternoon", "evening", "night"]
 
 MonthToken = Literal[
     "january", "february", "march", "april", "may", "june",
@@ -101,7 +107,11 @@ DateRange = PresetRange | LastNDays | MonthRange | AbsoluteRange
 
 
 class DashboardCommand(BaseModel):
-    """A view/filter command. Unmentioned fields stay None → carry over (D-13)."""
+    """A view/filter command. Unmentioned fields stay None → carry over (D-13).
+
+    An explicit ``*_all: true`` is how Claude clears a filter group back to
+    "all" — distinct from leaving the field ``None`` (carry over unchanged).
+    """
 
     action: Literal["command"]
     chart: ChartToken | None = None
@@ -113,8 +123,12 @@ class DashboardCommand(BaseModel):
     # alone) — "only"/"just" is the explicit way to exclude, via ShowOnly.
     datasets: list[DatasetToken] | None = None
     date_range: DateRange | None = None
-    am_pm: Literal["all", "am", "pm"] | None = None
-    bp_category: BPCategoryToken | None = None
+    bp_category: list[BPCategoryToken] | None = None
+    bp_category_all: bool = False
+    pulse_category: list[PulseCategoryToken] | None = None
+    pulse_category_all: bool = False
+    time_of_day: list[TimeOfDayToken] | None = None
+    time_of_day_all: bool = False
     reset: bool = False  # "show all data"/"start over" → showAllData()
 
 
@@ -271,10 +285,11 @@ class AppliedFilters(BaseModel):
     chartView: ChartToken | None = None
     datePreset: Literal["7d", "30d", "90d", "all"] | None = None
     customRange: CustomRange | None = None
-    amPm: Literal["all", "AM", "PM"] | None = None
-    bpCategory: Literal[
-        "all", "Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Hypertensive Crisis"
+    bpCategory: list[
+        Literal["Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Hypertensive Crisis"]
     ] | None = None
+    pulseCategory: list[Literal["Bradycardia", "Normal", "Tachycardia"]] | None = None
+    timeOfDay: list[Literal["Morning", "Afternoon", "Evening", "Night"]] | None = None
     # Additive single-dataset toggle; leaves every other dataset untouched.
     overlayDataset: DatasetToken | None = None
     overlayState: Literal["on", "off"] | None = None
@@ -302,7 +317,6 @@ class AgentReply(BaseModel):
 
 # Values verbatim from app.deps.BPCategory (spaces included, never snake_cased).
 BP_TOKEN_TO_LABEL: dict[str, str] = {
-    "all": "all",
     "hypotension": "Hypotension",
     "normal": "Normal",
     "elevated": "Elevated",
@@ -311,4 +325,13 @@ BP_TOKEN_TO_LABEL: dict[str, str] = {
     "hypertensive_crisis": "Hypertensive Crisis",
 }
 
-AMPM_TOKEN_TO_LABEL: dict[str, str] = {"all": "all", "am": "AM", "pm": "PM"}
+PULSE_TOKEN_TO_LABEL: dict[str, str] = {
+    "bradycardia": "Bradycardia",
+    "normal": "Normal",
+    "tachycardia": "Tachycardia",
+}
+
+# No TIME_OF_DAY_TOKEN_TO_LABEL: unlike the two maps above, none of the four
+# time-of-day labels ("Morning", "Afternoon", "Evening", "Night") have internal
+# capitals or multi-word forms, so plain str.capitalize() is sufficient at the
+# call site — intentionally inconsistent with BP/PULSE, not an oversight.
