@@ -57,7 +57,7 @@ def test_applied_reply_echoes_filters(client) -> None:
     def fake(text, context, earliest, latest):
         return AgentReply(
             kind="applied",
-            filters=AppliedFilters(chartView="timeline", datePreset="30d", amPm="AM"),
+            filters=AppliedFilters(chartView="timeline", datePreset="30d", bpCategory=["Stage 1"]),
             message="",
         )
 
@@ -68,7 +68,7 @@ def test_applied_reply_echoes_filters(client) -> None:
     assert body["kind"] == "applied"
     assert body["filters"]["chartView"] == "timeline"
     assert body["filters"]["datePreset"] == "30d"
-    assert body["filters"]["amPm"] == "AM"
+    assert body["filters"]["bpCategory"] == ["Stage 1"]
 
 
 def test_custom_range_serializes_with_from_alias(client) -> None:

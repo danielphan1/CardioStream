@@ -87,10 +87,14 @@ def test_utterance_intent(entry: dict) -> None:
         assert f is not None and f.customRange is not None, f"{entry['id']}: customRange missing"
         assert f.customRange.from_ == expect["customRange"]["from"], f"{entry['id']}: from"
         assert f.customRange.to == expect["customRange"]["to"], f"{entry['id']}: to"
-    if "amPm" in expect:
-        assert f is not None and f.amPm == expect["amPm"], f"{entry['id']}: amPm"
+    if "timeOfDay" in expect:
+        assert f is not None and f.timeOfDay == expect["timeOfDay"], f"{entry['id']}: timeOfDay"
     if "bpCategory" in expect:
         assert f is not None and f.bpCategory == expect["bpCategory"], f"{entry['id']}: bpCategory"
+    if "pulseCategory" in expect:
+        assert f is not None and f.pulseCategory == expect["pulseCategory"], (
+            f"{entry['id']}: pulseCategory"
+        )
     if "reset" in expect:
         assert f is not None and f.reset == expect["reset"], f"{entry['id']}: reset"
     if expect.get("has_message"):
