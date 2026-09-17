@@ -465,12 +465,27 @@ Not applicable — this phase introduces **zero new external packages** (UI-SPEC
    - What's unclear: whether Chris (the actual end user) has an opinion on this, or whether "no strong opinion, ship the recommended option" is an acceptable path for `/gsd-plan-phase 15` to take unilaterally.
    - Recommendation: surface this exact question to the user before or during planning (per the UI-SPEC's own instruction), since it changes the store shape (`store/filters.ts`'s field count), the agent's `prompt.py` vocabulary for "mornings"/"evenings" routing, and the live-sentence segment count — a decision reversed *after* implementation starts is a real rework cost, not a cosmetic one.
 
-2. **The agent's "clear this filter back to all" mechanism for list-typed `am_pm`/`bp_category` (Focus Answer 3).**
+2. ~~**The agent's "clear this filter back to all" mechanism for list-typed `am_pm`/`bp_category` (Focus Answer 3).**~~ **RESOLVED
+   2026-09-16.** Decided during planning as **PD-01** (documented in `15-02-PLAN.md`): a sibling
+   `*_all: bool = False` flag per group — Focus Answer 3's recommended Option 1 — e.g.
+   `bp_category_all: bool = False` alongside `bp_category: list[BPCategoryToken] | None = None`,
+   mirroring the existing `reset: bool` idiom already coexisting with `DashboardCommand`'s optional
+   fields. When both a list AND its matching `_all` flag are present in one command, the `_all` flag
+   wins (maps to the empty-list "clear to no restriction" state; the accompanying list value, if any,
+   is ignored) — documented as a code comment in `_apply_command`. Original framing kept below for
+   traceability.
    - What we know: the current singular schema handles this via an `"all"` token; a bare list-typed field loses that expressiveness unless something replaces it.
    - What's unclear: which of the two options (sibling boolean flag vs. retained `"all"` sentinel inside the list) the planner should commit to — both are valid, this research recommends the sibling-flag approach but flags it as a judgment call (Assumption A4), not a settled fact.
    - Recommendation: decide explicitly during planning (not silently during coding); whichever is chosen, `prompt.py`'s "back to all categories"/"show all times" vocabulary needs a matching update either way.
 
-3. **Does FastAPI (this project's pinned 0.139.x) resolve an entirely-omitted `list[X] | None` query param to `None` or to `[]`?**
+3. ~~**Does FastAPI (this project's pinned 0.139.x) resolve an entirely-omitted `list[X] | None` query param to `None` or to `[]`?**~~ **RESOLVED
+   2026-09-16.** Addressed procedurally rather than pre-verified from documentation: `15-01-PLAN.md`
+   Task 1's action item (c) requires an explicit regression test — `GET /readings` with `bp_category`
+   omitted entirely must return all 5 seeded rows, not zero — written and run against this project's
+   actual pinned FastAPI/SQLAlchemy versions as part of Task 1's own `<verify>` gate, before any
+   `IN`-clause code downstream is trusted to behave correctly on an omitted param. This is exactly the
+   recommendation below, now committed as a concrete task instruction rather than a deferred check.
+   Original framing kept below for traceability.
    - What we know: training knowledge and general FastAPI documentation say `None` (the declared default), consistent with existing singular-filter behavior in this codebase.
    - What's unclear: not independently verified against a running instance of this project's exact pinned version in this research session (no test execution was performed).
    - Recommendation: the planner's first backend task for the `IN`-clause conversion should include an explicit test asserting this (`GET /readings` with no `bp_category` param at all returns every row, not zero) as its very first regression test, before building anything on top of the assumption.
