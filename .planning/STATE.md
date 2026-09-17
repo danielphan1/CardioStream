@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
 status: planning
-last_updated: "2026-09-17T23:10:47.325Z"
+last_updated: "2026-09-17T23:27:57.830Z"
 last_activity: 2026-09-17
 progress:
   total_phases: 7
@@ -227,12 +227,12 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-17T23:10:47.318Z
-Stopped at: Phase 16 context gathered
+Last session: 2026-09-17T23:27:57.823Z
+Stopped at: Phase 16 UI-SPEC approved
 Next action: Phase 15 (Unified Filter Surface) has a UI-SPEC ready to plan; no formal milestone currently
   wraps phases 13-19 (v1.1 already shipped 2026-08-27) — consider scoping one, or continue straight to
   Phase 15 planning
-Resume file: .planning/phases/16-trend-clarity-and-chart-polish/16-CONTEXT.md
+Resume file: .planning/phases/16-trend-clarity-and-chart-polish/16-UI-SPEC.md
 
 ## Operator Next Steps
 
