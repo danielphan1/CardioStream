@@ -19,9 +19,13 @@ import { create } from "zustand";
 import type {
   BPCategory,
   ChartView,
+  PulseCategory,
   SeriesDataset,
+  TimeOfDayBucket,
 } from "../api/types";
+import { CLINICAL_ORDER, PULSE_CLINICAL_ORDER } from "../lib/palette";
 import type { DatePreset } from "../lib/dates";
+import { TIME_OF_DAY_ORDER } from "../lib/dates";
 
 export type { DatePreset };
 
@@ -46,14 +50,43 @@ const DEFAULT_DATASETS: Record<SeriesDataset, boolean> = {
   procedures: false,
 };
 
-// Internal-only shape of the persisted blob — mirrors FilterState's 6
-// persisted fields exactly (excludes the action functions).
-type PersistedFilters = {
+/** All-false default maps for the three v3 category filter groups — same
+ *  "governs a brand-new device only" caveat as DEFAULT_DATASETS above. */
+const DEFAULT_BP_CATEGORY: Record<BPCategory, boolean> = Object.fromEntries(
+  CLINICAL_ORDER.map((c) => [c, false]),
+) as Record<BPCategory, boolean>;
+const DEFAULT_PULSE_CATEGORY: Record<PulseCategory, boolean> =
+  Object.fromEntries(
+    PULSE_CLINICAL_ORDER.map((c) => [c, false]),
+  ) as Record<PulseCategory, boolean>;
+const DEFAULT_TIME_OF_DAY: Record<TimeOfDayBucket, boolean> =
+  Object.fromEntries(
+    TIME_OF_DAY_ORDER.map((c) => [c, false]),
+  ) as Record<TimeOfDayBucket, boolean>;
+
+// Internal-only shape of the OLD (pre-Phase-15) persisted blob — today's
+// scalar amPm/bpCategory single-select shape, renamed from the old
+// `PersistedFilters` now that the name means v3 (below).
+type PersistedFiltersV2 = {
   chartView: ChartView;
   datePreset: DatePreset;
   customRange: { from: string | null; to: string | null };
   amPm: "all" | "AM" | "PM";
   bpCategory: "all" | BPCategory;
+  visibleDatasets: Record<SeriesDataset, boolean>;
+};
+
+// Internal-only shape of the CURRENT (v3) persisted blob — mirrors
+// FilterState's persisted fields exactly (excludes the action functions).
+// amPm is gone (resolved Option B — no v3 destination); bpCategory widens to
+// a multi-select map, plus two brand-new category maps.
+type PersistedFilters = {
+  chartView: ChartView;
+  datePreset: DatePreset;
+  customRange: { from: string | null; to: string | null };
+  bpCategory: Record<BPCategory, boolean>;
+  pulseCategory: Record<PulseCategory, boolean>;
+  timeOfDay: Record<TimeOfDayBucket, boolean>;
   visibleDatasets: Record<SeriesDataset, boolean>;
 };
 
@@ -63,7 +96,7 @@ type PersistedFilters = {
 // exhaustive switch with a timeline fallback already guards against a
 // shape-valid but unrecognized chartView downstream, so this guard
 // deliberately doesn't duplicate that check.
-function isPersistedFilters(value: unknown): value is PersistedFilters {
+function isV2Filters(value: unknown): value is PersistedFiltersV2 {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
 
@@ -86,6 +119,70 @@ function isPersistedFilters(value: unknown): value is PersistedFilters {
   }
 
   return true;
+}
+
+// Shape-only validation for the CURRENT (v3) blob — same per-key boolean-map
+// pattern as visibleDatasets above, repeated for the three category groups.
+function isV3Filters(value: unknown): value is PersistedFilters {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+
+  if (typeof v.chartView !== "string") return false;
+  if (typeof v.datePreset !== "string") return false;
+
+  if (typeof v.customRange !== "object" || v.customRange === null)
+    return false;
+  const range = v.customRange as Record<string, unknown>;
+  if (typeof range.from !== "string" && range.from !== null) return false;
+  if (typeof range.to !== "string" && range.to !== null) return false;
+
+  if (typeof v.visibleDatasets !== "object" || v.visibleDatasets === null)
+    return false;
+  const datasets = v.visibleDatasets as Record<string, unknown>;
+  for (const key of DATASET_KEYS) {
+    if (typeof datasets[key] !== "boolean") return false;
+  }
+
+  if (typeof v.bpCategory !== "object" || v.bpCategory === null) return false;
+  const bpCategory = v.bpCategory as Record<string, unknown>;
+  for (const key of CLINICAL_ORDER) {
+    if (typeof bpCategory[key] !== "boolean") return false;
+  }
+
+  if (typeof v.pulseCategory !== "object" || v.pulseCategory === null)
+    return false;
+  const pulseCategory = v.pulseCategory as Record<string, unknown>;
+  for (const key of PULSE_CLINICAL_ORDER) {
+    if (typeof pulseCategory[key] !== "boolean") return false;
+  }
+
+  if (typeof v.timeOfDay !== "object" || v.timeOfDay === null) return false;
+  const timeOfDay = v.timeOfDay as Record<string, unknown>;
+  for (const key of TIME_OF_DAY_ORDER) {
+    if (typeof timeOfDay[key] !== "boolean") return false;
+  }
+
+  return true;
+}
+
+// ── v2 → v3 migration ─────────────────────────────────────────────────────
+// A blob written by the pre-Phase-15 app has scalar amPm/bpCategory
+// single-select fields. Same governing principle as migrateLegacy below:
+// never silently reset a caregiver's prior selection on first load after
+// deploy. v2.amPm is never read — it has no v3 destination (resolved Option
+// B); amPm is dropped entirely, not migrated to timeOfDay.
+function migrateV2(v2: PersistedFiltersV2): PersistedFilters {
+  return {
+    chartView: v2.chartView,
+    datePreset: v2.datePreset,
+    customRange: v2.customRange,
+    visibleDatasets: v2.visibleDatasets,
+    bpCategory: Object.fromEntries(
+      CLINICAL_ORDER.map((c) => [c, c === v2.bpCategory]),
+    ) as Record<BPCategory, boolean>,
+    pulseCategory: { ...DEFAULT_PULSE_CATEGORY },
+    timeOfDay: { ...DEFAULT_TIME_OF_DAY },
+  };
 }
 
 // ── v1 → v2 migration ─────────────────────────────────────────────────────
@@ -115,7 +212,7 @@ function isLegacyFilters(value: unknown): value is LegacyFilters {
 
 /** The old `activeChart` carried two orthogonal facts at once — which view to
  *  show AND (for the two timeline charts) which vital. Split them apart. */
-function migrateLegacy(legacy: LegacyFilters & Record<string, unknown>): PersistedFilters {
+function migrateLegacy(legacy: LegacyFilters & Record<string, unknown>): PersistedFiltersV2 {
   let chartView: ChartView = "timeline";
   let blood_pressure = true;
   let pulse = true;
@@ -167,9 +264,12 @@ function readStoredFilters(): PersistedFilters | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw === null) return null;
     const parsed: unknown = JSON.parse(raw);
-    if (isPersistedFilters(parsed)) return parsed;
+    if (isV3Filters(parsed)) return parsed;
+    if (isV2Filters(parsed)) return migrateV2(parsed);
     if (isLegacyFilters(parsed)) {
-      return migrateLegacy(parsed as LegacyFilters & Record<string, unknown>);
+      return migrateV2(
+        migrateLegacy(parsed as LegacyFilters & Record<string, unknown>),
+      );
     }
     return null;
   } catch {
@@ -189,8 +289,9 @@ interface FilterState {
   chartView: ChartView; // D-08 — timeline vs the two summary views
   datePreset: DatePreset;
   customRange: { from: string | null; to: string | null }; // "YYYY-MM-DD"
-  amPm: "all" | "AM" | "PM"; // D-19 single-select
-  bpCategory: "all" | BPCategory; // D-19 single-select
+  bpCategory: Record<BPCategory, boolean>; // Phase 15 multi-select
+  pulseCategory: Record<PulseCategory, boolean>; // Phase 15 multi-select
+  timeOfDay: Record<TimeOfDayBucket, boolean>; // Phase 15 multi-select
   visibleDatasets: Record<SeriesDataset, boolean>; // D-01 independent multi-select
   initFilters: () => void;
   setChartView: (v: ChartView) => void;
@@ -216,8 +317,9 @@ export const useFilters = create<FilterState>((set, get) => {
       chartView: s.chartView,
       datePreset: s.datePreset,
       customRange: s.customRange,
-      amPm: s.amPm,
       bpCategory: s.bpCategory,
+      pulseCategory: s.pulseCategory,
+      timeOfDay: s.timeOfDay,
       visibleDatasets: s.visibleDatasets,
     });
   };
@@ -226,8 +328,9 @@ export const useFilters = create<FilterState>((set, get) => {
     chartView: "timeline",
     datePreset: "all",
     customRange: { from: null, to: null },
-    amPm: "all",
-    bpCategory: "all",
+    bpCategory: { ...DEFAULT_BP_CATEGORY },
+    pulseCategory: { ...DEFAULT_PULSE_CATEGORY },
+    timeOfDay: { ...DEFAULT_TIME_OF_DAY },
     visibleDatasets: { ...DEFAULT_DATASETS },
     initFilters: () => {
       const stored = readStoredFilters();
@@ -279,8 +382,9 @@ export const useFilters = create<FilterState>((set, get) => {
         chartView: "timeline",
         datePreset: "all",
         customRange: { from: null, to: null },
-        amPm: "all",
-        bpCategory: "all",
+        bpCategory: { ...DEFAULT_BP_CATEGORY },
+        pulseCategory: { ...DEFAULT_PULSE_CATEGORY },
+        timeOfDay: { ...DEFAULT_TIME_OF_DAY },
         visibleDatasets: { ...DEFAULT_DATASETS },
       });
       persistCurrent();

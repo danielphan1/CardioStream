@@ -9,8 +9,25 @@ const INITIAL = {
   chartView: "timeline" as const,
   datePreset: "all" as const,
   customRange: { from: null, to: null },
-  amPm: "all" as const,
-  bpCategory: "all" as const,
+  bpCategory: {
+    Hypotension: false,
+    Normal: false,
+    Elevated: false,
+    "Stage 1": false,
+    "Stage 2": false,
+    "Hypertensive Crisis": false,
+  },
+  pulseCategory: {
+    Bradycardia: false,
+    Normal: false,
+    Tachycardia: false,
+  },
+  timeOfDay: {
+    Morning: false,
+    Afternoon: false,
+    Evening: false,
+    Night: false,
+  },
   visibleDatasets: {
     blood_pressure: true,
     pulse: true,
@@ -31,8 +48,9 @@ describe("useFilters initial state", () => {
     expect(s.chartView).toBe("timeline");
     expect(s.datePreset).toBe("all");
     expect(s.customRange).toEqual({ from: null, to: null });
-    expect(s.amPm).toBe("all");
-    expect(s.bpCategory).toBe("all");
+    expect(Object.values(s.bpCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.timeOfDay).every((v) => !v)).toBe(true);
   });
 
   it("defaults to both vitals on and every event type off (D-10)", () => {
@@ -193,34 +211,6 @@ describe("showOnlyDatasets — exclusive selection (the client's own phrasing)",
 });
 
 describe("initFilters (localStorage bootstrap)", () => {
-  it("restores a valid persisted blob on initFilters()", () => {
-    const persisted = {
-      chartView: "bp_categories",
-      datePreset: "7d",
-      customRange: { from: null, to: null },
-      amPm: "AM",
-      bpCategory: "Stage 2",
-      visibleDatasets: {
-        blood_pressure: false,
-        pulse: true,
-        labs: true,
-        incidents: false,
-        procedures: true,
-      },
-    };
-    localStorage.setItem("hv-filters", JSON.stringify(persisted));
-
-    useFilters.getState().initFilters();
-
-    const s = useFilters.getState();
-    expect(s.chartView).toBe(persisted.chartView);
-    expect(s.datePreset).toBe(persisted.datePreset);
-    expect(s.customRange).toEqual(persisted.customRange);
-    expect(s.amPm).toBe(persisted.amPm);
-    expect(s.bpCategory).toBe(persisted.bpCategory);
-    expect(s.visibleDatasets).toEqual(persisted.visibleDatasets);
-  });
-
   it("leaves defaults untouched when the persisted value is corrupted JSON", () => {
     localStorage.setItem("hv-filters", "garbage");
 
@@ -331,8 +321,7 @@ describe("v1 → v2 migration of pre-Phase-14 persisted filters", () => {
     useFilters.getState().initFilters();
     const s = useFilters.getState();
     expect(s.datePreset).toBe("30d");
-    expect(s.amPm).toBe("PM");
-    expect(s.bpCategory).toBe("Stage 1");
+    expect(s.bpCategory["Stage 1"]).toBe(true);
   });
 
   it("falls back to timeline with both vitals for an unrecognized activeChart", () => {
@@ -356,6 +345,44 @@ describe("v1 → v2 migration of pre-Phase-14 persisted filters", () => {
     expect(useFilters.getState().visibleDatasets).toEqual(
       INITIAL.visibleDatasets,
     );
+  });
+});
+
+// A blob written by the pre-Phase-15 app — scalar amPm/bpCategory
+// single-select fields. Same "don't silently reset Chris's choice" principle
+// as the v1→v2 block above, now proven for v2→v3 too.
+describe("v2 → v3 migration of pre-Phase-15 persisted filters", () => {
+  it("migrates a v2 blob's scalar bpCategory into the v3 multi-select map, ignoring the stray amPm field", () => {
+    const v2 = {
+      chartView: "bp_categories",
+      datePreset: "30d",
+      customRange: { from: null, to: null },
+      bpCategory: "Stage 2",
+      visibleDatasets: {
+        blood_pressure: false,
+        pulse: true,
+        labs: true,
+        incidents: false,
+        procedures: true,
+      },
+      amPm: "AM", // stray v2 field — tolerated but ignored, no v3 destination
+    };
+    localStorage.setItem("hv-filters", JSON.stringify(v2));
+
+    useFilters.getState().initFilters();
+
+    const s = useFilters.getState();
+    expect(s.bpCategory["Stage 2"]).toBe(true);
+    expect(
+      Object.entries(s.bpCategory).every(
+        ([k, v]) => k === "Stage 2" || v === false,
+      ),
+    ).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.timeOfDay).every((v) => !v)).toBe(true);
+    expect(s.datePreset).toBe("30d");
+    expect(s.customRange).toEqual({ from: null, to: null });
+    expect(s.visibleDatasets).toEqual(v2.visibleDatasets);
   });
 });
 
