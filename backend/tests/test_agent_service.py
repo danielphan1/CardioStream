@@ -277,7 +277,7 @@ def test_command_carries_datasets_and_filters_together(monkeypatch) -> None:
         "action": "command",
         "datasets": ["blood_pressure"],
         "date_range": {"kind": "preset", "preset": "30d"},
-        "am_pm": "am",
+        "bp_category": ["stage_1", "stage_2"],
     })
 
     reply = service.interpret(
@@ -287,4 +287,4 @@ def test_command_carries_datasets_and_filters_together(monkeypatch) -> None:
     assert reply.kind == "applied"
     assert reply.filters.datasetsOn == ["blood_pressure"]
     assert reply.filters.datePreset == "30d"
-    assert reply.filters.amPm == "AM"
+    assert reply.filters.bpCategory == ["Stage 1", "Stage 2"]
