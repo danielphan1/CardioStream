@@ -16,17 +16,62 @@
  * empty dashboard forever. Phase 3's server-side resolver (API-05) MUST copy
  * this same anchor so voice commands and manual filters resolve identically.
  */
-import type { BPCategory, ResolvedFilters } from "../api/types";
+import type {
+  BPCategory,
+  PulseCategory,
+  ResolvedFilters,
+  TimeOfDayBucket,
+} from "../api/types";
+import { CLINICAL_ORDER, PULSE_CLINICAL_ORDER } from "./palette";
 
 export type DatePreset = "7d" | "30d" | "90d" | "all" | "custom";
+
+export const TIME_OF_DAY_ORDER: TimeOfDayBucket[] = [
+  "Morning",
+  "Afternoon",
+  "Evening",
+  "Night",
+];
 
 /** The date-relevant slice of the filter store (store/filters.ts). */
 export type FilterDateState = {
   datePreset: DatePreset;
   customRange: { from: string | null; to: string | null };
-  amPm: "all" | "AM" | "PM";
-  bpCategory: "all" | BPCategory;
+  bpCategory: Record<BPCategory, boolean>;
+  pulseCategory: Record<PulseCategory, boolean>;
+  timeOfDay: Record<TimeOfDayBucket, boolean>;
 };
+
+/** Keys of `m` whose value is `true` — the raw selected set, unordered. */
+export function selectedKeys<K extends string>(m: Record<K, boolean>): K[] {
+  return (Object.keys(m) as K[]).filter((k) => m[k]);
+}
+
+/** Zero-or-all convention: selecting none or every key means "no filter" —
+ * omit the key from the resolved query entirely. A strict subset resolves to
+ * that subset. */
+export function selectedOrOmit<K extends string>(
+  m: Record<K, boolean>,
+  totalKeys: number,
+): K[] | undefined {
+  const selected = selectedKeys(m);
+  return selected.length === 0 || selected.length === totalKeys
+    ? undefined
+    : selected;
+}
+
+/** Same zero-or-all convention, but for display: returns `allLabel` instead of
+ * `undefined`, or the raw selected-keys array otherwise (callers join it with
+ * joinWithAnd themselves). */
+export function selectedOrAll<K extends string>(
+  m: Record<K, boolean>,
+  allLabel: string,
+): K[] | string {
+  const selected = selectedKeys(m);
+  return selected.length === 0 || selected.length === Object.keys(m).length
+    ? allLabel
+    : selected;
+}
 
 const PRESET_DAYS: Partial<Record<DatePreset, number>> = {
   "7d": 7,
@@ -152,8 +197,17 @@ export function resolveFilters(
   }
   // "all" (and day presets without an anchor): no date keys.
 
-  if (state.amPm !== "all") resolved.am_pm = state.amPm;
-  if (state.bpCategory !== "all") resolved.bp_category = state.bpCategory;
+  const bpCategory = selectedOrOmit(state.bpCategory, CLINICAL_ORDER.length);
+  if (bpCategory) resolved.bp_category = bpCategory;
+
+  const pulseCategory = selectedOrOmit(
+    state.pulseCategory,
+    PULSE_CLINICAL_ORDER.length,
+  );
+  if (pulseCategory) resolved.pulse_category = pulseCategory;
+
+  const timeOfDay = selectedOrOmit(state.timeOfDay, TIME_OF_DAY_ORDER.length);
+  if (timeOfDay) resolved.time_of_day = timeOfDay;
 
   return resolved;
 }

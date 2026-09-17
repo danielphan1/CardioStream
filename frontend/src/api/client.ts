@@ -48,11 +48,16 @@ function handleUnauthorized(status: number): void {
 
 export async function getJson<T>(
   path: string,
-  params?: Record<string, string | undefined>,
+  params?: Record<string, string | string[] | undefined>,
 ): Promise<T> {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params ?? {})) {
-    if (value !== undefined) search.set(key, value);
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      for (const v of value) search.append(key, v);
+    } else {
+      search.set(key, value);
+    }
   }
   const qs = search.toString();
   let res: Response;
