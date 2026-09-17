@@ -75,7 +75,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 12. Visual Refresh | v1.1 | 8/8 | Complete    | 2026-08-27 |
 | 13. Visual Redesign (Nautical) | v1.1 | 12/12 | Complete    | 2026-09-04 |
 | 14. Show Panel & Combined Timeline | v1.1 | 6/6 | Complete    | 2026-09-12 |
-| 15. Unified Filter Surface | v1.2 | 7/8 | In Progress|  |
+| 15. Unified Filter Surface | v1.2 | 8/8 | Complete   | 2026-09-17 |
 | 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
@@ -142,7 +142,7 @@ Plans:
 **Goal:** Chris can combine filters instead of picking one — "Stage 1 **and** Stage 2", "mornings **and** evenings" — through the same checkbox control model the Show panel already uses, plus two filters whose data already exists but has never been reachable.
 **Requirements**: Client-driven request (2026-09-13). Direct continuation of Phase 14, whose `14-CONTEXT.md` named the root cause as *"the dashboard runs two different control models side by side"* — Phase 14 converted the five datasets to real checkboxes but left FilterBar as single-select `aria-pressed` buttons. This finishes that job.
 **Depends on:** Phase 14
-**Plans:** 7/8 plans executed
+**Plans:** 8/8 plans complete
 **UI hint**: yes
 
 Scope:
@@ -189,7 +189,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 15-08-PLAN.md — Frontend test-fixture sync (ChartDeck/CommandBar/useVoiceCommand/ShowPanel tests) + lib/agent-parity.test.ts rewrite (wave 4)
+- [x] 15-08-PLAN.md — Frontend test-fixture sync (ChartDeck/CommandBar/useVoiceCommand/ShowPanel tests) + lib/agent-parity.test.ts rewrite (wave 4)
 
 ### Phase 16: Trend Clarity and Chart Polish
 
