@@ -100,6 +100,14 @@ None - no external service configuration required.
 - `api/types.ts`, `lib/palette.ts`, `api/client.ts`, and `lib/dates.ts` now expose the fixed contracts (`PulseCategory`/`TimeOfDayBucket`, list-typed `ResolvedFilters`/`AppliedFilters`, `pulseCategoryColor`, `selectedKeys`/`selectedOrOmit`/`selectedOrAll`, `TIME_OF_DAY_ORDER`) that later Phase 15 plans (store, FilterBar, agent bridge) should import rather than redefine.
 - Downstream plans 15-06/15-07/15-08 must update `useStats.ts`, `agent.ts`, `agent.test.ts`, and `agent-parity.test.ts` to the new `AppliedFilters`/`ResolvedFilters`/`FilterDateState` shapes (amPm removed, bpCategory list-typed) — tracked as expected pending work above, not a blocker for this plan.
 
+## Self-Check: PASSED
+
+- FOUND: `frontend/src/api/types.ts`, `frontend/src/lib/palette.ts`, `frontend/src/api/client.ts`, `frontend/src/lib/dates.ts`, `frontend/src/lib/dates.test.ts` (all modified files present)
+- FOUND: `.planning/phases/15-unified-filter-surface-multi-select-checkboxes-pulse-categor/15-03-SUMMARY.md`
+- FOUND: commit `1222594` (Task 1)
+- FOUND: commit `db9e35b` (Task 2)
+- FOUND: commit `0724211` (plan metadata / this SUMMARY)
+
 ---
 *Phase: 15-unified-filter-surface-multi-select-checkboxes-pulse-categor*
 *Completed: 2026-09-17*
