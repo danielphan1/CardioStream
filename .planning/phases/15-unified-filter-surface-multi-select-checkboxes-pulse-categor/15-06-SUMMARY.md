@@ -98,3 +98,13 @@ _Task 3 is not a plan task — it closes a gap between Task 1's `<behavior>` spe
 ---
 *Phase: 15-unified-filter-surface-multi-select-checkboxes-pulse-categor*
 *Completed: 2026-09-17*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/lib/agent.ts
+- FOUND: frontend/src/lib/agent.test.ts
+- FOUND: .planning/phases/15-unified-filter-surface-multi-select-checkboxes-pulse-categor/15-06-SUMMARY.md
+- FOUND: commit 8aa095e (Task 1)
+- FOUND: commit 117eb69 (Task 2)
+- FOUND: commit 5f8680a (test addendum)
+- FOUND: commit b3818d2 (docs: summary)
