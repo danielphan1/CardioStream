@@ -3,6 +3,7 @@
 // presets anchored to the newest reading, never today (Pitfall 9).
 import { describe, expect, it } from "vitest";
 
+import type { BPCategory, PulseCategory, TimeOfDayBucket } from "../api/types";
 import {
   combineLocalDateTime,
   fmtLongDate,
@@ -13,17 +14,36 @@ import {
   parseDateOnly,
   presetLabel,
   resolveFilters,
+  TIME_OF_DAY_ORDER,
   type FilterDateState,
 } from "./dates";
+import { CLINICAL_ORDER, PULSE_CLINICAL_ORDER } from "./palette";
 
 const ANCHOR = "2025-06-13T09:21:00"; // newest seeded reading
+
+function allFalse<K extends string>(keys: K[]): Record<K, boolean> {
+  return Object.fromEntries(keys.map((k) => [k, false])) as Record<
+    K,
+    boolean
+  >;
+}
+
+function withTrue<K extends string>(
+  keys: K[],
+  trueKeys: K[],
+): Record<K, boolean> {
+  const m = allFalse(keys);
+  for (const k of trueKeys) m[k] = true;
+  return m;
+}
 
 function state(overrides: Partial<FilterDateState> = {}): FilterDateState {
   return {
     datePreset: "all",
     customRange: { from: null, to: null },
-    amPm: "all",
-    bpCategory: "all",
+    bpCategory: allFalse<BPCategory>(CLINICAL_ORDER),
+    pulseCategory: allFalse<PulseCategory>(PULSE_CLINICAL_ORDER),
+    timeOfDay: allFalse<TimeOfDayBucket>(TIME_OF_DAY_ORDER),
     ...overrides,
   };
 }
@@ -82,12 +102,63 @@ describe("resolveFilters", () => {
     expect(resolveFilters(state(), ANCHOR)).toEqual({});
   });
 
-  it('amPm "AM" adds am_pm; bpCategory "Stage 1" adds the verbatim label', () => {
+  it("a single true bpCategory key resolves to a one-element array", () => {
     const resolved = resolveFilters(
-      state({ amPm: "AM", bpCategory: "Stage 1" }),
+      state({ bpCategory: withTrue<BPCategory>(CLINICAL_ORDER, ["Stage 1"]) }),
       ANCHOR,
     );
-    expect(resolved).toEqual({ am_pm: "AM", bp_category: "Stage 1" });
+    expect(resolved).toEqual({ bp_category: ["Stage 1"] });
+  });
+
+  it("two true bpCategory keys resolve to both elements in the array", () => {
+    const resolved = resolveFilters(
+      state({
+        bpCategory: withTrue<BPCategory>(CLINICAL_ORDER, ["Stage 1", "Stage 2"]),
+      }),
+      ANCHOR,
+    );
+    expect(resolved).toEqual({ bp_category: ["Stage 1", "Stage 2"] });
+  });
+
+  it("all bpCategory keys true omits bp_category entirely (zero-or-all)", () => {
+    const resolved = resolveFilters(
+      state({
+        bpCategory: withTrue<BPCategory>(CLINICAL_ORDER, CLINICAL_ORDER),
+      }),
+      ANCHOR,
+    );
+    expect(resolved.bp_category).toBeUndefined();
+  });
+
+  it("no bpCategory keys true omits bp_category entirely (zero-or-all)", () => {
+    const resolved = resolveFilters(state(), ANCHOR);
+    expect(resolved.bp_category).toBeUndefined();
+  });
+
+  it("two true timeOfDay keys resolve to time_of_day array, same zero-or-all behavior", () => {
+    const resolved = resolveFilters(
+      state({
+        timeOfDay: withTrue<TimeOfDayBucket>(TIME_OF_DAY_ORDER, [
+          "Morning",
+          "Evening",
+        ]),
+      }),
+      ANCHOR,
+    );
+    expect(resolved).toEqual({ time_of_day: ["Morning", "Evening"] });
+  });
+
+  it("all timeOfDay keys true omits time_of_day entirely (zero-or-all)", () => {
+    const resolved = resolveFilters(
+      state({
+        timeOfDay: withTrue<TimeOfDayBucket>(
+          TIME_OF_DAY_ORDER,
+          TIME_OF_DAY_ORDER,
+        ),
+      }),
+      ANCHOR,
+    );
+    expect(resolved.time_of_day).toBeUndefined();
   });
 
   it("custom range passes through non-null from/to", () => {
