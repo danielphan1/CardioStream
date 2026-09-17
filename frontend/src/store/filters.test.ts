@@ -9,8 +9,25 @@ const INITIAL = {
   chartView: "timeline" as const,
   datePreset: "all" as const,
   customRange: { from: null, to: null },
-  amPm: "all" as const,
-  bpCategory: "all" as const,
+  bpCategory: {
+    Hypotension: false,
+    Normal: false,
+    Elevated: false,
+    "Stage 1": false,
+    "Stage 2": false,
+    "Hypertensive Crisis": false,
+  },
+  pulseCategory: {
+    Bradycardia: false,
+    Normal: false,
+    Tachycardia: false,
+  },
+  timeOfDay: {
+    Morning: false,
+    Afternoon: false,
+    Evening: false,
+    Night: false,
+  },
   visibleDatasets: {
     blood_pressure: true,
     pulse: true,
@@ -31,8 +48,9 @@ describe("useFilters initial state", () => {
     expect(s.chartView).toBe("timeline");
     expect(s.datePreset).toBe("all");
     expect(s.customRange).toEqual({ from: null, to: null });
-    expect(s.amPm).toBe("all");
-    expect(s.bpCategory).toBe("all");
+    expect(Object.values(s.bpCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.timeOfDay).every((v) => !v)).toBe(true);
   });
 
   it("defaults to both vitals on and every event type off (D-10)", () => {
@@ -63,19 +81,67 @@ describe("preset ↔ custom exclusivity", () => {
   });
 });
 
-describe("single-select filters (D-19)", () => {
-  it("setAmPm sets and clears the AM/PM filter", () => {
-    useFilters.getState().setAmPm("AM");
-    expect(useFilters.getState().amPm).toBe("AM");
-    useFilters.getState().setAmPm("all");
-    expect(useFilters.getState().amPm).toBe("all");
+describe("category filter toggle/set actions", () => {
+  it("toggleBpCategory flips one key and leaves the rest alone", () => {
+    useFilters.getState().toggleBpCategory("Stage 1", true);
+    let s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(true);
+    expect(s.bpCategory.Normal).toBe(false);
+
+    useFilters.getState().toggleBpCategory("Normal", true);
+    s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(true);
+    expect(s.bpCategory.Normal).toBe(true);
+
+    useFilters.getState().toggleBpCategory("Stage 1", false);
+    s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(false);
+    expect(s.bpCategory.Normal).toBe(true);
   });
 
-  it("setBpCategory sets and clears the category filter", () => {
-    useFilters.getState().setBpCategory("Stage 1");
-    expect(useFilters.getState().bpCategory).toBe("Stage 1");
-    useFilters.getState().setBpCategory("all");
-    expect(useFilters.getState().bpCategory).toBe("all");
+  it("setBpCategory replaces the whole map exhaustively", () => {
+    useFilters.getState().toggleBpCategory("Hypotension", true);
+    useFilters.getState().setBpCategory(["Stage 1"]);
+    const s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(true);
+    expect(s.bpCategory.Hypotension).toBe(false);
+    expect(
+      Object.entries(s.bpCategory).every(
+        ([k, v]) => k === "Stage 1" || v === false,
+      ),
+    ).toBe(true);
+  });
+
+  it("togglePulseCategory flips one key and leaves the rest alone", () => {
+    useFilters.getState().togglePulseCategory("Bradycardia", true);
+    const s = useFilters.getState();
+    expect(s.pulseCategory.Bradycardia).toBe(true);
+    expect(s.pulseCategory.Tachycardia).toBe(false);
+  });
+
+  it("setPulseCategory replaces the whole map exhaustively", () => {
+    useFilters.getState().togglePulseCategory("Bradycardia", true);
+    useFilters.getState().setPulseCategory(["Tachycardia"]);
+    const s = useFilters.getState();
+    expect(s.pulseCategory.Tachycardia).toBe(true);
+    expect(s.pulseCategory.Bradycardia).toBe(false);
+  });
+
+  it("toggleTimeOfDay flips one key and leaves the rest alone", () => {
+    useFilters.getState().toggleTimeOfDay("Morning", true);
+    const s = useFilters.getState();
+    expect(s.timeOfDay.Morning).toBe(true);
+    expect(s.timeOfDay.Evening).toBe(false);
+  });
+
+  it("setTimeOfDay replaces the whole map exhaustively", () => {
+    useFilters.getState().toggleTimeOfDay("Morning", true);
+    useFilters.getState().setTimeOfDay(["Evening", "Night"]);
+    const s = useFilters.getState();
+    expect(s.timeOfDay.Evening).toBe(true);
+    expect(s.timeOfDay.Night).toBe(true);
+    expect(s.timeOfDay.Morning).toBe(false);
+    expect(s.timeOfDay.Afternoon).toBe(false);
   });
 });
 
@@ -99,8 +165,8 @@ describe("showAllData (D-11)", () => {
     const s0 = useFilters.getState();
     s0.setChartView("bp_categories");
     s0.setCustomRange("2025-03-01", "2025-03-31");
-    s0.setAmPm("PM");
-    s0.setBpCategory("Hypertensive Crisis");
+    s0.toggleTimeOfDay("Evening", true);
+    s0.setBpCategory(["Hypertensive Crisis"]);
     s0.showOnlyDatasets(["labs"]);
 
     useFilters.getState().showAllData();
@@ -109,8 +175,9 @@ describe("showAllData (D-11)", () => {
     expect(s.chartView).toBe("timeline");
     expect(s.datePreset).toBe("all");
     expect(s.customRange).toEqual({ from: null, to: null });
-    expect(s.amPm).toBe("all");
-    expect(s.bpCategory).toBe("all");
+    expect(Object.values(s.bpCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.timeOfDay).every((v) => !v)).toBe(true);
     // WR-01: "start over" is subtractive. It must NOT switch on three marker
     // sets the user never asked for — that hands a caregiver a busier screen
     // than the app's own default.
@@ -193,34 +260,6 @@ describe("showOnlyDatasets — exclusive selection (the client's own phrasing)",
 });
 
 describe("initFilters (localStorage bootstrap)", () => {
-  it("restores a valid persisted blob on initFilters()", () => {
-    const persisted = {
-      chartView: "bp_categories",
-      datePreset: "7d",
-      customRange: { from: null, to: null },
-      amPm: "AM",
-      bpCategory: "Stage 2",
-      visibleDatasets: {
-        blood_pressure: false,
-        pulse: true,
-        labs: true,
-        incidents: false,
-        procedures: true,
-      },
-    };
-    localStorage.setItem("hv-filters", JSON.stringify(persisted));
-
-    useFilters.getState().initFilters();
-
-    const s = useFilters.getState();
-    expect(s.chartView).toBe(persisted.chartView);
-    expect(s.datePreset).toBe(persisted.datePreset);
-    expect(s.customRange).toEqual(persisted.customRange);
-    expect(s.amPm).toBe(persisted.amPm);
-    expect(s.bpCategory).toBe(persisted.bpCategory);
-    expect(s.visibleDatasets).toEqual(persisted.visibleDatasets);
-  });
-
   it("leaves defaults untouched when the persisted value is corrupted JSON", () => {
     localStorage.setItem("hv-filters", "garbage");
 
@@ -331,8 +370,7 @@ describe("v1 → v2 migration of pre-Phase-14 persisted filters", () => {
     useFilters.getState().initFilters();
     const s = useFilters.getState();
     expect(s.datePreset).toBe("30d");
-    expect(s.amPm).toBe("PM");
-    expect(s.bpCategory).toBe("Stage 1");
+    expect(s.bpCategory["Stage 1"]).toBe(true);
   });
 
   it("falls back to timeline with both vitals for an unrecognized activeChart", () => {
@@ -356,6 +394,44 @@ describe("v1 → v2 migration of pre-Phase-14 persisted filters", () => {
     expect(useFilters.getState().visibleDatasets).toEqual(
       INITIAL.visibleDatasets,
     );
+  });
+});
+
+// A blob written by the pre-Phase-15 app — scalar amPm/bpCategory
+// single-select fields. Same "don't silently reset Chris's choice" principle
+// as the v1→v2 block above, now proven for v2→v3 too.
+describe("v2 → v3 migration of pre-Phase-15 persisted filters", () => {
+  it("migrates a v2 blob's scalar bpCategory into the v3 multi-select map, ignoring the stray amPm field", () => {
+    const v2 = {
+      chartView: "bp_categories",
+      datePreset: "30d",
+      customRange: { from: null, to: null },
+      bpCategory: "Stage 2",
+      visibleDatasets: {
+        blood_pressure: false,
+        pulse: true,
+        labs: true,
+        incidents: false,
+        procedures: true,
+      },
+      amPm: "AM", // stray v2 field — tolerated but ignored, no v3 destination
+    };
+    localStorage.setItem("hv-filters", JSON.stringify(v2));
+
+    useFilters.getState().initFilters();
+
+    const s = useFilters.getState();
+    expect(s.bpCategory["Stage 2"]).toBe(true);
+    expect(
+      Object.entries(s.bpCategory).every(
+        ([k, v]) => k === "Stage 2" || v === false,
+      ),
+    ).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.timeOfDay).every((v) => !v)).toBe(true);
+    expect(s.datePreset).toBe("30d");
+    expect(s.customRange).toEqual({ from: null, to: null });
+    expect(s.visibleDatasets).toEqual(v2.visibleDatasets);
   });
 });
 
@@ -396,8 +472,10 @@ describe("setter persistence (writes the 'hv-filters' key)", () => {
       throw new Error("blocked");
     };
     try {
-      expect(() => useFilters.getState().setAmPm("AM")).not.toThrow();
-      expect(useFilters.getState().amPm).toBe("AM");
+      expect(() =>
+        useFilters.getState().toggleTimeOfDay("Morning", true),
+      ).not.toThrow();
+      expect(useFilters.getState().timeOfDay.Morning).toBe(true);
     } finally {
       Storage.prototype.setItem = original;
     }
