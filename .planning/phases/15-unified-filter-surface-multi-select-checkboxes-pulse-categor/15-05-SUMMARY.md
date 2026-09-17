@@ -104,3 +104,12 @@ None - no external service configuration required.
 ## Next Phase Readiness
 - `FilterBar.tsx` now exposes the 4-group checkbox surface (`role="group"` labels: `"Date range"`, `"Time of day"`, `"Blood pressure category"`, `"Pulse category"`) that Phase 15's agent-bridge plan (15-06) and any later human-verify checkpoint build against.
 - `PulseField` in `lib/agent.ts` still needs `"timeOfDay"`/`"pulseCategory"` added (owned by 15-06) before the whole project type-checks clean again — flagged above, not fixed here per this plan's declared file scope.
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/FilterBar.tsx
+- FOUND: frontend/src/components/FilterBar.test.tsx
+- FOUND: .planning/phases/15-unified-filter-surface-multi-select-checkboxes-pulse-categor/15-05-SUMMARY.md
+- FOUND: cf14282 (Task 1 commit)
+- FOUND: f33fc55 (Task 2 commit)
+- FOUND: 60418af (plan metadata commit)
