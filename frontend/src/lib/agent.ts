@@ -12,11 +12,14 @@ import type {
   AppliedFilters,
   BPCategory,
   ChartView,
+  PulseCategory,
   SeriesDataset,
+  TimeOfDayBucket,
 } from "../api/types";
 import type { DatePreset } from "./dates";
-import { fmtLongDateOnly, presetLabel } from "./dates";
+import { fmtLongDateOnly, presetLabel, selectedOrOmit, TIME_OF_DAY_ORDER } from "./dates";
 import { DATASET_META, DATASET_ORDER } from "./datasetMeta";
+import { CLINICAL_ORDER, PULSE_CLINICAL_ORDER } from "./palette";
 import { joinWithAnd } from "./showSentence";
 import { useFilters } from "../store/filters";
 import { useGuide } from "../store/guide";
@@ -193,10 +196,12 @@ function datasetsPhrase(visible: Record<SeriesDataset, boolean>): string | null 
 
 /**
  * Deterministic full-state echo composed from POST-apply store state — never
- * from model text (VOICE-06, D-07). LOCKED template:
- *   "Showing {chartPhrase}, {rangePhrase}{ampmSuffix}{categorySuffix}"
- * Canonical: bp_timeline + 30d + AM + all → "Showing blood pressure, last 30
- * days, mornings". `_latestReading` is accepted for call-site parity with the
+ * from model text (VOICE-06, D-07). LOCKED template (UI-SPEC §9):
+ *   "Showing {chartPhrase}, {rangePhrase}{timeOfDaySuffix}{bpCategorySuffix}{pulseCategorySuffix}"
+ * Canonical: bp_timeline + 30d + Morning only → "Showing blood pressure, last
+ * 30 days, mornings". Each suffix collapses to "" under the zero-or-all
+ * convention (selectedOrOmit — none selected or every key selected both mean
+ * "no filter"). `_latestReading` is accepted for call-site parity with the
  * resolver family; the locked format never anchors day presets to a date.
  */
 export function composeConfirmation(
@@ -205,8 +210,9 @@ export function composeConfirmation(
     visibleDatasets: Record<SeriesDataset, boolean>;
     datePreset: DatePreset;
     customRange: { from: string | null; to: string | null };
-    amPm: "all" | "AM" | "PM";
-    bpCategory: "all" | BPCategory;
+    bpCategory: Record<BPCategory, boolean>;
+    pulseCategory: Record<PulseCategory, boolean>;
+    timeOfDay: Record<TimeOfDayBucket, boolean>;
   },
   _latestReading: string | null,
 ): string {
@@ -238,10 +244,26 @@ export function composeConfirmation(
     rangePhrase = presetLabel(state.datePreset).toLowerCase(); // "last 30 days"
   }
 
-  const ampmSuffix =
-    state.amPm === "AM" ? ", mornings" : state.amPm === "PM" ? ", evenings" : "";
-  const categorySuffix =
-    state.bpCategory !== "all" ? `, ${state.bpCategory} readings only` : "";
+  // Zero-or-all (none selected, or every key selected) collapses a suffix to
+  // "" — selectedOrOmit already encodes that convention (resolveFilters uses
+  // the identical call shape for the query-param side of the same state).
+  const timeOfDaySelected = selectedOrOmit(state.timeOfDay, TIME_OF_DAY_ORDER.length);
+  const timeOfDaySuffix = timeOfDaySelected
+    ? `, ${joinWithAnd(timeOfDaySelected.map((b) => `${b.toLowerCase()}s`))}`
+    : "";
 
-  return `Showing ${chartPhrase}, ${rangePhrase}${ampmSuffix}${categorySuffix}`;
+  const bpSelected = selectedOrOmit(state.bpCategory, CLINICAL_ORDER.length);
+  const bpCategorySuffix = bpSelected
+    ? `, ${joinWithAnd(bpSelected)} blood pressure`
+    : "";
+
+  const pulseSelected = selectedOrOmit(
+    state.pulseCategory,
+    PULSE_CLINICAL_ORDER.length,
+  );
+  const pulseCategorySuffix = pulseSelected
+    ? `, ${joinWithAnd(pulseSelected)} pulse`
+    : "";
+
+  return `Showing ${chartPhrase}, ${rangePhrase}${timeOfDaySuffix}${bpCategorySuffix}${pulseCategorySuffix}`;
 }

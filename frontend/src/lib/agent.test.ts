@@ -276,7 +276,10 @@ describe("composeConfirmation", () => {
   it("emits the VOICE-06/D-07 canonical string exactly", () => {
     expect(
       composeConfirmation(
-        confState({ datePreset: "30d", amPm: "AM" }),
+        confState({
+          datePreset: "30d",
+          timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+        }),
         null,
       ),
     ).toBe("Showing blood pressure, last 30 days, mornings");
@@ -294,7 +297,7 @@ describe("composeConfirmation", () => {
     ).toBe("Showing blood pressure, February 1, 2025 through April 30, 2025");
   });
 
-  it("composes pulse + PM + category suffix from all data", () => {
+  it("composes pulse + evening + category suffix from all data", () => {
     expect(
       composeConfirmation(
         confState({
@@ -306,11 +309,66 @@ describe("composeConfirmation", () => {
             procedures: false,
           },
           datePreset: "all",
-          amPm: "PM",
-          bpCategory: "Stage 2",
+          timeOfDay: { ...ALL_FALSE_TOD, Evening: true },
+          bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
         }),
         null,
       ),
-    ).toBe("Showing pulse, all data, evenings, Stage 2 readings only");
+    ).toBe("Showing pulse, all data, evenings, Stage 2 blood pressure");
+  });
+
+  it("composes the UI-SPEC §9 worked example verbatim", () => {
+    expect(
+      composeConfirmation(
+        confState({
+          visibleDatasets: {
+            blood_pressure: true,
+            pulse: true,
+            labs: false,
+            incidents: false,
+            procedures: false,
+          },
+          datePreset: "30d",
+          timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+          bpCategory: {
+            ...ALL_FALSE_BP,
+            "Stage 1": true,
+            "Stage 2": true,
+          },
+          pulseCategory: { ...ALL_FALSE_PULSE, Tachycardia: true },
+        }),
+        null,
+      ),
+    ).toBe(
+      "Showing blood pressure and pulse, last 30 days, mornings, Stage 1 and Stage 2 blood pressure, Tachycardia pulse",
+    );
+  });
+
+  it("zero-or-all in every group collapses every suffix to nothing", () => {
+    const allTrueBp = Object.fromEntries(
+      CLINICAL_ORDER.map((c) => [c, true]),
+    ) as typeof ALL_FALSE_BP;
+    const allTruePulse = Object.fromEntries(
+      PULSE_CLINICAL_ORDER.map((c) => [c, true]),
+    ) as typeof ALL_FALSE_PULSE;
+    const allTrueTod = Object.fromEntries(
+      TIME_OF_DAY_ORDER.map((c) => [c, true]),
+    ) as typeof ALL_FALSE_TOD;
+
+    expect(
+      composeConfirmation(
+        confState({
+          datePreset: "30d",
+          bpCategory: allTrueBp,
+          pulseCategory: allTruePulse,
+          timeOfDay: allTrueTod,
+        }),
+        null,
+      ),
+    ).toBe("Showing blood pressure, last 30 days");
+
+    expect(
+      composeConfirmation(confState({ datePreset: "30d" }), null),
+    ).toBe("Showing blood pressure, last 30 days");
   });
 });
