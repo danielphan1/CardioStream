@@ -82,8 +82,16 @@ beforeEach(() => {
     },
     datePreset: "all",
     customRange: { from: null, to: null },
-    amPm: "all",
-    bpCategory: "all",
+    bpCategory: {
+      Hypotension: false,
+      Normal: false,
+      Elevated: false,
+      "Stage 1": false,
+      "Stage 2": false,
+      "Hypertensive Crisis": false,
+    },
+    pulseCategory: { Bradycardia: false, Normal: false, Tachycardia: false },
+    timeOfDay: { Morning: false, Afternoon: false, Evening: false, Night: false },
   });
   useAgentPulse.setState({ seq: 0, fields: [] });
   useAgentStatus.setState({ unavailable: false });

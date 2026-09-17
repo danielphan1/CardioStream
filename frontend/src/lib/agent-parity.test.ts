@@ -2,10 +2,11 @@
 // filter is ever voice-unreachable and no command vocabulary is dead:
 //
 //   1. Enumeration reachability — every concrete value of the FULL frontend unions
-//      (ChartView×3, SeriesDataset×5, BPCategory×6+"all", datePreset×4, amPm×3) through the
-//      SINGLE mutation surface applyAgentFilters() actually mutates the matching
-//      useFilters slice. Adding a view/dataset/category/preset without a command
-//      path, or a store action with no AppliedFilters field, breaks this suite.
+//      (ChartView×3, SeriesDataset×5, BPCategory×6, PulseCategory×3, TimeOfDayBucket×4,
+//      datePreset×4) through the SINGLE mutation surface applyAgentFilters() actually
+//      mutates the matching useFilters slice. Adding a view/dataset/category/preset
+//      without a command path, or a store action with no AppliedFilters field, breaks
+//      this suite.
 //   2. Frontend↔backend token equality — the enumerated unions equal the
 //      backend/app/agent/schemas.py ChartToken / AppliedFilters literals verbatim
 //      (read from disk, read-only). Token drift on either side breaks the build.
@@ -20,7 +21,13 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { applyAgentFilters, useAgentPulse } from "./agent";
 import { useFilters } from "../store/filters";
-import type { BPCategory, ChartView, SeriesDataset } from "../api/types";
+import type {
+  BPCategory,
+  ChartView,
+  PulseCategory,
+  SeriesDataset,
+  TimeOfDayBucket,
+} from "../api/types";
 
 // The full frontend unions — enumerated so a future addition without a command
 // path (or a backend token drift) fails a concrete assertion, not silently.
@@ -39,8 +46,20 @@ const BP_CATEGORIES = [
   "Hypertensive Crisis",
 ] as const satisfies readonly BPCategory[];
 
+const PULSE_CATEGORIES = [
+  "Bradycardia",
+  "Normal",
+  "Tachycardia",
+] as const satisfies readonly PulseCategory[];
+
+const TIME_OF_DAY_BUCKETS = [
+  "Morning",
+  "Afternoon",
+  "Evening",
+  "Night",
+] as const satisfies readonly TimeOfDayBucket[];
+
 const DATE_PRESETS = ["7d", "30d", "90d", "all"] as const;
-const AMPM = ["all", "AM", "PM"] as const;
 
 const DATASETS = [
   "blood_pressure",
@@ -50,15 +69,34 @@ const DATASETS = [
   "procedures",
 ] as const satisfies readonly SeriesDataset[];
 
-// The six mutating actions on the filter store (store/filters.ts). Every one MUST
-// be reachable through some AppliedFilters field (ACC-03); the store is compared
+// All-false default maps for the beforeEach seed and the reset-to-defaults
+// assertion below — same "governs a brand-new device only" shape as
+// store/filters.ts's own DEFAULT_BP_CATEGORY/DEFAULT_PULSE_CATEGORY/
+// DEFAULT_TIME_OF_DAY (not imported — this suite's fixtures stay self-contained).
+const ALL_FALSE_BP: Record<BPCategory, boolean> = Object.fromEntries(
+  BP_CATEGORIES.map((c) => [c, false]),
+) as Record<BPCategory, boolean>;
+const ALL_FALSE_PULSE: Record<PulseCategory, boolean> = Object.fromEntries(
+  PULSE_CATEGORIES.map((c) => [c, false]),
+) as Record<PulseCategory, boolean>;
+const ALL_FALSE_TIME: Record<TimeOfDayBucket, boolean> = Object.fromEntries(
+  TIME_OF_DAY_BUCKETS.map((c) => [c, false]),
+) as Record<TimeOfDayBucket, boolean>;
+
+// The nine mutating actions on the filter store (store/filters.ts) that are
+// reachable through some AppliedFilters field (ACC-03); the store is compared
 // against this list below so adding an action without a command path fails.
+// The three toggle* category actions (toggleBpCategory/togglePulseCategory/
+// toggleTimeOfDay) are deliberately excluded — UI-only checkbox-click actions,
+// no AppliedFilters field ever drives a single-key category toggle from the
+// agent (same exclusion status as the initFilters bootstrap exclusion below).
 const STORE_ACTIONS = [
   "setChartView",
   "setDatePreset",
   "setCustomRange",
-  "setAmPm",
   "setBpCategory",
+  "setPulseCategory",
+  "setTimeOfDay",
   "showAllData",
   "setDataset",
   "showOnlyDatasets",
@@ -69,8 +107,9 @@ beforeEach(() => {
     chartView: "timeline",
     datePreset: "all",
     customRange: { from: null, to: null },
-    amPm: "all",
-    bpCategory: "all",
+    bpCategory: { ...ALL_FALSE_BP },
+    pulseCategory: { ...ALL_FALSE_PULSE },
+    timeOfDay: { ...ALL_FALSE_TIME },
     visibleDatasets: {
       blood_pressure: true,
       pulse: true,
@@ -91,11 +130,27 @@ describe("enumeration reachability — every UI filter is voice-reachable (ACC-0
     },
   );
 
-  it.each(["all", ...BP_CATEGORIES] as const)(
-    "applyAgentFilters({ bpCategory: '%s' }) mutates the store",
+  it.each(BP_CATEGORIES)(
+    "applyAgentFilters({ bpCategory: ['%s'] }) mutates the store",
     (category) => {
-      applyAgentFilters({ bpCategory: category });
-      expect(useFilters.getState().bpCategory).toBe(category);
+      applyAgentFilters({ bpCategory: [category] });
+      expect(useFilters.getState().bpCategory[category]).toBe(true);
+    },
+  );
+
+  it.each(PULSE_CATEGORIES)(
+    "applyAgentFilters({ pulseCategory: ['%s'] }) mutates the store",
+    (category) => {
+      applyAgentFilters({ pulseCategory: [category] });
+      expect(useFilters.getState().pulseCategory[category]).toBe(true);
+    },
+  );
+
+  it.each(TIME_OF_DAY_BUCKETS)(
+    "applyAgentFilters({ timeOfDay: ['%s'] }) mutates the store",
+    (bucket) => {
+      applyAgentFilters({ timeOfDay: [bucket] });
+      expect(useFilters.getState().timeOfDay[bucket]).toBe(true);
     },
   );
 
@@ -107,14 +162,6 @@ describe("enumeration reachability — every UI filter is voice-reachable (ACC-0
     },
   );
 
-  it.each(AMPM)(
-    "applyAgentFilters({ amPm: '%s' }) mutates the store",
-    (amPm) => {
-      applyAgentFilters({ amPm });
-      expect(useFilters.getState().amPm).toBe(amPm);
-    },
-  );
-
   it("applyAgentFilters({ customRange }) sets a custom range", () => {
     applyAgentFilters({ customRange: { from: "2025-02-01", to: "2025-04-30" } });
     const s = useFilters.getState();
@@ -123,12 +170,16 @@ describe("enumeration reachability — every UI filter is voice-reachable (ACC-0
   });
 
   it("applyAgentFilters({ reset: true }) returns the store to defaults", () => {
-    useFilters.setState({ datePreset: "30d", amPm: "AM", bpCategory: "Stage 2" });
+    useFilters.setState({
+      datePreset: "30d",
+      bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
+    });
     applyAgentFilters({ reset: true });
     const s = useFilters.getState();
     expect(s.datePreset).toBe("all");
-    expect(s.amPm).toBe("all");
-    expect(s.bpCategory).toBe("all");
+    for (const key of BP_CATEGORIES) expect(s.bpCategory[key]).toBe(false);
+    for (const key of PULSE_CATEGORIES) expect(s.pulseCategory[key]).toBe(false);
+    for (const key of TIME_OF_DAY_BUCKETS) expect(s.timeOfDay[key]).toBe(false);
   });
 
   it.each(DATASETS)(
@@ -184,14 +235,22 @@ describe("store↔command 1:1 mapping — no unreachable action, no dead field",
       assert: () => expect(useFilters.getState().customRange.from).toBe("2025-02-01"),
     },
     {
-      action: "setAmPm",
-      apply: () => applyAgentFilters({ amPm: "PM" }),
-      assert: () => expect(useFilters.getState().amPm).toBe("PM"),
+      action: "setBpCategory",
+      apply: () => applyAgentFilters({ bpCategory: ["Stage 2"] }),
+      assert: () =>
+        expect(useFilters.getState().bpCategory["Stage 2"]).toBe(true),
     },
     {
-      action: "setBpCategory",
-      apply: () => applyAgentFilters({ bpCategory: "Stage 2" }),
-      assert: () => expect(useFilters.getState().bpCategory).toBe("Stage 2"),
+      action: "setPulseCategory",
+      apply: () => applyAgentFilters({ pulseCategory: ["Tachycardia"] }),
+      assert: () =>
+        expect(useFilters.getState().pulseCategory["Tachycardia"]).toBe(true),
+    },
+    {
+      action: "setTimeOfDay",
+      apply: () => applyAgentFilters({ timeOfDay: ["Morning"] }),
+      assert: () =>
+        expect(useFilters.getState().timeOfDay["Morning"]).toBe(true),
     },
     {
       action: "showAllData",
@@ -228,8 +287,20 @@ describe("store↔command 1:1 mapping — no unreachable action, no dead field",
     // bootstrap) is deliberately excluded: it's a bootstrap-only action
     // mirroring store/theme.ts's initTheme / store/speech.ts's initSpeech,
     // never voice-reachable, so it's not part of the AppliedFilters surface.
+    // `toggleBpCategory`/`togglePulseCategory`/`toggleTimeOfDay` are also
+    // excluded: UI-only checkbox-click actions (flip one category, leave the
+    // rest of the group alone) with no AppliedFilters field that ever drives a
+    // single-key toggle from the agent — the agent always replaces the whole
+    // group via the matching set* action instead.
     const actualActions = Object.entries(useFilters.getState())
-      .filter(([key, value]) => typeof value === "function" && key !== "initFilters")
+      .filter(
+        ([key, value]) =>
+          typeof value === "function" &&
+          key !== "initFilters" &&
+          key !== "toggleBpCategory" &&
+          key !== "togglePulseCategory" &&
+          key !== "toggleTimeOfDay",
+      )
       .map(([key]) => key)
       .sort();
     expect(actualActions).toEqual([...STORE_ACTIONS].sort());
@@ -257,11 +328,28 @@ describe("frontend voice vocabulary matches backend tokens (D-15)", () => {
     expect(backendCharts).toEqual([...CHART_VIEWS].sort());
   });
 
-  it("backend AppliedFilters.bpCategory equals the frontend BPCategory union + 'all'", () => {
+  it("backend AppliedFilters.bpCategory equals the frontend BPCategory union verbatim", () => {
+    // \s* between the two brackets: ruff wraps this particular field across
+    // lines (list[\n        Literal[...]\n    ]) while pulseCategory/timeOfDay
+    // below stay on one line — the pattern tolerates both.
     const backendBp = literalTokens(
-      schemaText.match(/bpCategory: Literal\[([^\]]*)\]/),
+      schemaText.match(/bpCategory: list\[\s*Literal\[([^\]]*)\]\s*\]/),
     );
-    expect(backendBp).toEqual(["all", ...BP_CATEGORIES].sort());
+    expect(backendBp).toEqual([...BP_CATEGORIES].sort());
+  });
+
+  it("backend AppliedFilters.pulseCategory equals the frontend PulseCategory union verbatim", () => {
+    const backendPulse = literalTokens(
+      schemaText.match(/pulseCategory: list\[\s*Literal\[([^\]]*)\]\s*\]/),
+    );
+    expect(backendPulse).toEqual([...PULSE_CATEGORIES].sort());
+  });
+
+  it("backend AppliedFilters.timeOfDay equals the frontend TimeOfDayBucket union verbatim", () => {
+    const backendTimeOfDay = literalTokens(
+      schemaText.match(/timeOfDay: list\[\s*Literal\[([^\]]*)\]\s*\]/),
+    );
+    expect(backendTimeOfDay).toEqual([...TIME_OF_DAY_BUCKETS].sort());
   });
 
   it("backend DatasetToken equals the frontend SeriesDataset union verbatim", () => {
