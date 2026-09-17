@@ -297,8 +297,16 @@ interface FilterState {
   setChartView: (v: ChartView) => void;
   setDatePreset: (p: Exclude<DatePreset, "custom">) => void;
   setCustomRange: (from: string, to: string) => void;
-  setAmPm: (v: "all" | "AM" | "PM") => void;
-  setBpCategory: (v: "all" | BPCategory) => void;
+  /** UI-only: flip one category, leave the rest of the group alone —
+   *  never voice-reachable (no AppliedFilters field maps to it). */
+  toggleBpCategory: (category: BPCategory, on: boolean) => void;
+  /** Voice-reachable: REPLACES the whole bpCategory map with exactly the
+   *  categories given. */
+  setBpCategory: (categories: BPCategory[]) => void;
+  togglePulseCategory: (category: PulseCategory, on: boolean) => void;
+  setPulseCategory: (categories: PulseCategory[]) => void;
+  toggleTimeOfDay: (bucket: TimeOfDayBucket, on: boolean) => void;
+  setTimeOfDay: (buckets: TimeOfDayBucket[]) => void;
   /** Additive: flip one dataset, leave the rest alone ("show my pulse"). */
   setDataset: (dataset: SeriesDataset, on: boolean) => void;
   /** Exclusive: named datasets on, every other one off ("only pulse"). */
@@ -348,12 +356,43 @@ export const useFilters = create<FilterState>((set, get) => {
       set({ datePreset: "custom", customRange: { from, to } });
       persistCurrent();
     },
-    setAmPm: (amPm) => {
-      set({ amPm });
+    // Mirrors setDataset's exact shape — UI checkbox onChange calls this,
+    // touching only the one key that changed.
+    toggleBpCategory: (category, on) => {
+      set((s) => ({ bpCategory: { ...s.bpCategory, [category]: on } }));
       persistCurrent();
     },
-    setBpCategory: (bpCategory) => {
-      set({ bpCategory });
+    // Built exhaustively from CLINICAL_ORDER rather than spreading current
+    // state, mirroring showOnlyDatasets's own exhaustive-rebuild reasoning
+    // verbatim — the agent bridge sends the full desired selection, so the
+    // result must never leave a stale category on.
+    setBpCategory: (categories) => {
+      const next = {} as Record<BPCategory, boolean>;
+      for (const key of CLINICAL_ORDER) next[key] = categories.includes(key);
+      set({ bpCategory: next });
+      persistCurrent();
+    },
+    togglePulseCategory: (category, on) => {
+      set((s) => ({
+        pulseCategory: { ...s.pulseCategory, [category]: on },
+      }));
+      persistCurrent();
+    },
+    setPulseCategory: (categories) => {
+      const next = {} as Record<PulseCategory, boolean>;
+      for (const key of PULSE_CLINICAL_ORDER)
+        next[key] = categories.includes(key);
+      set({ pulseCategory: next });
+      persistCurrent();
+    },
+    toggleTimeOfDay: (bucket, on) => {
+      set((s) => ({ timeOfDay: { ...s.timeOfDay, [bucket]: on } }));
+      persistCurrent();
+    },
+    setTimeOfDay: (buckets) => {
+      const next = {} as Record<TimeOfDayBucket, boolean>;
+      for (const key of TIME_OF_DAY_ORDER) next[key] = buckets.includes(key);
+      set({ timeOfDay: next });
       persistCurrent();
     },
     setDataset: (dataset, on) => {

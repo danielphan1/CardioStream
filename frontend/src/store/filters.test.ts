@@ -81,19 +81,67 @@ describe("preset ↔ custom exclusivity", () => {
   });
 });
 
-describe("single-select filters (D-19)", () => {
-  it("setAmPm sets and clears the AM/PM filter", () => {
-    useFilters.getState().setAmPm("AM");
-    expect(useFilters.getState().amPm).toBe("AM");
-    useFilters.getState().setAmPm("all");
-    expect(useFilters.getState().amPm).toBe("all");
+describe("category filter toggle/set actions", () => {
+  it("toggleBpCategory flips one key and leaves the rest alone", () => {
+    useFilters.getState().toggleBpCategory("Stage 1", true);
+    let s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(true);
+    expect(s.bpCategory.Normal).toBe(false);
+
+    useFilters.getState().toggleBpCategory("Normal", true);
+    s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(true);
+    expect(s.bpCategory.Normal).toBe(true);
+
+    useFilters.getState().toggleBpCategory("Stage 1", false);
+    s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(false);
+    expect(s.bpCategory.Normal).toBe(true);
   });
 
-  it("setBpCategory sets and clears the category filter", () => {
-    useFilters.getState().setBpCategory("Stage 1");
-    expect(useFilters.getState().bpCategory).toBe("Stage 1");
-    useFilters.getState().setBpCategory("all");
-    expect(useFilters.getState().bpCategory).toBe("all");
+  it("setBpCategory replaces the whole map exhaustively", () => {
+    useFilters.getState().toggleBpCategory("Hypotension", true);
+    useFilters.getState().setBpCategory(["Stage 1"]);
+    const s = useFilters.getState();
+    expect(s.bpCategory["Stage 1"]).toBe(true);
+    expect(s.bpCategory.Hypotension).toBe(false);
+    expect(
+      Object.entries(s.bpCategory).every(
+        ([k, v]) => k === "Stage 1" || v === false,
+      ),
+    ).toBe(true);
+  });
+
+  it("togglePulseCategory flips one key and leaves the rest alone", () => {
+    useFilters.getState().togglePulseCategory("Bradycardia", true);
+    const s = useFilters.getState();
+    expect(s.pulseCategory.Bradycardia).toBe(true);
+    expect(s.pulseCategory.Tachycardia).toBe(false);
+  });
+
+  it("setPulseCategory replaces the whole map exhaustively", () => {
+    useFilters.getState().togglePulseCategory("Bradycardia", true);
+    useFilters.getState().setPulseCategory(["Tachycardia"]);
+    const s = useFilters.getState();
+    expect(s.pulseCategory.Tachycardia).toBe(true);
+    expect(s.pulseCategory.Bradycardia).toBe(false);
+  });
+
+  it("toggleTimeOfDay flips one key and leaves the rest alone", () => {
+    useFilters.getState().toggleTimeOfDay("Morning", true);
+    const s = useFilters.getState();
+    expect(s.timeOfDay.Morning).toBe(true);
+    expect(s.timeOfDay.Evening).toBe(false);
+  });
+
+  it("setTimeOfDay replaces the whole map exhaustively", () => {
+    useFilters.getState().toggleTimeOfDay("Morning", true);
+    useFilters.getState().setTimeOfDay(["Evening", "Night"]);
+    const s = useFilters.getState();
+    expect(s.timeOfDay.Evening).toBe(true);
+    expect(s.timeOfDay.Night).toBe(true);
+    expect(s.timeOfDay.Morning).toBe(false);
+    expect(s.timeOfDay.Afternoon).toBe(false);
   });
 });
 
@@ -117,8 +165,8 @@ describe("showAllData (D-11)", () => {
     const s0 = useFilters.getState();
     s0.setChartView("bp_categories");
     s0.setCustomRange("2025-03-01", "2025-03-31");
-    s0.setAmPm("PM");
-    s0.setBpCategory("Hypertensive Crisis");
+    s0.toggleTimeOfDay("Evening", true);
+    s0.setBpCategory(["Hypertensive Crisis"]);
     s0.showOnlyDatasets(["labs"]);
 
     useFilters.getState().showAllData();
@@ -127,8 +175,9 @@ describe("showAllData (D-11)", () => {
     expect(s.chartView).toBe("timeline");
     expect(s.datePreset).toBe("all");
     expect(s.customRange).toEqual({ from: null, to: null });
-    expect(s.amPm).toBe("all");
-    expect(s.bpCategory).toBe("all");
+    expect(Object.values(s.bpCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => !v)).toBe(true);
+    expect(Object.values(s.timeOfDay).every((v) => !v)).toBe(true);
     // WR-01: "start over" is subtractive. It must NOT switch on three marker
     // sets the user never asked for — that hands a caregiver a busier screen
     // than the app's own default.
@@ -423,8 +472,10 @@ describe("setter persistence (writes the 'hv-filters' key)", () => {
       throw new Error("blocked");
     };
     try {
-      expect(() => useFilters.getState().setAmPm("AM")).not.toThrow();
-      expect(useFilters.getState().amPm).toBe("AM");
+      expect(() =>
+        useFilters.getState().toggleTimeOfDay("Morning", true),
+      ).not.toThrow();
+      expect(useFilters.getState().timeOfDay.Morning).toBe(true);
     } finally {
       Storage.prototype.setItem = original;
     }
