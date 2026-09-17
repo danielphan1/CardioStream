@@ -127,3 +127,7 @@ None - no external service configuration required.
 ---
 *Phase: 15-unified-filter-surface-multi-select-checkboxes-pulse-categor*
 *Completed: 2026-09-17*
+
+## Self-Check: PASSED
+
+All 8 modified files confirmed present on disk; all 3 task commits (`f10fbf0`, `0b4c1b5`, `293b571`) confirmed in `git log`.
