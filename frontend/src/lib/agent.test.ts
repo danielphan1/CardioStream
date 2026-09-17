@@ -13,16 +13,34 @@ import {
   useAgentPulse,
   type PulseField,
 } from "./agent";
-import type { BPCategory, ChartView, SeriesDataset } from "../api/types";
-import type { DatePreset } from "./dates";
+import type {
+  BPCategory,
+  ChartView,
+  PulseCategory,
+  SeriesDataset,
+  TimeOfDayBucket,
+} from "../api/types";
+import { CLINICAL_ORDER, PULSE_CLINICAL_ORDER } from "./palette";
+import { TIME_OF_DAY_ORDER, type DatePreset } from "./dates";
+
+const ALL_FALSE_BP: Record<BPCategory, boolean> = Object.fromEntries(
+  CLINICAL_ORDER.map((c) => [c, false]),
+) as Record<BPCategory, boolean>;
+const ALL_FALSE_PULSE: Record<PulseCategory, boolean> = Object.fromEntries(
+  PULSE_CLINICAL_ORDER.map((c) => [c, false]),
+) as Record<PulseCategory, boolean>;
+const ALL_FALSE_TOD: Record<TimeOfDayBucket, boolean> = Object.fromEntries(
+  TIME_OF_DAY_ORDER.map((c) => [c, false]),
+) as Record<TimeOfDayBucket, boolean>;
 
 beforeEach(() => {
   useFilters.setState({
     chartView: "timeline",
     datePreset: "all",
     customRange: { from: null, to: null },
-    amPm: "all",
-    bpCategory: "all",
+    bpCategory: { ...ALL_FALSE_BP },
+    pulseCategory: { ...ALL_FALSE_PULSE },
+    timeOfDay: { ...ALL_FALSE_TOD },
     visibleDatasets: {
       blood_pressure: true,
       pulse: true,
@@ -41,8 +59,9 @@ type ConfState = {
   visibleDatasets: Record<SeriesDataset, boolean>;
   datePreset: DatePreset;
   customRange: { from: string | null; to: string | null };
-  amPm: "all" | "AM" | "PM";
-  bpCategory: "all" | BPCategory;
+  bpCategory: Record<BPCategory, boolean>;
+  pulseCategory: Record<PulseCategory, boolean>;
+  timeOfDay: Record<TimeOfDayBucket, boolean>;
 };
 
 function confState(overrides: Partial<ConfState> = {}): ConfState {
@@ -57,15 +76,19 @@ function confState(overrides: Partial<ConfState> = {}): ConfState {
     },
     datePreset: "all",
     customRange: { from: null, to: null },
-    amPm: "all",
-    bpCategory: "all",
+    bpCategory: { ...ALL_FALSE_BP },
+    pulseCategory: { ...ALL_FALSE_PULSE },
+    timeOfDay: { ...ALL_FALSE_TOD },
     ...overrides,
   };
 }
 
 describe("applyAgentFilters", () => {
   it("changes only the mentioned field; other filters carry over (D-13)", () => {
-    useFilters.setState({ datePreset: "30d", amPm: "AM" });
+    useFilters.setState({
+      datePreset: "30d",
+      timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+    });
 
     applyAgentFilters({ showOnly: ["pulse"] });
 
@@ -73,35 +96,80 @@ describe("applyAgentFilters", () => {
     expect(s.visibleDatasets.pulse).toBe(true);
     expect(s.visibleDatasets.blood_pressure).toBe(false);
     expect(s.datePreset).toBe("30d"); // survived
-    expect(s.amPm).toBe("AM"); // survived
+    expect(s.timeOfDay.Morning).toBe(true); // survived
+  });
+
+  it("applies list-typed bpCategory/pulseCategory/timeOfDay deltas as a full replace", () => {
+    applyAgentFilters({
+      bpCategory: ["Stage 1", "Stage 2"],
+      pulseCategory: ["Tachycardia"],
+      timeOfDay: ["Morning", "Evening"],
+    });
+
+    const s = useFilters.getState();
+    expect(s.bpCategory).toEqual({
+      ...ALL_FALSE_BP,
+      "Stage 1": true,
+      "Stage 2": true,
+    });
+    expect(s.pulseCategory).toEqual({ ...ALL_FALSE_PULSE, Tachycardia: true });
+    expect(s.timeOfDay).toEqual({
+      ...ALL_FALSE_TOD,
+      Morning: true,
+      Evening: true,
+    });
+  });
+
+  it("an explicit empty-array delta clears the group (!= null, not truthy)", () => {
+    useFilters.setState({
+      bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
+      pulseCategory: { ...ALL_FALSE_PULSE, Tachycardia: true },
+      timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+    });
+
+    applyAgentFilters({ bpCategory: [], pulseCategory: [], timeOfDay: [] });
+
+    const s = useFilters.getState();
+    expect(Object.values(s.bpCategory).every((v) => v === false)).toBe(true);
+    expect(Object.values(s.pulseCategory).every((v) => v === false)).toBe(
+      true,
+    );
+    expect(Object.values(s.timeOfDay).every((v) => v === false)).toBe(true);
   });
 
   it("reset returns the store to defaults", () => {
     useFilters.setState({
       datePreset: "30d",
-      amPm: "AM",
-      bpCategory: "Stage 2",
+      timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+      bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
     });
 
     applyAgentFilters({ reset: true });
 
     const s = useFilters.getState();
     expect(s.datePreset).toBe("all");
-    expect(s.amPm).toBe("all");
-    expect(s.bpCategory).toBe("all");
+    expect(Object.values(s.timeOfDay).every((v) => v === false)).toBe(true);
+    expect(Object.values(s.bpCategory).every((v) => v === false)).toBe(true);
   });
 
   it("applies reset FIRST, then per-field deltas", () => {
-    useFilters.setState({ datePreset: "30d", bpCategory: "Stage 2" });
+    useFilters.setState({
+      datePreset: "30d",
+      bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
+    });
 
-    applyAgentFilters({ reset: true, showOnly: ["pulse"], amPm: "AM" });
+    applyAgentFilters({
+      reset: true,
+      showOnly: ["pulse"],
+      timeOfDay: ["Morning"],
+    });
 
     const s = useFilters.getState();
     expect(s.visibleDatasets.pulse).toBe(true); // delta applied after reset
     expect(s.visibleDatasets.blood_pressure).toBe(false);
-    expect(s.amPm).toBe("AM"); // delta after reset
+    expect(s.timeOfDay).toEqual({ ...ALL_FALSE_TOD, Morning: true }); // delta after reset
     expect(s.datePreset).toBe("all"); // reset default (no delta)
-    expect(s.bpCategory).toBe("all"); // reset default (no delta)
+    expect(Object.values(s.bpCategory).every((v) => v === false)).toBe(true); // reset default (no delta)
   });
 
   it("custom range sets datePreset custom and stores strings verbatim (Pitfall 7)", () => {
@@ -125,24 +193,25 @@ describe("applyAgentFilters", () => {
   it("marks a D-08 pulse for exactly the touched groups and bumps seq", () => {
     const fields = applyAgentFilters({
       showOnly: ["pulse"],
-      amPm: "AM",
+      bpCategory: ["Stage 1"],
     });
 
-    expect([...fields].sort()).toEqual(["amPm", "datasets"]);
+    expect([...fields].sort()).toEqual(["bpCategory", "datasets"]);
     const pulse = useAgentPulse.getState();
-    expect([...pulse.fields].sort()).toEqual(["amPm", "datasets"]);
+    expect([...pulse.fields].sort()).toEqual(["bpCategory", "datasets"]);
     expect(pulse.seq).toBe(1); // bumped from 0
   });
 
-  it("reset marks all five pulse groups", () => {
+  it("reset marks all six pulse groups", () => {
     applyAgentFilters({ reset: true });
 
     const expected: PulseField[] = [
-      "amPm",
       "bpCategory",
       "chart",
       "dateRange",
       "datasets",
+      "pulseCategory",
+      "timeOfDay",
     ].sort() as PulseField[];
     expect([...useAgentPulse.getState().fields].sort()).toEqual(expected);
   });
@@ -245,7 +314,10 @@ describe("composeConfirmation", () => {
   it("emits the VOICE-06/D-07 canonical string exactly", () => {
     expect(
       composeConfirmation(
-        confState({ datePreset: "30d", amPm: "AM" }),
+        confState({
+          datePreset: "30d",
+          timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+        }),
         null,
       ),
     ).toBe("Showing blood pressure, last 30 days, mornings");
@@ -263,7 +335,7 @@ describe("composeConfirmation", () => {
     ).toBe("Showing blood pressure, February 1, 2025 through April 30, 2025");
   });
 
-  it("composes pulse + PM + category suffix from all data", () => {
+  it("composes pulse + evening + category suffix from all data", () => {
     expect(
       composeConfirmation(
         confState({
@@ -275,11 +347,66 @@ describe("composeConfirmation", () => {
             procedures: false,
           },
           datePreset: "all",
-          amPm: "PM",
-          bpCategory: "Stage 2",
+          timeOfDay: { ...ALL_FALSE_TOD, Evening: true },
+          bpCategory: { ...ALL_FALSE_BP, "Stage 2": true },
         }),
         null,
       ),
-    ).toBe("Showing pulse, all data, evenings, Stage 2 readings only");
+    ).toBe("Showing pulse, all data, evenings, Stage 2 blood pressure");
+  });
+
+  it("composes the UI-SPEC §9 worked example verbatim", () => {
+    expect(
+      composeConfirmation(
+        confState({
+          visibleDatasets: {
+            blood_pressure: true,
+            pulse: true,
+            labs: false,
+            incidents: false,
+            procedures: false,
+          },
+          datePreset: "30d",
+          timeOfDay: { ...ALL_FALSE_TOD, Morning: true },
+          bpCategory: {
+            ...ALL_FALSE_BP,
+            "Stage 1": true,
+            "Stage 2": true,
+          },
+          pulseCategory: { ...ALL_FALSE_PULSE, Tachycardia: true },
+        }),
+        null,
+      ),
+    ).toBe(
+      "Showing blood pressure and pulse, last 30 days, mornings, Stage 1 and Stage 2 blood pressure, Tachycardia pulse",
+    );
+  });
+
+  it("zero-or-all in every group collapses every suffix to nothing", () => {
+    const allTrueBp = Object.fromEntries(
+      CLINICAL_ORDER.map((c) => [c, true]),
+    ) as typeof ALL_FALSE_BP;
+    const allTruePulse = Object.fromEntries(
+      PULSE_CLINICAL_ORDER.map((c) => [c, true]),
+    ) as typeof ALL_FALSE_PULSE;
+    const allTrueTod = Object.fromEntries(
+      TIME_OF_DAY_ORDER.map((c) => [c, true]),
+    ) as typeof ALL_FALSE_TOD;
+
+    expect(
+      composeConfirmation(
+        confState({
+          datePreset: "30d",
+          bpCategory: allTrueBp,
+          pulseCategory: allTruePulse,
+          timeOfDay: allTrueTod,
+        }),
+        null,
+      ),
+    ).toBe("Showing blood pressure, last 30 days");
+
+    expect(
+      composeConfirmation(confState({ datePreset: "30d" }), null),
+    ).toBe("Showing blood pressure, last 30 days");
   });
 });
