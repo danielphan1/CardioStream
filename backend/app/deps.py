@@ -22,7 +22,7 @@ from datetime import date, datetime
 from typing import Annotated, Literal
 
 from fastapi import Query
-from sqlalchemy import DateTime, Select
+from sqlalchemy import DateTime, Select, extract, or_
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
@@ -32,6 +32,60 @@ from app.models import Incident, LabResult, Procedure, Reading
 BPCategory = Literal[
     "Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Hypertensive Crisis"
 ]
+PulseCategory = Literal["Bradycardia", "Normal", "Tachycardia"]
+TimeOfDayBucket = Literal["Morning", "Afternoon", "Evening", "Night"]
+
+# hour-of-day range per bucket, inclusive on both ends. Night's (21, 4) has
+# lo > hi — the deliberate encoding of the midnight wrap (21:00-23:59 AND
+# 00:00-04:59), not a typo. This is query-time-only: unlike every other
+# derived value in this project (am_pm, bp_category, pulse_category), time
+# of day is NEVER stored — see classify_time_of_day's docstring below for why
+# it deliberately does not live in app.derivations.
+_TIME_OF_DAY_HOURS: dict[TimeOfDayBucket, tuple[int, int]] = {
+    "Morning": (5, 11),
+    "Afternoon": (12, 16),
+    "Evening": (17, 20),
+    "Night": (21, 4),
+}
+
+
+def _hour_in_bucket(hour: int, bucket: TimeOfDayBucket) -> bool:
+    lo, hi = _TIME_OF_DAY_HOURS[bucket]
+    if lo > hi:  # wrap case (Night)
+        return hour >= lo or hour <= hi
+    return lo <= hour <= hi
+
+
+def classify_time_of_day(hour: int) -> TimeOfDayBucket:
+    """Classify an hour-of-day (0-23) into a time-of-day bucket.
+
+    Deliberately NOT in ``app.derivations``: that module's docstring scopes
+    itself to values computed ONCE at ETL/ingestion time and stored as a
+    column (DATA-01). Time of day is query-time-only by design (no ETL/schema
+    change) — it is derived fresh from ``Reading.datetime_`` on every request,
+    never stored. The four ranges in ``_TIME_OF_DAY_HOURS`` partition all 24
+    hours, so exactly one bucket always matches.
+    """
+    for bucket in _TIME_OF_DAY_HOURS:
+        if _hour_in_bucket(hour, bucket):
+            return bucket
+    raise AssertionError(f"unreachable: hour {hour} matched no bucket")  # pragma: no cover
+
+
+def _time_of_day_predicate(buckets: list[TimeOfDayBucket]):
+    """Build an OR'd SQL predicate over ``Reading.datetime_``'s hour for the
+    given buckets, using the SAME ``_TIME_OF_DAY_HOURS`` table as
+    ``classify_time_of_day`` — never a second copy of the boundary numbers.
+    """
+    hour = extract("hour", Reading.datetime_)
+    clauses = []
+    for bucket in buckets:
+        lo, hi = _TIME_OF_DAY_HOURS[bucket]
+        if lo > hi:  # wrap case (Night)
+            clauses.append(or_(hour >= lo, hour <= hi))
+        else:
+            clauses.append(hour.between(lo, hi))
+    return or_(*clauses)
 
 
 def get_db() -> Iterator[Session]:
@@ -113,20 +167,30 @@ class ReadingFilters(DateRangeFilters):
         self,
         start_date: Annotated[date | None, Query()] = None,
         end_date: Annotated[date | None, Query()] = None,
-        am_pm: Annotated[Literal["AM", "PM"] | None, Query()] = None,
-        bp_category: Annotated[BPCategory | None, Query()] = None,
+        bp_category: Annotated[list[BPCategory] | None, Query()] = None,
+        pulse_category: Annotated[list[PulseCategory] | None, Query()] = None,
+        time_of_day: Annotated[list[TimeOfDayBucket] | None, Query()] = None,
     ) -> None:
         super().__init__(start_date, end_date)
-        self.am_pm = am_pm
         self.bp_category = bp_category
+        self.pulse_category = pulse_category
+        self.time_of_day = time_of_day
 
     def apply(self, stmt: Select) -> Select:
-        """Add where-clauses for every provided filter to ``stmt``."""
+        """Add where-clauses for every provided filter to ``stmt``.
+
+        The ``if self.field:`` truthy guard (not ``is not None``) is the
+        correctness mechanism: ``None`` and ``[]`` are both falsy, so an
+        absent OR empty selection never compiles to SQLAlchemy's
+        always-false ``IN ()`` — both mean "no restriction" (zero-or-all).
+        """
         stmt = super().apply(stmt)
-        if self.am_pm:
-            stmt = stmt.where(Reading.am_pm == self.am_pm)
         if self.bp_category:
-            stmt = stmt.where(Reading.bp_category == self.bp_category)
+            stmt = stmt.where(Reading.bp_category.in_(self.bp_category))
+        if self.pulse_category:
+            stmt = stmt.where(Reading.pulse_category.in_(self.pulse_category))
+        if self.time_of_day:
+            stmt = stmt.where(_time_of_day_predicate(self.time_of_day))
         return stmt
 
 
