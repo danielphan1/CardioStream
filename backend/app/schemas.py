@@ -18,6 +18,7 @@ Pinned invariants:
 # otherwise shadow the annotation inside the model class namespace.
 from datetime import date as DateType
 from datetime import datetime as DateTimeType
+from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
@@ -35,7 +36,7 @@ class ReadingOut(BaseModel):
     pulse: int
     am_pm: str
     bp_category: str
-    pulse_category: str
+    pulse_category: Literal["Bradycardia", "Normal", "Tachycardia"]
     map: float = Field(validation_alias=AliasChoices("map_value", "map"))
     pulse_pressure: int
     notes: str | None = None

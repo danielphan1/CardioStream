@@ -32,6 +32,7 @@ from app.models import Incident, LabResult, Procedure, Reading
 BPCategory = Literal[
     "Hypotension", "Normal", "Elevated", "Stage 1", "Stage 2", "Hypertensive Crisis"
 ]
+PulseCategory = Literal["Bradycardia", "Normal", "Tachycardia"]
 
 
 def get_db() -> Iterator[Session]:
@@ -113,20 +114,26 @@ class ReadingFilters(DateRangeFilters):
         self,
         start_date: Annotated[date | None, Query()] = None,
         end_date: Annotated[date | None, Query()] = None,
-        am_pm: Annotated[Literal["AM", "PM"] | None, Query()] = None,
-        bp_category: Annotated[BPCategory | None, Query()] = None,
+        bp_category: Annotated[list[BPCategory] | None, Query()] = None,
+        pulse_category: Annotated[list[PulseCategory] | None, Query()] = None,
     ) -> None:
         super().__init__(start_date, end_date)
-        self.am_pm = am_pm
         self.bp_category = bp_category
+        self.pulse_category = pulse_category
 
     def apply(self, stmt: Select) -> Select:
-        """Add where-clauses for every provided filter to ``stmt``."""
+        """Add where-clauses for every provided filter to ``stmt``.
+
+        The ``if self.field:`` truthy guard (not ``is not None``) is the
+        correctness mechanism: ``None`` and ``[]`` are both falsy, so an
+        absent OR empty selection never compiles to SQLAlchemy's
+        always-false ``IN ()`` — both mean "no restriction" (zero-or-all).
+        """
         stmt = super().apply(stmt)
-        if self.am_pm:
-            stmt = stmt.where(Reading.am_pm == self.am_pm)
         if self.bp_category:
-            stmt = stmt.where(Reading.bp_category == self.bp_category)
+            stmt = stmt.where(Reading.bp_category.in_(self.bp_category))
+        if self.pulse_category:
+            stmt = stmt.where(Reading.pulse_category.in_(self.pulse_category))
         return stmt
 
 

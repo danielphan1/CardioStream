@@ -101,9 +101,9 @@ def test_six_categories_in_order_even_when_filter_matches_one(client, seeded) ->
 
 
 def test_stats_respect_same_filters_as_readings(client, seeded) -> None:
-    """One filter semantics: /stats/summary?am_pm=PM matches /readings rows."""
-    stats = client.get("/stats/summary", params={"am_pm": "PM"}).json()
-    readings = client.get("/readings", params={"am_pm": "PM"}).json()
+    """One filter semantics: /stats/summary?bp_category=... matches /readings rows."""
+    stats = client.get("/stats/summary", params={"bp_category": "Stage 1"}).json()
+    readings = client.get("/readings", params={"bp_category": "Stage 1"}).json()
     assert stats["count"] == len(readings) == 2
     assert stats["systolic"] == {"avg": 135.0, "min": 130, "max": 140}
 
@@ -158,7 +158,7 @@ def test_empty_database_all_null(client, session) -> None:
 
 
 def test_invalid_params_return_422(client, seeded) -> None:
-    assert client.get("/stats/summary", params={"am_pm": "MORNING"}).status_code == 422
+    assert client.get("/stats/summary", params={"bp_category": "stage 1"}).status_code == 422
     assert client.get("/stats/summary", params={"start_date": "nope"}).status_code == 422
 
 
