@@ -75,7 +75,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 12. Visual Refresh | v1.1 | 8/8 | Complete    | 2026-08-27 |
 | 13. Visual Redesign (Nautical) | v1.1 | 12/12 | Complete    | 2026-09-04 |
 | 14. Show Panel & Combined Timeline | v1.1 | 6/6 | Complete    | 2026-09-12 |
-| 15. Unified Filter Surface | v1.2 | 4/8 | In Progress|  |
+| 15. Unified Filter Surface | v1.2 | 7/8 | In Progress|  |
 | 16. Trend Clarity & Chart Polish | v1.2 | 0/0 | Not planned | — |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
@@ -142,7 +142,7 @@ Plans:
 **Goal:** Chris can combine filters instead of picking one — "Stage 1 **and** Stage 2", "mornings **and** evenings" — through the same checkbox control model the Show panel already uses, plus two filters whose data already exists but has never been reachable.
 **Requirements**: Client-driven request (2026-09-13). Direct continuation of Phase 14, whose `14-CONTEXT.md` named the root cause as *"the dashboard runs two different control models side by side"* — Phase 14 converted the five datasets to real checkboxes but left FilterBar as single-select `aria-pressed` buttons. This finishes that job.
 **Depends on:** Phase 14
-**Plans:** 4/8 plans executed
+**Plans:** 7/8 plans executed
 **UI hint**: yes
 
 Scope:
@@ -183,9 +183,9 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 15-05-PLAN.md — FilterBar.tsx converted to 4-group checkbox surface (Time of Day, BP Category, Pulse Category) + new FilterBar.test.tsx (wave 3)
-- [ ] 15-06-PLAN.md — lib/agent.ts: applyAgentFilters + composeConfirmation multi-select grammar (wave 3)
-- [ ] 15-07-PLAN.md — EmptyState/App.tsx/useStats.ts wiring + Guide "What Can I Say" copy correction (wave 3)
+- [x] 15-05-PLAN.md — FilterBar.tsx converted to 4-group checkbox surface (Time of Day, BP Category, Pulse Category) + new FilterBar.test.tsx (wave 3)
+- [x] 15-06-PLAN.md — lib/agent.ts: applyAgentFilters + composeConfirmation multi-select grammar (wave 3)
+- [x] 15-07-PLAN.md — EmptyState/App.tsx/useStats.ts wiring + Guide "What Can I Say" copy correction (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
