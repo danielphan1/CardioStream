@@ -133,8 +133,9 @@ function Dashboard() {
 
   // EmptyState copy inputs (D-11) — read from the same store the charts use.
   const datePreset = useFilters((s) => s.datePreset);
-  const amPm = useFilters((s) => s.amPm);
+  const timeOfDay = useFilters((s) => s.timeOfDay);
   const bpCategory = useFilters((s) => s.bpCategory);
+  const pulseCategory = useFilters((s) => s.pulseCategory);
 
   // UNFILTERED newest reading — the honest preset anchor (D-20) and the
   // D-11 EmptyState anchor. latest_reading is unfiltered in EVERY response.
@@ -198,8 +199,9 @@ function Dashboard() {
     chartRegion = (
       <EmptyState
         latestReading={latestReading}
-        amPm={amPm}
+        timeOfDay={timeOfDay}
         bpCategory={bpCategory}
+        pulseCategory={pulseCategory}
         presetLabel={presetLabel(datePreset)}
       />
     );

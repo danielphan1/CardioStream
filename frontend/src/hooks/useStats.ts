@@ -29,8 +29,9 @@ export function useStats(resolved: ResolvedFilters) {
 export function useResolvedFilters(): ResolvedFilters {
   const datePreset = useFilters((s) => s.datePreset);
   const customRange = useFilters((s) => s.customRange);
-  const amPm = useFilters((s) => s.amPm);
   const bpCategory = useFilters((s) => s.bpCategory);
+  const pulseCategory = useFilters((s) => s.pulseCategory);
+  const timeOfDay = useFilters((s) => s.timeOfDay);
 
   // Unfiltered stats query = the stable preset anchor (latest_reading).
   const { data: anchor } = useQuery({
@@ -40,7 +41,7 @@ export function useResolvedFilters(): ResolvedFilters {
   });
 
   return resolveFilters(
-    { datePreset, customRange, amPm, bpCategory },
+    { datePreset, customRange, bpCategory, pulseCategory, timeOfDay },
     anchor?.latest_reading ?? null,
   );
 }
