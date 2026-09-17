@@ -1,5 +1,5 @@
 // Unit tests for lib/voiceCommands.ts — GUIDE-02, D-08/D-09/D-10.
-// Key contracts: exactly 9 categories in the UI-SPEC-locked order, EXAMPLES
+// Key contracts: exactly 10 categories in the UI-SPEC-locked order, EXAMPLES
 // is a referential derivation (not an independently-authored duplicate list),
 // and the similar-phrasings note is the exact locked string.
 import { describe, expect, it } from "vitest";
@@ -11,8 +11,8 @@ import {
 } from "./voiceCommands";
 
 describe("VOICE_COMMAND_CATEGORIES", () => {
-  it("has exactly 9 entries", () => {
-    expect(VOICE_COMMAND_CATEGORIES).toHaveLength(9);
+  it("has exactly 10 entries", () => {
+    expect(VOICE_COMMAND_CATEGORIES).toHaveLength(10);
   });
 
   it("has the exact locked id sequence, in order", () => {
@@ -20,8 +20,9 @@ describe("VOICE_COMMAND_CATEGORIES", () => {
       "datasets",
       "show-only",
       "date-range",
-      "am-pm",
+      "time-of-day",
       "bp-category",
+      "pulse-category",
       "chart-view",
       "reset",
       "speech",
@@ -43,8 +44,8 @@ describe("VOICE_COMMAND_CATEGORIES", () => {
 });
 
 describe("EXAMPLES", () => {
-  it("has length 9", () => {
-    expect(EXAMPLES).toHaveLength(9);
+  it("has length 10", () => {
+    expect(EXAMPLES).toHaveLength(10);
   });
 
   it("is referentially derived from VOICE_COMMAND_CATEGORIES.map((c) => c.example), not a coincidental duplicate", () => {

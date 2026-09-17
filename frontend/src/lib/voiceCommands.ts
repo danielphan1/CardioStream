@@ -25,14 +25,19 @@ export const VOICE_COMMAND_CATEGORIES: VoiceCommandCategory[] = [
   },
   { id: "date-range", label: "Filtering by date", example: "last 30 days" },
   {
-    id: "am-pm",
-    label: "Filtering by AM or PM",
+    id: "time-of-day",
+    label: "Filtering by time of day",
     example: "mornings only",
   },
   {
     id: "bp-category",
     label: "Filtering by blood pressure category",
     example: "show stage 2 readings",
+  },
+  {
+    id: "pulse-category",
+    label: "Filtering by pulse category",
+    example: "show tachycardia readings",
   },
   {
     id: "chart-view",

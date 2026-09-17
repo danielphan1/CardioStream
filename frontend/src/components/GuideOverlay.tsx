@@ -293,11 +293,11 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
             <h2 className={h2Class}>Filters</h2>
             <p className={bodyClass}>
               Filters narrow down which readings are shown — by date range, by
-              morning (AM) or evening (PM), or by blood pressure category.
+              time of day, by blood pressure category, or by pulse category.
             </p>
             <p className={bodyClass}>
-              <strong>By click:</strong> Tap a filter chip (like "Last 30 Days"
-              or "Mornings") to turn it on or off.
+              <strong>By click:</strong> Tap a filter checkbox (like "Last 30
+              Days" or "Morning") to turn it on or off.
             </p>
             <p className={bodyClass}>
               <strong>By voice:</strong> Say a filter phrase, like "last 30
