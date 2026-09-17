@@ -1,13 +1,16 @@
 """Integration tests for GET /readings (API-01).
 
-Covers (02-01-PLAN behavior contract, extended by 15-01-PLAN Task 1):
-  - each filter alone: start_date, end_date, bp_category, pulse_category
+Covers (02-01-PLAN behavior contract, extended by 15-01-PLAN):
+  - each filter alone: start_date, end_date, bp_category, pulse_category,
+    time_of_day
   - list-typed filters: OR within one group (e.g. bp_category=Stage 1 AND
     Stage 2), AND across groups (e.g. date range AND bp_category)
   - zero-or-all semantics: an omitted list filter NEVER compiles to
     SQLAlchemy's always-false `IN ()` — absence means "no restriction"
   - `am_pm` query filtering is REMOVED (PD-02): now an unrecognized param,
     silently ignored by FastAPI, never a 422 and never a filter
+  - time_of_day's midnight-wrapping Night bucket (21-23 and 0-4) matches
+    across the wrap in one query, not as two disjoint ranges
   - INCLUSIVE end_date boundary — a 23:xx reading ON end_date is kept
     (RESEARCH Pitfall 4 regression)
   - canonical labels with spaces ("Hypertensive Crisis") URL-encoded
@@ -51,6 +54,25 @@ def seeded(session):
         _reading(datetime(2025, 3, 3, 7, 15), 142, 88, 58, "AM", "Stage 2"),
         _reading(datetime(2025, 3, 4, 23, 15), 190, 125, 62, "PM", "Hypertensive Crisis"),
         _reading(datetime(2025, 3, 6, 9, 0), 85, 55, 48, "AM", "Hypotension", notes="dizzy"),
+    ]
+    session.add_all(rows)
+    session.commit()
+    return rows
+
+
+@pytest.fixture
+def time_of_day_seeded(session):
+    """Dedicated small fixture covering all four time-of-day buckets,
+    including a row on each side of the midnight wrap (Night: 21-23 and 0-4).
+    Kept separate from `seeded` so the fixed-count assertions elsewhere
+    (5 rows, exact category counts) stay unaffected.
+    """
+    rows = [
+        _reading(datetime(2025, 4, 1, 7, 0), 118, 76, 55, "AM", "Normal"),  # Morning
+        _reading(datetime(2025, 4, 1, 14, 0), 122, 79, 62, "PM", "Elevated"),  # Afternoon
+        _reading(datetime(2025, 4, 1, 18, 30), 130, 82, 64, "PM", "Stage 1"),  # Evening
+        _reading(datetime(2025, 4, 1, 23, 15), 140, 90, 66, "PM", "Stage 2"),  # Night, late
+        _reading(datetime(2025, 4, 2, 3, 45), 128, 80, 58, "AM", "Stage 1"),  # Night, wraps to early morning
     ]
     session.add_all(rows)
     session.commit()
@@ -192,6 +214,25 @@ def test_pulse_category_filter(client, seeded, category: str, expected_count: in
     assert all(item["pulse_category"] == category for item in body)
 
 
+def test_time_of_day_night_wraps_midnight(client, time_of_day_seeded) -> None:
+    """Night (21-23, 0-4) must match both the late-evening AND early-morning
+    row in one query — the midnight-wrap case, not two disjoint ranges."""
+    r = client.get("/readings", params={"time_of_day": "Night"})
+    assert r.status_code == 200
+    body = r.json()
+    datetimes = {item["datetime"] for item in body}
+    assert datetimes == {"2025-04-01T23:15:00", "2025-04-02T03:45:00"}
+
+
+def test_time_of_day_or_within_group(client, time_of_day_seeded) -> None:
+    """OR-within-group: time_of_day=Morning&time_of_day=Evening returns both."""
+    r = client.get("/readings", params={"time_of_day": ["Morning", "Evening"]})
+    assert r.status_code == 200
+    body = r.json()
+    datetimes = {item["datetime"] for item in body}
+    assert datetimes == {"2025-04-01T07:00:00", "2025-04-01T18:30:00"}
+
+
 @pytest.mark.parametrize(
     "params",
     [
@@ -199,6 +240,7 @@ def test_pulse_category_filter(client, seeded, category: str, expected_count: in
         {"bp_category": "Crisis"},
         {"start_date": "not-a-date"},
         {"end_date": "2025-13-45"},
+        {"time_of_day": "midnight"},  # not a valid bucket name
     ],
 )
 def test_invalid_params_return_422(client, seeded, params: dict) -> None:
