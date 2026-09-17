@@ -4,36 +4,66 @@
 // the "Show all data" button. The chosen range is NEVER auto-widened —
 // the button is the only way out (D-11 hard rule).
 //
-// Copy is verbatim from 02-UI-SPEC.md Copywriting Contract. This component
-// receives typed props only and never renders error objects or raw status
-// text (T-02-11 — error presentation is centralized in App, plan 02-07).
+// Copy is verbatim from 02-UI-SPEC.md Copywriting Contract, extended per
+// 15-UI-SPEC.md §8 for the v3 multi-select filter shape (Phase 15). This
+// component receives typed props only and never renders error objects or
+// raw status text (T-02-11 — error presentation is centralized in App).
 import { Sailboat } from "lucide-react";
 
-import { fmtLongDate } from "../lib/dates";
+import type { BPCategory, PulseCategory, TimeOfDayBucket } from "../api/types";
+import { fmtLongDate, TIME_OF_DAY_ORDER } from "../lib/dates";
+import { CLINICAL_ORDER, PULSE_CLINICAL_ORDER } from "../lib/palette";
+import { joinWithAnd } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
 
 type EmptyStateProps = {
   /** UNFILTERED newest reading (stats.latest_reading) — D-11 anchor. */
   latestReading: string | null;
-  amPm: "all" | "AM" | "PM";
-  /** "all" or a category label — "all" omits the category clause. */
-  bpCategory: string;
+  bpCategory: Record<BPCategory, boolean>;
+  pulseCategory: Record<PulseCategory, boolean>;
+  timeOfDay: Record<TimeOfDayBucket, boolean>;
   /** Display label for the active date range (lib/dates presetLabel). */
   presetLabel: string;
 };
 
+// Zero-or-all collapse: 0 or every key selected means "no filter" — the same
+// locally-scoped helper shape as lib/agent.ts composeConfirmation's `selected`.
+function selected<K extends string>(m: Record<K, boolean>): K[] {
+  return (Object.keys(m) as K[]).filter((k) => m[k]);
+}
+
 export function EmptyState({
   latestReading,
-  amPm,
   bpCategory,
+  pulseCategory,
+  timeOfDay,
   presetLabel,
 }: EmptyStateProps) {
   const showAllData = useFilters((s) => s.showAllData);
 
-  // "There are no {AM|PM} readings in {presetLabel}{ in {category}}."
-  // The AM/PM segment is omitted entirely when the filter is "all".
-  const amPmSegment = amPm === "all" ? "" : `${amPm} `;
-  const categoryClause = bpCategory === "all" ? "" : ` in ${bpCategory}`;
+  // "There are no {time of day }readings in {presetLabel}{ in {category}}{ with {pulse} pulse}."
+  // Each clause collapses to "" under the zero-or-all convention (15-UI-SPEC §8).
+  const timeOfDaySelected = selected(timeOfDay);
+  const timeOfDayPrefix =
+    timeOfDaySelected.length === 0 ||
+    timeOfDaySelected.length === TIME_OF_DAY_ORDER.length
+      ? ""
+      : `${joinWithAnd(timeOfDaySelected.map((b) => b.toLowerCase()))} `;
+
+  const bpCategorySelected = selected(bpCategory);
+  const bpCategoryClause =
+    bpCategorySelected.length === 0 ||
+    bpCategorySelected.length === CLINICAL_ORDER.length
+      ? ""
+      : ` in ${joinWithAnd(bpCategorySelected)}`;
+
+  const pulseCategorySelected = selected(pulseCategory);
+  const pulseCategoryClause =
+    pulseCategorySelected.length === 0 ||
+    pulseCategorySelected.length === PULSE_CLINICAL_ORDER.length
+      ? ""
+      : ` with ${joinWithAnd(pulseCategorySelected)} pulse`;
+
   const newestSentence =
     latestReading !== null
       ? ` The newest reading is from ${fmtLongDate(latestReading)}.`
@@ -50,7 +80,7 @@ export function EmptyState({
         No readings match these filters
       </h2>
       <p className="text-lg">
-        {`There are no ${amPmSegment}readings in ${presetLabel}${categoryClause}.${newestSentence}`}
+        {`There are no ${timeOfDayPrefix}readings in ${presetLabel}${bpCategoryClause}${pulseCategoryClause}.${newestSentence}`}
       </p>
       <button
         type="button"
