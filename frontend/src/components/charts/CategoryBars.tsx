@@ -23,7 +23,11 @@ import {
 } from "recharts";
 
 import type { StatsSummary } from "../../api/types";
-import { categoryBarData, prefersReducedMotion } from "../../lib/chartData";
+import {
+  categoryBarData,
+  categoryBarRightMargin,
+  prefersReducedMotion,
+} from "../../lib/chartData";
 import { useElementWidth } from "../../hooks/useElementWidth";
 import { categoryColor } from "../../lib/palette";
 
@@ -44,12 +48,16 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
   const animate = prefersReducedMotion() === false;
   const { ref, width: containerWidth } = useElementWidth<HTMLDivElement>();
   const narrow = containerWidth > 0 && containerWidth < 480;
+  const labelFontSize = narrow ? 16 : 18;
+  const rightMargin = categoryBarRightMargin(rows, labelFontSize);
 
   // D-10 full label drawn just past the bar end, ink color, 18px (16px
-  // below 480px container width). The right margin below reserves room
-  // for the longest label ("Hypertensive Crisis — NN readings (NN%)")
-  // even on the widest bar; it shrinks alongside the font on narrow
-  // containers rather than clipping the label (readability pass, D-06).
+  // below 480px container width). The right margin is derived from the
+  // actual rendered label set via categoryBarRightMargin()/
+  // estimateChipWidth() rather than a fixed guess — Phase 16 gap-closure
+  // fix for a real clipping regression (CR-01/16-VERIFICATION.md), where
+  // the prior static 160px/300px values covered roughly half of what the
+  // longest label ("Hypertensive Crisis — NN readings (NN%)") needed.
   const barLabel = ({ x, y, width, height, index }: BarLabelGlyphProps) => {
     if (
       index === undefined ||
@@ -66,7 +74,7 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
       <text
         x={Number(x) + Number(width) + 8}
         y={Number(y) + Number(height) / 2}
-        fontSize={narrow ? 16 : 18}
+        fontSize={labelFontSize}
         fill="var(--color-depth)"
         dominantBaseline="middle"
       >
@@ -82,7 +90,7 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
           layout="vertical"
           data={rows}
           accessibilityLayer
-          margin={{ top: 8, right: narrow ? 160 : 300, bottom: 8, left: 8 }}
+          margin={{ top: 8, right: rightMargin, bottom: 8, left: 8 }}
         >
           <XAxis
             type="number"
