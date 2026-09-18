@@ -79,6 +79,28 @@ export function groupAmPm(readings: Reading[]): AmPmRow[] {
 }
 
 /**
+ * D-01/D-02: count-based rolling average over the last `window` readings for
+ * a single vitals key (systolic/diastolic/pulse), one output entry per input
+ * point. This is deliberately a *reading-count* window, not a calendar-day
+ * window — readings are not daily, so a time-based window would silently mix
+ * in wildly different sample densities. Mirrors `groupAmPm`'s "no data ->
+ * skip/omit, don't fabricate" instinct: indices before a full window exists
+ * (the first `window - 1`) are `undefined`, never a partial-window average.
+ */
+export function rollingAverage(
+  points: TimePoint[],
+  key: "systolic" | "diastolic" | "pulse",
+  window = 7,
+): (number | undefined)[] {
+  return points.map((_, i) => {
+    if (i < window - 1) return undefined;
+    let sum = 0;
+    for (let j = i - window + 1; j <= i; j++) sum += points[j][key];
+    return round1(sum / window);
+  });
+}
+
+/**
  * D-10 exact label format: "Stage 1 — 34 readings (26%)". Percent is
  * Math.round-ed; count 1 uses the singular "reading".
  */
