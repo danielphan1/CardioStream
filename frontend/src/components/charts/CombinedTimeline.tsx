@@ -18,6 +18,12 @@
  *   element (impeccable P1, 2026-08-28 — corrects an earlier wrong fix).
  * - Elevated and Stage 1 never get chips: those bands span 10 of the 180
  *   domain units (~22px at hero height), too thin to hold one.
+ * - Phase 16 (D-01–D-05): bold rolling-average trend lines mount only when
+ *   `hasTrend` (`points.length >= 7`). Raw-line dimming is gated on the SAME
+ *   `hasTrend` — dimming a raw line only makes sense when a bold trend line
+ *   exists above it to support; never dim with nothing on top. The end-label
+ *   pill moves from the raw line to the trend line via that same gate and
+ *   must never render on both at once.
  *
  * New in Phase 14 — dual axes, and two rules about them that were established
  * by test, not by assumption:
@@ -53,8 +59,10 @@ import {
   isDotCrowded,
   prefersReducedMotion,
   resolveLabelY,
+  rollingAverage,
   toTimePoints,
 } from "../../lib/chartData";
+import type { TimePoint } from "../../lib/chartData";
 import { fmtShortDate } from "../../lib/dates";
 import type { OverlayEvent } from "../../lib/overlayEvents";
 import { OVERLAY_META } from "../../lib/overlayMeta";
@@ -77,6 +85,15 @@ const BPM = "bpm";
 
 type BandLabelChipProps = {
   viewBox?: { x?: number; y?: number; width?: number; height?: number };
+};
+
+/** Render data for the LineChart once trend lines exist (D-02) — a strict
+ *  superset of TimePoint, so bands/axes/markers/tooltip (which never read
+ *  these keys) are unaffected. */
+type TrendPoint = TimePoint & {
+  systolicTrend?: number;
+  diastolicTrend?: number;
+  pulseTrend?: number;
 };
 
 const CHIP_FONT_SIZE = 14;
@@ -204,7 +221,21 @@ export default function CombinedTimeline({
   const [dismissed, setDismissed] = useState(false);
   const animate = prefersReducedMotion() === false;
   const { ref, width } = useElementWidth<HTMLDivElement>();
+  const hasTrend = points.length >= 7;
   const crowded = isDotCrowded(width, points.length);
+
+  // D-01/D-02: bold rolling-average trend lines, merged onto a superset of
+  // `points` so bands/axes/markers/tooltip (which never read the new keys)
+  // are unaffected.
+  const systolicTrend = rollingAverage(points, "systolic");
+  const diastolicTrend = rollingAverage(points, "diastolic");
+  const pulseTrend = rollingAverage(points, "pulse");
+  const trendPoints: TrendPoint[] = points.map((p, i) => ({
+    ...p,
+    systolicTrend: systolicTrend[i],
+    diastolicTrend: diastolicTrend[i],
+    pulseTrend: pulseTrend[i],
+  }));
 
   // Anchor markers to a VISIBLE axis — a ReferenceLine on a hidden axis
   // renders nothing (see the header note). ChartDeck only mounts this
@@ -223,16 +254,22 @@ export default function CombinedTimeline({
     // bubbles up from Recharts' focusable accessibilityLayer chart.
     <div
       ref={ref}
-      className="h-full w-full"
+      className="flex h-full w-full flex-col gap-2"
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
           setDismissed(false);
         }
       }}
     >
+      <p className="m-0 shrink-0" style={{ fontSize: 18, color: "var(--color-depth)" }}>
+        {hasTrend
+          ? "Bold lines show a 7-reading rolling average. Lighter lines show each individual reading."
+          : `Trend line needs at least 7 readings to show — you have ${points.length} here. Showing individual readings only.`}
+      </p>
+      <div className="min-h-0 flex-1">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
-          data={points}
+          data={trendPoints}
           accessibilityLayer
           onClick={() => setDismissed(false)}
           // right: fits the widest end-label pill ("Diastolic" ≈ 96px) with
@@ -326,14 +363,17 @@ export default function CombinedTimeline({
               yAxisId={MMHG}
               dataKey="systolic"
               stroke="var(--line-systolic)"
-              strokeWidth={3}
+              strokeWidth={hasTrend ? 2 : 3}
+              strokeOpacity={hasTrend ? 0.85 : 1}
               dot={crowded ? false : { r: 5 }}
               activeDot={{ r: 10 }}
               isAnimationActive={animate}
             >
-              <LabelList
-                content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
-              />
+              {!hasTrend && (
+                <LabelList
+                  content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
+                />
+              )}
             </Line>
           )}
           {showBP && (
@@ -341,14 +381,17 @@ export default function CombinedTimeline({
               yAxisId={MMHG}
               dataKey="diastolic"
               stroke="var(--line-diastolic)"
-              strokeWidth={3}
+              strokeWidth={hasTrend ? 2 : 3}
+              strokeOpacity={hasTrend ? 0.85 : 1}
               dot={crowded ? false : { r: 5 }}
               activeDot={{ r: 10 }}
               isAnimationActive={animate}
             >
-              <LabelList
-                content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
-              />
+              {!hasTrend && (
+                <LabelList
+                  content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
+                />
+              )}
             </Line>
           )}
           {showPulse && (
@@ -360,10 +403,63 @@ export default function CombinedTimeline({
               yAxisId={BPM}
               dataKey="pulse"
               stroke="var(--line-pulse)"
-              strokeWidth={3}
+              strokeWidth={hasTrend ? 2 : 3}
+              strokeOpacity={hasTrend ? 0.85 : 1}
               strokeDasharray="9 5"
               dot={crowded ? false : { r: 5 }}
               activeDot={{ r: 10 }}
+              isAnimationActive={animate}
+            >
+              {!hasTrend && (
+                <LabelList
+                  content={makeEndLabel(lastIndex, "Pulse", "var(--line-pulse)", endLabelYs)}
+                />
+              )}
+            </Line>
+          )}
+
+          {/* D-01/D-02: bold rolling-average trend lines, only once 7+
+              readings exist — the end-label pill moves here from the raw
+              line via the same `hasTrend` gate, never both at once. */}
+          {showBP && hasTrend && (
+            <Line
+              yAxisId={MMHG}
+              dataKey="systolicTrend"
+              stroke="var(--line-systolic)"
+              strokeWidth={4}
+              dot={false}
+              activeDot={false}
+              isAnimationActive={animate}
+            >
+              <LabelList
+                content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
+              />
+            </Line>
+          )}
+          {showBP && hasTrend && (
+            <Line
+              yAxisId={MMHG}
+              dataKey="diastolicTrend"
+              stroke="var(--line-diastolic)"
+              strokeWidth={4}
+              dot={false}
+              activeDot={false}
+              isAnimationActive={animate}
+            >
+              <LabelList
+                content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
+              />
+            </Line>
+          )}
+          {showPulse && hasTrend && (
+            <Line
+              yAxisId={BPM}
+              dataKey="pulseTrend"
+              stroke="var(--line-pulse)"
+              strokeWidth={4}
+              strokeDasharray="9 5"
+              dot={false}
+              activeDot={false}
               isAnimationActive={animate}
             >
               <LabelList
@@ -394,6 +490,7 @@ export default function CombinedTimeline({
           })}
         </LineChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }
