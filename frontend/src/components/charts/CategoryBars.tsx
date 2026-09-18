@@ -24,9 +24,12 @@ import {
 
 import type { StatsSummary } from "../../api/types";
 import {
+  CATEGORY_LABEL_MARGIN_PADDING,
   categoryBarData,
   categoryBarRightMargin,
+  clampCategoryBarRightMargin,
   prefersReducedMotion,
+  truncateLabelForWidth,
 } from "../../lib/chartData";
 import { useElementWidth } from "../../hooks/useElementWidth";
 import { categoryColor } from "../../lib/palette";
@@ -49,7 +52,9 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
   const { ref, width: containerWidth } = useElementWidth<HTMLDivElement>();
   const narrow = containerWidth > 0 && containerWidth < 480;
   const labelFontSize = narrow ? 16 : 18;
-  const rightMargin = categoryBarRightMargin(rows, labelFontSize);
+  const rawRightMargin = categoryBarRightMargin(rows, labelFontSize);
+  const rightMargin = clampCategoryBarRightMargin(rawRightMargin, containerWidth);
+  const labelMaxWidth = rightMargin - CATEGORY_LABEL_MARGIN_PADDING;
 
   // D-10 full label drawn just past the bar end, ink color, 18px (16px
   // below 480px container width). The right margin is derived from the
@@ -58,6 +63,12 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
   // fix for a real clipping regression (CR-01/16-VERIFICATION.md), where
   // the prior static 160px/300px values covered roughly half of what the
   // longest label ("Hypertensive Crisis — NN readings (NN%)") needed.
+  // Round 2 (16-VERIFICATION.md BLOCKER): rightMargin is now also clamped
+  // against containerWidth via clampCategoryBarRightMargin() so bars can
+  // never collapse to zero width on a narrow real viewport, and the D-10
+  // label itself shrinks via truncateLabelForWidth() when that clamp
+  // fires — round 1 sized the margin correctly but never bounded it
+  // against the container's actual available width.
   const barLabel = ({ x, y, width, height, index }: BarLabelGlyphProps) => {
     if (
       index === undefined ||
@@ -78,7 +89,7 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
         fill="var(--color-depth)"
         dominantBaseline="middle"
       >
-        {row.label}
+        {truncateLabelForWidth(row.label, labelMaxWidth, labelFontSize)}
       </text>
     );
   };

@@ -9,6 +9,7 @@ import type { CategoryBarRow } from "./chartData";
 import {
   categoryBarData,
   categoryBarRightMargin,
+  clampCategoryBarRightMargin,
   estimateChipWidth,
   formatCategoryLabel,
   groupAmPm,
@@ -17,6 +18,7 @@ import {
   resolveLabelY,
   rollingAverage,
   toTimePoints,
+  truncateLabelForWidth,
 } from "./chartData";
 
 let nextId = 1;
@@ -265,6 +267,69 @@ describe("categoryBarRightMargin", () => {
 
   it("returns 0 for the degenerate empty-rows case", () => {
     expect(categoryBarRightMargin([], 16)).toBe(0);
+  });
+});
+
+describe("clampCategoryBarRightMargin", () => {
+  const rows: CategoryBarRow[] = [
+    {
+      category: "Hypertensive Crisis",
+      count: 6,
+      percent: 4.5,
+      label: "Hypertensive Crisis — 6 readings (5%)",
+    },
+  ];
+
+  it("clamps to a non-zero plot width at the real production-scale narrow container (343px — a 375px iPhone SE viewport minus App.tsx's px-4 page padding), the exact 16-VERIFICATION.md round-2 regression", () => {
+    const rawMargin = categoryBarRightMargin(rows, 16);
+    expect(rawMargin).toBe(383);
+    const clamped = clampCategoryBarRightMargin(rawMargin, 343);
+    expect(clamped).toBe(295);
+    // Recreates Recharts' own offset formula (selectChartOffsetInternal.js):
+    // offsetWidth = Math.max(chartWidth - margin.left - margin.right, 0).
+    // 8 mirrors CategoryBars.tsx's hardcoded margin.left.
+    const plotWidth = Math.max(343 - 8 - clamped, 0);
+    expect(plotWidth).toBeGreaterThan(0);
+    expect(plotWidth).toBe(40);
+  });
+
+  it("does not clamp when the container is wide enough — matches categoryBarRightMargin's own unclamped output", () => {
+    const rawMargin = categoryBarRightMargin(rows, 16);
+    expect(clampCategoryBarRightMargin(rawMargin, 900)).toBe(rawMargin);
+  });
+
+  it("passes the input through unchanged when containerWidth hasn't been measured yet (0 — jsdom/pre-ResizeObserver state)", () => {
+    expect(clampCategoryBarRightMargin(383, 0)).toBe(383);
+  });
+
+  it("never returns a negative margin even when the container is smaller than the minimum plot width itself", () => {
+    expect(clampCategoryBarRightMargin(383, 20)).toBe(0);
+  });
+});
+
+describe("truncateLabelForWidth", () => {
+  it("returns the label unchanged when it already fits", () => {
+    expect(truncateLabelForWidth("Normal — 28 readings (21%)", 300, 16)).toBe(
+      "Normal — 28 readings (21%)",
+    );
+  });
+
+  it("shrinks the longest real label to fit the clamped budget from the 343px scenario above, appending an ellipsis", () => {
+    // 279 = the 295px clamped margin from the case above minus the 16px
+    // CATEGORY_LABEL_MARGIN_PADDING.
+    expect(
+      truncateLabelForWidth(
+        "Hypertensive Crisis — 6 readings (5%)",
+        279,
+        16,
+      ),
+    ).toBe("Hypertensive Crisis — 6 rea…");
+  });
+
+  it("never returns an empty string, even at a 0px budget", () => {
+    expect(
+      truncateLabelForWidth("Hypertensive Crisis — 6 readings (5%)", 0, 16),
+    ).toBe("…");
   });
 });
 

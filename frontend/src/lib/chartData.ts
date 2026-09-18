@@ -181,7 +181,7 @@ export function estimateChipWidth(text: string, fontSize: number): number {
  *  16-VERIFICATION.md's clipping finding (the prior static 160px/300px
  *  margin.right guess covered roughly half of what the longest real D-10
  *  label needs). */
-const CATEGORY_LABEL_MARGIN_PADDING = 16;
+export const CATEGORY_LABEL_MARGIN_PADDING = 16;
 
 /**
  * The `BarChart margin.right` CategoryBars needs to draw its D-10 labels
@@ -198,6 +198,56 @@ export function categoryBarRightMargin(
     Math.max(...rows.map((r) => estimateChipWidth(r.label, fontSize))) +
     CATEGORY_LABEL_MARGIN_PADDING
   );
+}
+
+// Mirrors CategoryBars.tsx's own hardcoded `margin.left: 8` on its
+// <BarChart> — duplicated here (not imported) because the clamp math below
+// needs to reason about the exact same plot-area geometry Recharts itself
+// will compute.
+const CATEGORY_BAR_LEFT_MARGIN = 8;
+
+// ponytail: fixed floor, revisit if live QA shows bars still read as a
+// sliver at this width. Not measured/derived — chosen well clear of
+// Recharts' own zero-clamp.
+const MIN_CATEGORY_BAR_PLOT_WIDTH = 40;
+
+/**
+ * Bounds `rightMargin` against the container's actual measured width so
+ * CategoryBars' bars never collapse to zero width. Recharts hard-clamps its
+ * own plot area (`offsetWidth = Math.max(chartWidth - offset.left -
+ * offset.right, 0)`, `recharts/es6/state/selectors/selectChartOffsetInternal.js`
+ * lines 71-78) — the moment `margin.left + margin.right >= containerWidth`,
+ * every bar renders zero-width and invisible. Round 1's `categoryBarRightMargin()`
+ * (CR-01) sized the margin correctly for the label but never bounded it
+ * against the container — this is the round-2 gap-closure fix
+ * (16-VERIFICATION.md BLOCKER).
+ */
+export function clampCategoryBarRightMargin(
+  rightMargin: number,
+  containerWidth: number,
+): number {
+  if (containerWidth <= 0) return rightMargin;
+  const maxMargin =
+    containerWidth - CATEGORY_BAR_LEFT_MARGIN - MIN_CATEGORY_BAR_PLOT_WIDTH;
+  return Math.min(rightMargin, Math.max(maxMargin, 0));
+}
+
+/**
+ * Graceful-degradation half of the round-2 fix: when
+ * `clampCategoryBarRightMargin()` reduces `margin.right` below what the full
+ * label needs, the label must shrink (ellipsis-truncated) to fit rather than
+ * clip invisibly past the SVG's `overflow: hidden` edge.
+ */
+export function truncateLabelForWidth(
+  label: string,
+  maxWidthPx: number,
+  fontSize: number,
+): string {
+  if (maxWidthPx <= 0) return "…";
+  if (estimateChipWidth(label, fontSize) <= maxWidthPx) return label;
+  const perCharWidth = fontSize * CHIP_CHAR_WIDTH_FACTOR;
+  const maxChars = Math.max(1, Math.floor(maxWidthPx / perCharWidth) - 1);
+  return `${label.slice(0, maxChars)}…`;
 }
 
 /** Matches CombinedTimeline.tsx's END_LABEL_HEIGHT (its 14px chip font + 3px
