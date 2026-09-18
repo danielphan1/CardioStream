@@ -13,6 +13,7 @@ import {
   isDotCrowded,
   prefersReducedMotion,
   resolveLabelY,
+  rollingAverage,
   toTimePoints,
 } from "./chartData";
 
@@ -265,5 +266,78 @@ describe("resolveLabelY", () => {
     for (const p of placed) {
       expect(Math.abs(result - p)).toBeGreaterThanOrEqual(GAP);
     }
+  });
+});
+
+// D-01/D-02/D-03: the count-based 7-reading rolling average CombinedTimeline
+// (Phase 16, Plan 16-03) will plot alongside the raw dimmed line.
+describe("rollingAverage", () => {
+  it("returns undefined for every index before a full 7-reading window exists (D-02, partial window)", () => {
+    const points = toTimePoints(
+      [100, 101, 103, 104, 106, 107].map((systolic) => reading({ systolic })),
+    );
+    expect(rollingAverage(points, "systolic")).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it("averages the first full 7-reading window, rounded to 1 decimal (exact window)", () => {
+    const points = toTimePoints(
+      [100, 101, 103, 104, 106, 107, 109].map((systolic) =>
+        reading({ systolic }),
+      ),
+    );
+    const result = rollingAverage(points, "systolic");
+    expect(result.slice(0, 6)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    expect(result[6]).toBe(104.3);
+  });
+
+  it("slides the window: the 8th point drops the earliest of the prior 7", () => {
+    const points = toTimePoints(
+      [100, 101, 103, 104, 106, 107, 109, 112].map((systolic) =>
+        reading({ systolic }),
+      ),
+    );
+    const result = rollingAverage(points, "systolic");
+    expect(result[6]).toBe(104.3);
+    expect(result[7]).toBe(106);
+  });
+
+  it("is purely count-based, indifferent to wildly uneven time gaps between readings (D-01)", () => {
+    const points = toTimePoints(
+      [
+        { systolic: 100, datetime: "2015-01-01T00:00:00" },
+        { systolic: 101, datetime: "2016-03-15T00:00:00" },
+        { systolic: 103, datetime: "2019-11-02T00:00:00" },
+        { systolic: 104, datetime: "2020-01-01T00:00:00" },
+        { systolic: 106, datetime: "2024-06-30T00:00:00" },
+        { systolic: 107, datetime: "2024-12-01T00:00:00" },
+        { systolic: 109, datetime: "2025-06-03T07:42:00" },
+      ].map((overrides) => reading(overrides)),
+    );
+    expect(rollingAverage(points, "systolic")[6]).toBe(104.3);
+  });
+
+  it("returns an empty array for empty input", () => {
+    expect(rollingAverage([], "systolic")).toEqual([]);
+  });
+
+  it("reads whichever key is passed, not a hardcoded field (D-03, per-key correctness)", () => {
+    const points = toTimePoints(
+      [60, 61, 63, 64, 66, 67, 69].map((diastolic) => reading({ diastolic })),
+    );
+    expect(rollingAverage(points, "diastolic")[6]).toBe(64.3);
   });
 });

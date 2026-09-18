@@ -17,6 +17,12 @@ const LIGHT = {
   lineSystolic: "#1E3A5F",
   lineDiastolic: "#1F7A6C",
   linePulse: "#9E4A24",
+  lineSystolicDimmedVsDeck: "#3E5676",
+  lineSystolicDimmedVsMist: "#3C5574",
+  lineDiastolicDimmedVsDeck: "#3F8D81",
+  lineDiastolicDimmedVsMist: "#3C8B7F",
+  linePulseDimmedVsDeck: "#AB6444",
+  linePulseDimmedVsMist: "#A86242",
 };
 
 const DARK = {
@@ -31,6 +37,12 @@ const DARK = {
   lineSystolic: "#9DBFE0",
   lineDiastolic: "#7FD6C4",
   linePulse: "#E3A07C",
+  lineSystolicDimmedVsDeck: "#87A5C3",
+  lineSystolicDimmedVsMist: "#88A7C6",
+  lineDiastolicDimmedVsDeck: "#6DB9AB",
+  lineDiastolicDimmedVsMist: "#6EBAAE",
+  linePulseDimmedVsDeck: "#C28B6E",
+  linePulseDimmedVsMist: "#C38C71",
 };
 
 // The three vitals series a CombinedTimeline can draw at once (Phase 14).
@@ -38,6 +50,17 @@ const DARK = {
 // 1.4.11), not 4.5:1. Both grounds are tested because the chart sits on mist
 // inside a card but the page behind it is deck.
 const VITALS_LINES = ["lineSystolic", "lineDiastolic", "linePulse"] as const;
+
+// The 6 series/background pairs (3 vitals lines x 2 backgrounds) for the
+// Phase 16 dimmed-raw-line regression block below: [tokenKey, backgroundKey].
+const DIMMED_LINE_PAIRS = [
+  ["lineSystolicDimmedVsDeck", "deck"],
+  ["lineDiastolicDimmedVsDeck", "deck"],
+  ["linePulseDimmedVsDeck", "deck"],
+  ["lineSystolicDimmedVsMist", "mist"],
+  ["lineDiastolicDimmedVsMist", "mist"],
+  ["linePulseDimmedVsMist", "mist"],
+] as const;
 
 describe("light theme — brass contrast floors", () => {
   it("brass text on brass fill clears AA normal text (4.5:1, WCAG 1.4.3)", () => {
@@ -127,6 +150,29 @@ describe("dark theme — vitals line contrast floors", () => {
     "%s against mist clears non-text UI floor (3:1, WCAG 1.4.11)",
     (token) => {
       expect(hex(DARK[token], DARK.mist)).toBeGreaterThanOrEqual(3);
+    },
+  );
+});
+
+// The Phase 16 regression guard (D-04): CombinedTimeline dims each raw
+// vitals line to 0.85 opacity once its rolling average is plotted on top, so
+// the average reads as the primary signal. This locks in that the dimmed
+// line still clears the 3:1 non-text floor — a future opacity change that
+// breaks contrast fails here instead of shipping.
+describe("light theme — dimmed raw vitals line contrast floors (Phase 16, D-04 @ 0.85 opacity)", () => {
+  it.each(DIMMED_LINE_PAIRS)(
+    "%s clears the non-text UI floor (3:1, WCAG 1.4.11)",
+    (token, bgKey) => {
+      expect(hex(LIGHT[token], LIGHT[bgKey])).toBeGreaterThanOrEqual(3);
+    },
+  );
+});
+
+describe("dark theme — dimmed raw vitals line contrast floors (Phase 16, D-04 @ 0.85 opacity)", () => {
+  it.each(DIMMED_LINE_PAIRS)(
+    "%s clears the non-text UI floor (3:1, WCAG 1.4.11)",
+    (token, bgKey) => {
+      expect(hex(DARK[token], DARK[bgKey])).toBeGreaterThanOrEqual(3);
     },
   );
 });
