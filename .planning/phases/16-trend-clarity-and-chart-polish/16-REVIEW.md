@@ -1,6 +1,6 @@
 ---
 phase: 16-trend-clarity-and-chart-polish
-reviewed: 2026-09-18T08:35:13Z
+reviewed: 2026-09-18T09:30:38Z
 depth: standard
 files_reviewed: 7
 files_reviewed_list:
@@ -12,278 +12,95 @@ files_reviewed_list:
   - frontend/src/components/charts/CombinedTimeline.tsx
   - frontend/src/components/charts/CombinedTimeline.test.tsx
 findings:
-  critical: 1
-  warning: 3
-  info: 2
+  critical: 0
+  warning: 5
+  info: 1
   total: 6
 status: issues_found
 ---
 
 # Phase 16: Code Review Report
 
-**Reviewed:** 2026-09-18T08:35:13Z
+**Reviewed:** 2026-09-18T09:30:38Z
 **Depth:** standard
 **Files Reviewed:** 7
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the trend-clarity/chart-polish deliverables: `chartData.ts`'s new pure
-helpers (`rollingAverage`, `isDotCrowded`, `estimateChipWidth`,
-`resolveLabelY`), their unit tests, the WCAG contrast regression suite, and
-the three chart components (`CategoryBars`, `AmPmComparison`,
-`CombinedTimeline`) plus `CombinedTimeline`'s behavior tests. `tsc -b` and
-`npm run lint` (oxlint) are both clean, and all 99 existing tests pass, so
-the issues below are semantic/domain defects that static tooling and the
-current test suite do not catch — exactly where an adversarial pass earns
-its keep.
+This is a re-review after the 16-04 gap-closure plan. Verified the prior
+CR-01 finding against the current code by hand: `categoryBarRightMargin()`
+computes `margin.right` as `max(estimateChipWidth(label, fontSize) for all
+rows) + 16px`, and since every bar's rendered `x + width` is bounded above
+by the plot's right edge (`containerWidth - margin.right`, because the
+`XAxis` domain is `[0, "dataMax"]` and no bar's value can exceed
+`dataMax`), the algebra holds for every row, not just the longest-labeled
+one: `label_width + 8 <= margin.right` is guaranteed for all six bars.
+**CR-01 is genuinely resolved** — the static 160/300px guess is gone and
+the label clipping bug it caused cannot recur from the same value set.
 
-`resolveLabelY`'s collision-avoidance math was brute-force verified
-(200k random trials) to be order-independent and loop-terminating for the
-small (≤3-item) inputs it's actually used with — that part holds up.
+Re-assessing the three carried-forward warnings against current code (not
+just accepting the prior review's word for it):
+- **WR-01** (StrictMode double-fire in `makeEndLabel`) — confirmed still
+  present; confirmed `<StrictMode>` is actually enabled in `main.tsx`;
+  confirmed via `recharts` source that `LabelList`'s `content` function is
+  invoked through `createElement`, i.e. as a real reconciled component, so
+  it is subject to React 18's dev-only double-invoke.
+- **WR-02** (contrast.test.ts fixture decoupling) — confirmed still
+  present; spot-verified the current hardcoded "Dimmed" hex values against
+  a manual 0.85-alpha blend of the real `--line-*` and `--color-deck/mist`
+  tokens and they are numerically correct *today*, which is exactly what
+  makes the decoupling dangerous — the test can't tell a stale value from
+  a fresh one.
+- **WR-03** (duplicate `END_LABEL_HEIGHT`) — confirmed still present,
+  unchanged.
 
-The most serious finding is a genuine, demonstrable regression in
-`CategoryBars.tsx`: the commit that added the narrow-viewport branch
-(`fix(16-02)`) claims "Full category labels never clip on narrow chart
-containers," but the numbers say otherwise — the reserved margin is roughly
-half of what the label text actually needs. Separately, an empirically
-reproduced (not theoretical) React-purity bug was found in
-`CombinedTimeline.tsx`'s end-label collision avoidance: under the app's own
-`<StrictMode>` root, label pills render 20px off from their production
-position.
-
-## Critical Issues
-
-### CR-01: CategoryBars' narrow-mode right margin is far too small for its own D-10 labels — clips the chart's primary content on mobile
-
-**File:** `frontend/src/components/charts/CategoryBars.tsx:46,69,85`
-**Issue:**
-
-```tsx
-const narrow = containerWidth > 0 && containerWidth < 480;
-...
-fontSize={narrow ? 16 : 18}
-...
-margin={{ top: 8, right: narrow ? 160 : 300, bottom: 8, left: 8 }}
-```
-
-The commit that introduced this (`fix(16-02): CategoryBars responsive right
-margin and label font below 480px`) states in its own message: "Full
-category labels never clip on narrow chart containers." That claim doesn't
-hold up against the actual label text this component draws.
-
-The full D-10 label for the longest real category is e.g.
-`"Hypertensive Crisis — 6 readings (5%)"` — 37 characters. Using the
-project's *own* text-width heuristic (`estimateChipWidth`'s
-`CHIP_CHAR_WIDTH_FACTOR = 0.62`, documented as "deliberately generous...
-errs toward a slightly wider chip") applied at this component's actual
-font sizes:
-
-- narrow (16px): `37 * 16 * 0.62 ≈ 367px` needed vs. **160px** reserved — a
-  ~207px shortfall (the margin covers less than half of what's needed).
-- wide (18px): `37 * 18 * 0.62 ≈ 413px` needed vs. **300px** reserved — a
-  ~113px shortfall.
-
-Even discounting the 0.62 factor substantially for CategoryBars' regular
-(non-bold) weight, the narrow case is not close — it's off by roughly 2x —
-and the wide case has essentially zero safety margin, meaning any
-Hypertensive-Crisis row with a double- or triple-digit count/percent will
-clip there too.
-
-This isn't a cosmetic nit: `Bar`/`ResponsiveContainer` render into a plain
-`<svg>` (`node_modules/recharts/es6/container/Surface.js` sets no
-`overflow: visible`, and `index.css` has no override), and embedded SVG
-elements are clipped to their own bounds by the default UA stylesheet
-(`svg:not(:root) { overflow: hidden; }`). Text drawn past
-`plot width + margin.right` is invisible, not just visually cramped. Per
-this file's own doc comment, "the labels ARE the values... there is
-nothing extra to inspect" — when they clip, the chart loses its entire
-purpose on any phone-width viewport, which is precisely the breakpoint
-this code path exists to support. There is no test coverage for this
-(no `CategoryBars` component test exists among the reviewed files), so
-nothing currently guards the regression.
-
-**Fix:** Derive the margin from the actual label set instead of a static
-guess, using the estimator this codebase already has:
-
-```tsx
-import { categoryBarData, estimateChipWidth, prefersReducedMotion } from "../../lib/chartData";
-...
-const labelFontSize = narrow ? 16 : 18;
-const rightMargin =
-  Math.max(...rows.map((r) => estimateChipWidth(r.label, labelFontSize))) + 16;
-...
-margin={{ top: 8, right: rightMargin, bottom: 8, left: 8 }}
-```
-
-Add a regression test (mirroring the existing `estimateChipWidth` tests in
-`chartData.test.ts`) asserting the computed margin covers the longest
-formatted label at both the narrow and wide breakpoints, and verify once in
-an actual browser at 320–414px width — jsdom cannot catch this class of bug
-since it does no real text layout.
+Reviewing the fix itself (not just re-confirming it closed CR-01) surfaced
+two new, related risks the fix introduces or inherits, plus one
+pre-existing dead-code item in a file in scope. Details below.
 
 ## Warnings
 
-### WR-01: End-label collision avoidance mutates shared state during render — empirically wrong under the app's own `<StrictMode>`
+### WR-01: `makeEndLabel` mutates a captured array during render (StrictMode double-invoke risk)
 
-**File:** `frontend/src/components/charts/CombinedTimeline.tsx:163-200,249`
-**Issue:** `makeEndLabel`'s returned `EndLabel` function is passed to
-Recharts as `LabelList`'s `content` prop. Recharts invokes this via
-`createElement(content, props)` (`node_modules/recharts/es6/component/Label.js:285`),
-so React treats it as a genuine function component subject to normal
-render rules — including React 19's `<StrictMode>` double-invocation of
-component render bodies in development. `main.tsx` wraps the whole app in
-`<StrictMode>`.
+**File:** `frontend/src/components/charts/CombinedTimeline.tsx:163-200` (push at line 172), array created at line 249
+**Issue:** `endLabelYs` is a plain array created fresh per `CombinedTimeline` render and closed over by every `makeEndLabel(...)` call. The returned `EndLabel` component pushes into it as a side effect *during render*. `recharts`' `LabelList`/`Label` implementation renders a function `content` prop via `createElement(content, propsForContent)` (`node_modules/recharts/es6/component/Label.js:285`), so `EndLabel` is a real reconciled component, not a plain function call — it is therefore subject to React 18 `<StrictMode>`'s dev-only double-invocation of component render bodies. `main.tsx` does wrap the app in `<StrictMode>`. Within one double-invoked pass, the *same* series' `EndLabel` pushes twice into the shared array; `resolveLabelY` sees its own first push as a "placed" collision on the second call and bumps itself down unnecessarily, and every later series then collides against that phantom duplicate too. This only fires in `npm run dev` (StrictMode's extra render pass is stripped entirely from production builds), so Chris never sees it, but it will make local visual QA of label placement unreliable and confusing for anyone testing this component in dev mode.
+**Fix:** Use a ref instead of a plain closed-over array (`useRef<number[]>([]).current`, reset once per render via a `useMemo`/render-start assignment), or compute all three labels' positions in one pass before rendering (e.g. a `useMemo` that maps `[systolic, diastolic, pulse]` end-Ys through `resolveLabelY` up front) rather than mutating shared state from inside each label's own render function.
 
-`EndLabel`'s body has a side effect outside of its return value:
+### WR-02: `contrast.test.ts` dimmed-line fixtures are hand-computed, not derived from source
 
-```tsx
-const labelY = resolveLabelY(Number(y), placedYs);
-placedYs.push(labelY);   // mutates the closed-over array
-```
+**File:** `frontend/src/tests/contrast.test.ts:20-25,40-45,56-63`
+**Issue:** `lineSystolicDimmedVsDeck` etc. are hardcoded hex literals meant to represent `--line-systolic` (etc.) at 0.85 opacity over `--color-deck`/`--color-mist`. Nothing in the test computes this blend from the real `--line-*`/`--color-deck`/`--color-mist` tokens in `index.css` or from the `0.85` literal in `CombinedTimeline.tsx:367,385,407`. Verified the current six values are numerically correct today (manual alpha-blend check matches to the byte), but that's precisely the risk: if either the base line color, the background token, or the `0.85` opacity constant changes, this "regression guard" silently goes stale and keeps passing/failing on the old math instead of the new rendered color — the opposite of what a regression test is for.
+**Fix:** Derive the six dimmed values in the test itself from the existing `LIGHT`/`DARK` base tokens and a shared `DIMMED_OPACITY = 0.85` constant (simple sRGB alpha blend: `round(fg*a + bg*(1-a))` per channel), rather than hand-computing and pasting in the results. That also lets the same constant be imported by (or asserted equal to) the `0.85` used in `CombinedTimeline.tsx`, closing the loop between the two files.
 
-`placedYs` (`endLabelYs` in the parent) is a plain array shared by closure
-across all three series' end labels for one render. Under `StrictMode`,
-each `EndLabel` invocation fires twice; the array mutation survives both
-invocations (arrays are mutated by reference, unaffected by React
-discarding a render's output), so by the time the *second* invocation of a
-later label runs, `placedYs` already contains extra entries from the
-duplicated calls to itself and its siblings. This corrupts the collision
-math for lines that don't actually collide, pushing labels further down
-than intended.
+### WR-03: `END_LABEL_HEIGHT` is defined twice and must be kept in sync by hand
 
-This was empirically reproduced, not just reasoned about — rendering the
-same `CombinedTimeline` instance with and without `<StrictMode>` wrapping
-(mocked `ResponsiveContainer`, same props) yields different pill `y`
-positions for every series:
+**File:** `frontend/src/lib/chartData.ts:207` vs `frontend/src/components/charts/CombinedTimeline.tsx:147`
+**Issue:** `chartData.ts` hardcodes `const END_LABEL_HEIGHT = 20;` for `resolveLabelY`'s collision math, while `CombinedTimeline.tsx` derives its own `const END_LABEL_HEIGHT = CHIP_FONT_SIZE + CHIP_PAD_Y * 2;` (also 20) for actual chip sizing. They currently agree only because both were hand-updated to 20; nothing enforces it. If `CHIP_FONT_SIZE` or `CHIP_PAD_Y` changes in `CombinedTimeline.tsx` (e.g. a font-size tweak), `resolveLabelY`'s collision threshold in `chartData.ts` silently goes out of sync with the actual pill height it's supposed to protect, and pills could start visually overlapping again with no test failure (the `chartData.test.ts` tests for `resolveLabelY` hardcode `GAP = 20` independently too, so they wouldn't catch the drift either).
+**Fix:** Pass the height into `resolveLabelY(y, placed, height)` as a parameter, with `CombinedTimeline.tsx` supplying its own `END_LABEL_HEIGHT` and `chartData.ts` only providing a default for callers/tests that don't care about the exact value. That removes the second hardcoded copy without re-triggering the oxlint `only-export-components` issue the current comment says motivated keeping the constant in `chartData.ts`.
 
-| series (by render order) | without StrictMode | with StrictMode | diff |
-|---|---|---|---|
-| 1st pill | 141.37 | 161.37 | +20 (`END_LABEL_HEIGHT`) |
-| 2nd pill | 272.27 | 292.27 | +20 |
-| 3rd pill | 185 | 205 | +20 |
+### WR-04: `categoryBarRightMargin` has no ceiling — can consume the whole container on narrow viewports
 
-Production builds strip `StrictMode`'s double-invoke behavior, so shipped
-users aren't affected — but every developer running `npm run dev` (which is
-exactly how this file's own comments say these positioning bugs were
-"live-verified," e.g. "Pulse clipped the top of Systolic at a 7-day
-filter") is looking at label positions offset by a full `END_LABEL_HEIGHT`
-from what actually ships. No test in `CombinedTimeline.test.tsx` renders
-inside `StrictMode`, so this class of regression is invisible to CI as
-well as to the manual verification workflow the codebase relies on.
+**File:** `frontend/src/lib/chartData.ts:192-201`, `frontend/src/components/charts/CategoryBars.tsx:49-52`
+**Issue:** The CR-01 fix correctly sizes `margin.right` to the longest label, but does not bound it against `containerWidth`. `estimateChipWidth`/`categoryBarRightMargin` grow with the numeric count and percent digits in the label text (`"Stage 2 — 300 readings (40%)"`), so as Chris's dataset accumulates — the app already targets a single user tracking since early 2025 with no upper bound on readings-per-category — the required margin grows without limit while the container does not. Concretely: on a 375px-wide phone card (`narrow` breakpoint, `labelFontSize=16`), a row like `"Stage 2 — 300 readings (40%)"` computes to `margin.right ≈ 294px`, and `"Hypertensive Crisis — 50 readings (7%)"` computes to `≈ 393px` — both larger than the entire available card width, leaving the bar plot area zero-width or negative. `CategoryBars` has no `min-width` on its wrapping div and `ChartDeck.tsx` applies none either, so there is nothing preventing this. This doesn't crash, but it silently defeats the very fix CR-01 shipped: labels stop clipping only by squeezing the bars themselves out of existence.
+**Fix:** Clamp `rightMargin` (e.g. `Math.min(rightMargin, containerWidth * 0.6)`) and, once clamped, either shrink the label font further, truncate the label (e.g. drop the parenthetical percent below some width), or let the label wrap/ellipsize — pick one, but bound the margin so it can never exceed a safe fraction of the measured container width.
 
-**Fix:** Don't mutate closure state from inside a render-time callback.
-Resolve all three Y positions once, in the parent component's own (pure)
-render body, before building the JSX tree — e.g. compute an ordered list of
-`{seriesKey, y}` via a single pass once each `Line`'s last point is known,
-or restructure `makeEndLabel` to accept a pre-resolved Y rather than
-computing-and-pushing at label-render time.
+### WR-05: `estimateChipWidth`'s calibration is documented for bold chip text, silently reused for regular-weight labels
 
-### WR-02: Dimmed-line contrast fixtures are hardcoded blends, fully decoupled from the opacity constant they claim to guard
-
-**File:** `frontend/src/tests/contrast.test.ts:56-63,157-178`
-**Issue:** The comment above `DIMMED_LINE_PAIRS` states: "This locks in that
-the dimmed line still clears the 3:1 non-text floor — a future opacity
-change that breaks contrast fails here instead of shipping." The listed hex
-values (e.g. `lineSystolicDimmedVsDeck: "#3E5676"`) are hand-computed
-alpha blends of `--line-systolic` (etc.) at exactly 0.85 opacity over
-`deck`/`mist` — verified correct for the pairs checked (e.g.
-`(30,58,95)*0.85 + (245,247,246)*0.15 → (62,86,118) = #3E5676`, matches).
-
-The problem is the linkage the docstring claims doesn't exist: these are
-static literals in the test file, not a value derived from
-`CombinedTimeline.tsx`'s actual `strokeOpacity={hasTrend ? 0.85 : 1}`
-(line 367/385/407). If a future change bumps that opacity to, say, 0.6 for
-better legibility, this test does not read that value anywhere — it will
-keep passing (or failing) based on the frozen 0.85 math, giving zero actual
-protection against the exact regression it's named after. The same applies
-to a future edit of `--line-systolic`/`--line-diastolic`/`--line-pulse` in
-`index.css`: nothing ties these literals back to the source tokens except a
-comment, so drift is silent until someone manually recomputes by hand.
-
-**Fix:** Export the opacity constant from `chartData.ts` (or
-`CombinedTimeline.tsx`) and compute the expected blended color in the test
-from the *same* base hex + that constant via a small `blend(fg, bg, alpha)`
-helper, rather than hand-typing the result. That way a change to either the
-opacity or the base token actually flows through and the test catches what
-it says it catches.
-
-### WR-03: `END_LABEL_HEIGHT` is defined twice, in two files, with no shared source of truth
-
-**File:** `frontend/src/lib/chartData.ts:183`, `frontend/src/components/charts/CombinedTimeline.tsx:147`
-**Issue:**
-
-```ts
-// chartData.ts:183 (module-private, used only by resolveLabelY)
-const END_LABEL_HEIGHT = 20;
-```
-```tsx
-// CombinedTimeline.tsx:147 (drives the actual rendered pill height)
-const END_LABEL_HEIGHT = CHIP_FONT_SIZE + CHIP_PAD_Y * 2; // = 20
-```
-
-The two constants happen to agree today (both evaluate to 20) and are kept
-in sync only by a doc comment ("Matches CombinedTimeline.tsx's
-END_LABEL_HEIGHT ... kept here, not there, so the function and its one
-constant don't trip oxlint's react(only-export-components)"). If either
-`CHIP_FONT_SIZE`/`CHIP_PAD_Y` in `CombinedTimeline.tsx` or the literal `20`
-in `chartData.ts` changes without the other, `resolveLabelY`'s collision
-detection silently stops matching the actual rendered chip height —
-reintroducing the exact overlapping-pill bug ("Pulse clipped the top of
-Systolic") this whole mechanism was built to fix, with no test able to
-catch it since `chartData.test.ts` only exercises `resolveLabelY` against
-its own local `GAP` constant, never against `CombinedTimeline`'s real
-`END_LABEL_HEIGHT`.
-
-**Fix:** Export `END_LABEL_HEIGHT` from `chartData.ts` and import it in
-`CombinedTimeline.tsx` instead of re-deriving it. The stated oxlint
-constraint (`react/only-export-components`) applies to files that export
-React components, not to a plain constant export from a non-component
-module like `chartData.ts` — `resolveLabelY` and `estimateChipWidth` are
-already exported from there, so `END_LABEL_HEIGHT` can join them with no
-new lint friction.
+**File:** `frontend/src/lib/chartData.ts:161-177` (doc comment + `CHIP_CHAR_WIDTH_FACTOR`), `frontend/src/components/charts/CategoryBars.tsx:51-52,74-83`
+**Issue:** `CHIP_CHAR_WIDTH_FACTOR`'s doc comment explicitly says it's calibrated "for the bold 14px Inter band-label chip text" used by `CombinedTimeline.tsx`'s `makeBandLabelChip`/`makeEndLabel` (both render `fontWeight={600}`). `categoryBarRightMargin` (the CR-01 fix) reuses the exact same function/constant to estimate the width of `CategoryBars.tsx`'s D-10 labels, which render with **no `fontWeight`** (default/normal weight) at 16-18px (`barLabel`, line 74-83). Regular-weight glyphs are narrower than bold glyphs at the same font-size, so today this happens to be safe (the estimate over-provisions space rather than under-provisioning it) — but that safety margin is incidental, not verified anywhere, and nothing ties the two use sites together. If `CHIP_CHAR_WIDTH_FACTOR` is ever retuned for its documented purpose (e.g. tightened because `CombinedTimeline`'s bold chips look too wide), that same change silently shrinks `CategoryBars`' margin too, for a lighter-weight font where the estimate is already closer to reality — reopening the exact CR-01 clipping bug this phase just closed, with no test anywhere that would catch the regression (the `categoryBarRightMargin` tests in `chartData.test.ts:237-269` only check the function's *internal* arithmetic against itself, not against `CategoryBars`' actual rendered font weight).
+**Fix:** At minimum, add a comment on `categoryBarRightMargin` (or on `CHIP_CHAR_WIDTH_FACTOR`) flagging that it is shared across a bold 14px context and a regular 16-18px context, so a future retune checks both. Better: give `CategoryBars` its own width-estimation constant calibrated for its actual (unbolded) font weight, decoupling the two call sites entirely.
 
 ## Info
 
-### IN-01: Repeated magic numbers for raw/trend line styling
+### IN-01: `AmPmComparison`'s `withLabels` parameter is always `true`; the file's own "Mini" mode doesn't exist
 
-**File:** `frontend/src/components/charts/CombinedTimeline.tsx:366-367,384-385,406-407`
-**Issue:** `strokeWidth={hasTrend ? 2 : 3}` and
-`strokeOpacity={hasTrend ? 0.85 : 1}` are copy-pasted identically across
-the systolic, diastolic, and pulse `<Line>` elements. A future tuning pass
-(this file has already had several, per its own header notes) risks
-updating one occurrence and missing the other two.
-**Fix:** Hoist to named constants once, e.g.
-`const RAW_STROKE_WIDTH_TRENDED = 2`, `const RAW_STROKE_WIDTH = 3`,
-`const RAW_LINE_DIMMED_OPACITY = 0.85`, and reference them in all three
-places (and in the `contrast.test.ts` fixture, per WR-02).
-
-### IN-02: Chart label/tick font sizes sit below CLAUDE.md's "≥18px body fonts" floor
-
-**File:** `frontend/src/components/charts/CategoryBars.tsx:69,91`; `frontend/src/components/charts/AmPmComparison.tsx:54,63,122,128,149,154`; `frontend/src/components/charts/CombinedTimeline.tsx:99,264(ok),308-333,344`
-**Issue:** CLAUDE.md lists "≥18px body fonts" under non-negotiable
-accessibility constraints, given Chris's profile. Across all three
-reviewed chart components, in-chart text is consistently 14-16px: axis
-ticks (`fontSize: 16`), `AmPmComparison`'s AM/PM period + value labels
-(`fontSize={16}`), `CombinedTimeline`'s band/end-label chip text
-(`CHIP_FONT_SIZE = 14`) and overlay marker glyphs (`fontSize: 14`). Most
-notably, `CategoryBars`' D-10 label — described in its own file header as
-"the labels ARE the values" (i.e., primary content, not chrome) — is
-explicitly dropped from 18px to **16px** on narrow containers, moving
-further from the stated floor exactly where legibility matters most
-(small mobile screens). This reads as a long-standing, multi-phase pattern
-(D-06/D-10/UI-SPEC references throughout) rather than something newly
-introduced here, so it's likely a deliberate, previously-negotiated
-tradeoff for dense chart chrome — but as submitted it visibly conflicts
-with the letter of CLAUDE.md's constraint, which draws no "chart chrome vs.
-body text" distinction.
-**Fix:** Either raise the affected font sizes to ≥18px where layout allows,
-or record an explicit, scoped exception in UI-SPEC.md/DESIGN.md ("chart
-axis/label chrome is exempt from the 18px floor because X") so the
-constraint and the implementation stop visibly disagreeing.
+**File:** `frontend/src/components/charts/AmPmComparison.tsx:95-104` (`amBar`/`pmBar`), call sites at lines 129-130 and 156-157
+**Issue:** `amBar`/`pmBar` take a `withLabels: boolean` parameter, but all four call sites pass `true` — the `false` branch is dead code. This traces back to the component's own header comment (line 17): `"Mini: single simplified BP chart only (no labels/axes/second panel)."` No `mini` prop exists on `AmPmComparisonProps`, and the component's only caller (`ChartDeck.tsx:122`) never passes one — this "Mini" mode is pre-existing (predates Phase 16, traced back to commit `cdaa4a0`) but is still present in this file today and was not addressed by the gap-closure plan. The doc comment describes a feature that isn't implemented, and the dead parameter is a leftover of that unfinished feature.
+**Fix:** Either wire up the promised `mini` mode (accept a `mini?: boolean` prop, gate the second panel/axes/labels on it, use it to drive `withLabels`) or delete the "Mini" doc-comment line and collapse `amBar`/`pmBar` to drop the now-pointless `withLabels` parameter.
 
 ---
 
-_Reviewed: 2026-09-18T08:35:13Z_
+_Reviewed: 2026-09-18T09:30:38Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
