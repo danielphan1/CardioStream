@@ -85,3 +85,12 @@ Both fixes are isolated to their own files with no shared logic touched by Plan 
 ---
 *Phase: 16-trend-clarity-and-chart-polish*
 *Completed: 2026-09-18*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/charts/CategoryBars.tsx
+- FOUND: frontend/src/components/charts/AmPmComparison.tsx
+- FOUND: .planning/phases/16-trend-clarity-and-chart-polish/16-02-SUMMARY.md
+- FOUND commit: 8f3640c
+- FOUND commit: 2870e6d
+- FOUND commit: 0401141
