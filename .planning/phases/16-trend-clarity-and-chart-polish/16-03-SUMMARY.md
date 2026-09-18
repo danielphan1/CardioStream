@@ -96,3 +96,12 @@ None - no external service configuration required.
 ---
 *Phase: 16-trend-clarity-and-chart-polish*
 *Completed: 2026-09-18*
+
+## Self-Check: PASSED
+
+- FOUND: frontend/src/components/charts/CombinedTimeline.tsx
+- FOUND: frontend/src/components/charts/CombinedTimeline.test.tsx
+- FOUND: .planning/phases/16-trend-clarity-and-chart-polish/16-03-SUMMARY.md
+- FOUND commit: 56ef44f (Task 1)
+- FOUND commit: 8b656f4 (Task 2)
+- FOUND commit: d080afa (SUMMARY.md)
