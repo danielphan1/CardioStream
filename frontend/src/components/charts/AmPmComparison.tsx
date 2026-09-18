@@ -21,6 +21,7 @@ import { Bar, BarChart, LabelList, ResponsiveContainer, XAxis, YAxis } from "rec
 
 import type { Reading } from "../../api/types";
 import { groupAmPm, prefersReducedMotion } from "../../lib/chartData";
+import { useElementWidth } from "../../hooks/useElementWidth";
 
 export type AmPmComparisonProps = {
   readings: Reading[];
@@ -75,6 +76,8 @@ export default function AmPmComparison({
   readings,
 }: AmPmComparisonProps) {
   const animate = prefersReducedMotion() === false;
+  const { ref, width: containerWidth } = useElementWidth<HTMLDivElement>();
+  const narrow = containerWidth > 0 && containerWidth < 480;
 
   const rows = groupAmPm(readings);
   const am = rows.find((r) => r.period === "AM");
@@ -101,7 +104,7 @@ export default function AmPmComparison({
   );
 
   return (
-    <div className="flex h-full w-full gap-8">
+    <div ref={ref} className={`flex h-full w-full ${narrow ? "gap-4" : "gap-8"}`}>
       <div className="flex h-full flex-1 flex-col">
         <p
           className="m-0 text-center"
