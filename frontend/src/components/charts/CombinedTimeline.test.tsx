@@ -79,6 +79,19 @@ const READINGS: Reading[] = [
   reading(4, "2025-04-05T08:00:00", 151, 88, 75),
 ];
 
+// 8 points — one past the D-02 hasTrend threshold (>= 7) — for Phase 16
+// trend-line coverage below.
+const TREND_READINGS: Reading[] = [
+  reading(5, "2025-01-05T08:00:00", 118, 76, 66),
+  reading(6, "2025-02-05T08:00:00", 122, 78, 70),
+  reading(7, "2025-03-05T08:00:00", 130, 82, 68),
+  reading(8, "2025-04-05T08:00:00", 128, 80, 74),
+  reading(9, "2025-05-05T08:00:00", 135, 84, 71),
+  reading(10, "2025-06-05T08:00:00", 140, 86, 69),
+  reading(11, "2025-07-05T08:00:00", 132, 81, 73),
+  reading(12, "2025-08-05T08:00:00", 138, 85, 70),
+];
+
 const OVERLAY_GLYPH = "\u25B2"; // incidents marker, from OVERLAY_META
 
 const EVENTS = [
@@ -284,5 +297,65 @@ describe("CombinedTimeline domains stay fixed (D-05 / DASH-06)", () => {
     );
     expect(container.textContent).toContain("30");
     expect(container.textContent).toContain("120");
+  });
+});
+
+describe("CombinedTimeline trend lines (Phase 16, D-01–D-05)", () => {
+  it("draws 6 lines (3 raw + 3 trend) once 7+ readings exist", () => {
+    const { container } = render(
+      <CombinedTimeline readings={TREND_READINGS} showBP showPulse />,
+    );
+    expect(lines(container)).toHaveLength(6);
+  });
+
+  it("dims the raw lines and leaves the trend lines full-strength", () => {
+    const { container } = render(
+      <CombinedTimeline readings={TREND_READINGS} showBP showPulse />,
+    );
+    const all = lines(container);
+    // Raw systolic (index 0): dimmed.
+    expect(all[0].getAttribute("stroke-width")).toBe("2");
+    expect(all[0].getAttribute("stroke-opacity")).toBe("0.85");
+    // Trend systolic (index 3): bold, full opacity (attribute absent).
+    expect(all[3].getAttribute("stroke-width")).toBe("4");
+    expect(all[3].getAttribute("stroke-opacity")).toBeNull();
+  });
+
+  it("keeps the pulse trend line dashed", () => {
+    const { container } = render(
+      <CombinedTimeline readings={TREND_READINGS} showBP showPulse />,
+    );
+    expect(lines(container)[5].getAttribute("stroke-dasharray")).toBe("9 5");
+  });
+
+  it("never duplicates the end-label pill once a trend line exists", () => {
+    const { container } = render(
+      <CombinedTimeline readings={TREND_READINGS} showBP showPulse />,
+    );
+    const seriesColors = [
+      "var(--line-systolic)",
+      "var(--line-diastolic)",
+      "var(--line-pulse)",
+    ];
+    const pillRects = Array.from(container.querySelectorAll("rect")).filter(
+      (r) => seriesColors.includes(r.getAttribute("fill") ?? ""),
+    );
+    expect(pillRects).toHaveLength(3);
+  });
+
+  it("captions that trend lines are showing once 7+ readings exist", () => {
+    const { container } = render(
+      <CombinedTimeline readings={TREND_READINGS} showBP showPulse />,
+    );
+    expect(container.textContent).toContain(
+      "Bold lines show a 7-reading rolling average.",
+    );
+  });
+
+  it("captions the exact reading count when under 7 readings", () => {
+    const { container } = render(
+      <CombinedTimeline readings={READINGS} showBP showPulse />,
+    );
+    expect(container.textContent).toContain("you have 4 here");
   });
 });
