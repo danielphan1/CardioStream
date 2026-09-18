@@ -24,6 +24,7 @@ import {
 
 import type { StatsSummary } from "../../api/types";
 import { categoryBarData, prefersReducedMotion } from "../../lib/chartData";
+import { useElementWidth } from "../../hooks/useElementWidth";
 import { categoryColor } from "../../lib/palette";
 
 export type CategoryBarsProps = {
@@ -41,10 +42,14 @@ type BarLabelGlyphProps = {
 export default function CategoryBars({ stats }: CategoryBarsProps) {
   const rows = categoryBarData(stats);
   const animate = prefersReducedMotion() === false;
+  const { ref, width: containerWidth } = useElementWidth<HTMLDivElement>();
+  const narrow = containerWidth > 0 && containerWidth < 480;
 
-  // D-10 full label drawn just past the bar end, ink color, 18px. The
-  // 300px right margin below reserves room for the longest label
-  // ("Hypertensive Crisis — NN readings (NN%)") even on the widest bar.
+  // D-10 full label drawn just past the bar end, ink color, 18px (16px
+  // below 480px container width). The right margin below reserves room
+  // for the longest label ("Hypertensive Crisis — NN readings (NN%)")
+  // even on the widest bar; it shrinks alongside the font on narrow
+  // containers rather than clipping the label (readability pass, D-06).
   const barLabel = ({ x, y, width, height, index }: BarLabelGlyphProps) => {
     if (
       index === undefined ||
@@ -61,7 +66,7 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
       <text
         x={Number(x) + Number(width) + 8}
         y={Number(y) + Number(height) / 2}
-        fontSize={18}
+        fontSize={narrow ? 16 : 18}
         fill="var(--color-depth)"
         dominantBaseline="middle"
       >
@@ -71,28 +76,30 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
   };
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart
-        layout="vertical"
-        data={rows}
-        accessibilityLayer
-        margin={{ top: 8, right: 300, bottom: 8, left: 8 }}
-      >
-        <XAxis
-          type="number"
-          domain={[0, "dataMax"]}
-          allowDecimals={false}
-          tick={{ fontSize: 16 }}
-        />
-        {/* Category names live in the D-10 label — ticks stay hidden. */}
-        <YAxis type="category" dataKey="category" hide />
-        <Bar dataKey="count" isAnimationActive={animate}>
-          {rows.map((row) => (
-            <Cell key={row.category} fill={categoryColor(row.category)} />
-          ))}
-          <LabelList content={barLabel} />
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div ref={ref} className="h-full w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          layout="vertical"
+          data={rows}
+          accessibilityLayer
+          margin={{ top: 8, right: narrow ? 160 : 300, bottom: 8, left: 8 }}
+        >
+          <XAxis
+            type="number"
+            domain={[0, "dataMax"]}
+            allowDecimals={false}
+            tick={{ fontSize: 16 }}
+          />
+          {/* Category names live in the D-10 label — ticks stay hidden. */}
+          <YAxis type="category" dataKey="category" hide />
+          <Bar dataKey="count" isAnimationActive={animate}>
+            {rows.map((row) => (
+              <Cell key={row.category} fill={categoryColor(row.category)} />
+            ))}
+            <LabelList content={barLabel} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
