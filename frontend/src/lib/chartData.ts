@@ -176,6 +176,30 @@ export function estimateChipWidth(text: string, fontSize: number): number {
   return Math.round(text.length * fontSize * CHIP_CHAR_WIDTH_FACTOR);
 }
 
+/** Covers CategoryBars.tsx's own 8px label offset (`barLabel`'s `x + width +
+ *  8`) plus a small buffer — Phase 16 gap-closure fix for CR-01/
+ *  16-VERIFICATION.md's clipping finding (the prior static 160px/300px
+ *  margin.right guess covered roughly half of what the longest real D-10
+ *  label needs). */
+const CATEGORY_LABEL_MARGIN_PADDING = 16;
+
+/**
+ * The `BarChart margin.right` CategoryBars needs to draw its D-10 labels
+ * ("Hypertensive Crisis — NN readings (NN%)") in full without SVG clipping —
+ * derived from the actual label set via `estimateChipWidth()` instead of a
+ * static guess (Phase 16 gap-closure fix for CR-01/16-VERIFICATION.md).
+ */
+export function categoryBarRightMargin(
+  rows: CategoryBarRow[],
+  fontSize: number,
+): number {
+  if (rows.length === 0) return 0;
+  return (
+    Math.max(...rows.map((r) => estimateChipWidth(r.label, fontSize))) +
+    CATEGORY_LABEL_MARGIN_PADDING
+  );
+}
+
 /** Matches CombinedTimeline.tsx's END_LABEL_HEIGHT (its 14px chip font + 3px
  *  vertical padding on each side) — kept here, not there, so the function and
  *  its one constant don't trip oxlint's react(only-export-components) (same

@@ -5,8 +5,10 @@
 import { describe, expect, it } from "vitest";
 
 import type { Reading, StatsSummary } from "../api/types";
+import type { CategoryBarRow } from "./chartData";
 import {
   categoryBarData,
+  categoryBarRightMargin,
   estimateChipWidth,
   formatCategoryLabel,
   groupAmPm,
@@ -229,6 +231,40 @@ describe("estimateChipWidth", () => {
 
   it("returns 0 for the degenerate empty string", () => {
     expect(estimateChipWidth("", 14)).toBe(0);
+  });
+});
+
+describe("categoryBarRightMargin", () => {
+  const rows: CategoryBarRow[] = [
+    {
+      category: "Hypertensive Crisis",
+      count: 6,
+      percent: 4.5,
+      label: "Hypertensive Crisis — 6 readings (5%)",
+    },
+    {
+      category: "Normal",
+      count: 28,
+      percent: 21.2,
+      label: "Normal — 28 readings (21%)",
+    },
+  ];
+
+  it("at the narrow 16px breakpoint, covers the longest label (estimateChipWidth 367 + 16px padding)", () => {
+    expect(categoryBarRightMargin(rows, 16)).toBe(383);
+  });
+
+  it("at the wide 18px breakpoint, covers the longest label (estimateChipWidth 413 + 16px padding)", () => {
+    expect(categoryBarRightMargin(rows, 18)).toBe(429);
+  });
+
+  it("never drops below the longest label's own estimated width (invariant, survives padding retuning)", () => {
+    const longest = Math.max(...rows.map((r) => estimateChipWidth(r.label, 16)));
+    expect(categoryBarRightMargin(rows, 16)).toBeGreaterThanOrEqual(longest);
+  });
+
+  it("returns 0 for the degenerate empty-rows case", () => {
+    expect(categoryBarRightMargin([], 16)).toBe(0);
   });
 });
 
