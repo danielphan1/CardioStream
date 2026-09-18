@@ -76,7 +76,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 13. Visual Redesign (Nautical) | v1.1 | 12/12 | Complete    | 2026-09-04 |
 | 14. Show Panel & Combined Timeline | v1.1 | 6/6 | Complete    | 2026-09-12 |
 | 15. Unified Filter Surface | v1.2 | 8/8 | Complete    | 2026-09-17 |
-| 16. Trend Clarity & Chart Polish | v1.2 | 0/3 | Planned, ready to execute | — |
+| 16. Trend Clarity & Chart Polish | v1.2 | 2/3 | In Progress|  |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
 | 19. Guest Demo Mode | v1.2 | 7/7 | Complete   | 2026-09-16 |
@@ -196,7 +196,7 @@ Plans:
 **Goal:** Chris can see which *direction* his health is moving, not just where each reading landed. No new chart types — this improves what already exists.
 **Requirements**: Client-driven request (2026-09-13), "better data visuals".
 **Depends on:** Phase 15
-**Plans:** 0/3 plans
+**Plans:** 2/3 plans executed
 **UI hint**: yes
 
 Scope:
@@ -218,8 +218,8 @@ has (readings are not daily).
 Plans:
 **Wave 1**
 
-- [ ] 16-01-PLAN.md — rollingAverage() window function + unit tests + dimmed-line contrast regression (wave 1)
-- [ ] 16-02-PLAN.md — CategoryBars + AmPmComparison responsive readability fixes (wave 1)
+- [x] 16-01-PLAN.md — rollingAverage() window function + unit tests + dimmed-line contrast regression (wave 1)
+- [x] 16-02-PLAN.md — CategoryBars + AmPmComparison responsive readability fixes (wave 1)
 
 **Wave 2** *(blocked on Wave 1 — 16-03 depends on 16-01)*
 
