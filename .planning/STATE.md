@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Polish & Records
-status: executing
-last_updated: "2026-09-18T23:11:58.137Z"
+status: ready_to_plan
+last_updated: 2026-09-19T09:23:53.911Z
 last_activity: 2026-09-18 -- Phase 16 execution started
 progress:
   total_phases: 7
   completed_phases: 7
   total_plans: 34
-  completed_plans: 34
+  completed_plans: 66
   percent: 100
+stopped_at: Phase 16 complete (5/5) — ready to discuss Phase 17
 ---
 
 # Project State
@@ -20,24 +21,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-19)
 
 **Core value:** Chris can see and explore his own health data entirely by voice — voice is the primary input method, not a gimmick.
-**Current focus:** Phase 16 — trend-clarity-and-chart-polish
+**Current focus:** Phase 17 — analytical views bp heatmap and event correlation
 
 ## Current Position
 
-Phase: 16 (trend-clarity-and-chart-polish) — EXECUTING
+Phase: 17
   live and verified at https://health-dashboard-demo.vercel.app (guest_demo/demo_test_pass) — Railway
   project "friendly-rebirth" (service CardioStream + Postgres) + Vercel project health-dashboard-demo.
   19-HUMAN-UAT.md's one test passed; see that file for full verification detail.
 Phase: 15 (unified-filter-surface-multi-select-checkboxes-pulse-categor) — PLANNED, ready to execute
-Plan: 1 of 5
-Status: Executing Phase 16
-Last activity: 2026-09-18 -- Phase 16 execution started
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-19
 
 ## Performance Metrics
 
 **Velocity (v1.0, for reference):**
 
-- Total plans completed: 71 (per MILESTONES.md; 46 tasks across 5 phases)
+- Total plans completed: 76 (per MILESTONES.md; 46 tasks across 5 phases)
 - Average duration: ~7min/plan (early phases; Phase 04 P03 outlier at 35min)
 
 **By Phase (v1.0):**
