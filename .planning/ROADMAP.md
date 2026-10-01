@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1–5 (shipped 2026-08-05) — full detail: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Polish & Records** — Phases 6–12 (shipped 2026-08-27) — full detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
+- 🚧 **v1.2 Charts & Filters** — Phases 13–19 (in progress: 5 of 7 complete; 17 and 18 not yet planned)
 - 📋 **v2** — Activate paid Claude API + agent-parsed data entry + other deferred enhancements (planned)
 
 ## Phases
@@ -43,6 +44,14 @@ Full phase goals, dependencies, and plan lists archived in
 
 </details>
 
+## 🚧 v1.2 Charts & Filters — Phases 13–19 (in progress)
+
+Phases 13–19 continued directly from the v1.1 ship (2026-08-27) without a
+separate requirements cycle, so this milestone was never formally opened via
+`/gsd-new-milestone`. Declared retroactively on 2026-09-30 so the planning data
+matches what was actually built. No v1.2 REQUIREMENTS.md exists by design — the
+phase goals below are the contract.
+
 ## Phase Details
 
 ### 📋 v2 (Planned)
@@ -73,8 +82,8 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 10. Spoken Replies (TTS) | v1.1 | 6/6 | Complete    | 2026-08-25 |
 | 11. Full Site Guide | v1.1 | 5/5 | Complete    | 2026-08-26 |
 | 12. Visual Refresh | v1.1 | 8/8 | Complete    | 2026-08-27 |
-| 13. Visual Redesign (Nautical) | v1.1 | 12/12 | Complete    | 2026-09-04 |
-| 14. Show Panel & Combined Timeline | v1.1 | 6/6 | Complete    | 2026-09-12 |
+| 13. Visual Redesign (Nautical) | v1.2 | 12/12 | Complete    | 2026-09-04 |
+| 14. Show Panel & Combined Timeline | v1.2 | 6/6 | Complete    | 2026-09-12 |
 | 15. Unified Filter Surface | v1.2 | 8/8 | Complete    | 2026-09-17 |
 | 16. Trend Clarity & Chart Polish | v1.2 | 5/5 | Complete    | 2026-09-19 |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
@@ -224,6 +233,29 @@ Plans:
 **Wave 2** *(blocked on Wave 1 — 16-03 depends on 16-01)*
 
 - [x] 16-03-PLAN.md — CombinedTimeline trend lines, conditional raw-line dimming, caption, tests (wave 2)
+
+### Phase 16.1: Dashboard Shell Redesign — visuals-first layout (INSERTED)
+
+**Goal:** Make the data the primary object on the dashboard. Today 1,508px of chrome sits above the first chart and the filter system (624px) is larger than the chart it filters (450px); this phase relocates chrome rather than shrinking it, because the ≥48px / ≥18px accessibility floor forbids shrinking.
+**Requirements**: Client-driven request (2026-09-30), "make the visuals more the focus while the filtering system can be smaller", with three reference dashboards supplied.
+**Depends on:** Phase 16
+**Blocks:** Phases 17 and 18 — both add surfaces (new chart views, new filters) that this phase restructures. Sequenced first so they build into the new shell instead of being retrofitted.
+**Plans:** 0 plans
+**UI hint**: yes
+
+Scope (locked with the client 2026-09-30):
+
+- **Left rail shell.** 240px fixed rail takes navigation (Dashboard, Readings, Upload, Add Record) and the utility controls, replacing the 216px horizontal header band. Below 1024px it becomes a drawer behind a 48px menu button, reusing the filter popover's dismissal mechanics so the app has one modal pattern.
+- **Filter popover.** The 624px filter block collapses to a trigger row — `[Dates: All]` and `[Filters · N]` — opening a popover built on GuideOverlay's existing focus-trap / Escape / return-focus machinery. The D-20 filter-state sentence stays VISIBLE on the page, never inside the popover: it is how Chris knows what is applied without opening anything.
+- **Inline vitals strip.** The four stat cards (588px) become a single ~90px readout row. Sparkline and status pill are dropped as duplicates of the chart directly below.
+- **Teal chrome accent.** `--color-brass` → `#0E8C74`, scoped to chrome only (selected rail item, selected date/time-of-day, Send, Apply). The six AHA BP-category colors and three overlay colors are UNCHANGED; category chips mark selection with a 12% tint + 2px border in their own hue, never teal.
+- **Diastolic hue move.** `--line-diastolic` (`#1F7A6C`) leaves the teal family so it cannot be confused with the accent. Must be re-derived against greyscale separation, not picked — systolic/diastolic sit at only 1.89:1 luminance today, which is why pulse draws dashed.
+- **Focus ring move.** `--color-signal` (`#0F6E86`) is a teal-blue and would collide with the new accent, which DESIGN.md explicitly forbids. Candidate: demote brass to the focus ring (already contrast-verified in both themes, and warm against a cool accent).
+
+Out of scope: ReadingsTable internals (it relocates to its own destination unchanged), AHA severity encoding, the 18px/48px floors, voice behavior.
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 16.1 to break down)
 
 ### Phase 17: Analytical Views — BP heatmap and event correlation
 

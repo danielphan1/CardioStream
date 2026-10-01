@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Polish & Records
-status: ready_to_plan
-last_updated: 2026-09-19T09:23:53.911Z
-last_activity: 2026-09-18 -- Phase 16 execution started
+milestone: v1.2
+milestone_name: Charts & Filters
+status: planning
+last_updated: "2026-10-01T01:47:04.335Z"
+last_activity: "2026-09-30 - Completed quick task 260930-n7i: design audit fixes"
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 34
-  completed_plans: 66
-  percent: 100
-stopped_at: Phase 16 complete (5/5) — ready to discuss Phase 17
+  total_phases: 8
+  completed_phases: 4
+  total_plans: 38
+  completed_plans: 32
+  percent: 50
 ---
 
 # Project State
@@ -25,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 
 ## Current Position
 
-Phase: 17
+Phase: 16.1
   live and verified at https://health-dashboard-demo.vercel.app (guest_demo/demo_test_pass) — Railway
   project "friendly-rebirth" (service CardioStream + Postgres) + Vercel project health-dashboard-demo.
   19-HUMAN-UAT.md's one test passed; see that file for full verification detail.
@@ -118,6 +117,7 @@ Recent decisions affecting current work:
 
 - Phase 14 added: Unified Show Panel and Combined Timeline. Client-driven change request from Chris (2026-09-12 meeting, decisions confirmed): replace the mutually-exclusive chart deck + separate overlay row with ONE five-checkbox Show panel driving ONE dual-axis combined timeline. **Explicitly reverses Phase 9's locked decision** ("BP Timeline and Pulse Trend stay today's two separate hero charts, no new combined-metric chart" — `09-CONTEXT.md`); that scope call was correct at the time and is simply not what the client wants now. Design contract written and client-approved before planning. Full scope and locked decisions in `14-CONTEXT.md`. Next: `/gsd-plan-phase 14`.
 - Phase 13 added: Visual Redesign — Nautical Minimalist Theme. Full visual-identity replacement (not an evolution like Phase 12) — new palette/type/spacing/elevation/component language sitewide, carrying forward the existing nautical motif (`--color-foam`/`--color-sky`, wave-curve divider) with far more craft, rendered clean and minimalist. All existing functionality and the accessibility floor carry over unchanged. Direction gathered live via `impeccable`'s new-work intake (structural + genre reference images reviewed in-browser); full scope and locked decisions in `13-CONTEXT.md`. Next: `/gsd-ui-phase 13`.
+- Phase 16.1 inserted after Phase 16: Dashboard shell redesign: left rail, filter popover, inline vitals strip, teal chrome accent. Sequenced before 17/18 so analytical views and deep-query filters build into the new shell rather than being retrofitted.
 
 ### Pending Todos
 
