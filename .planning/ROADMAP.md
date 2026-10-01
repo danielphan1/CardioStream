@@ -240,7 +240,7 @@ Plans:
 **Requirements**: Client-driven request (2026-09-30), "make the visuals more the focus while the filtering system can be smaller", with three reference dashboards supplied.
 **Depends on:** Phase 16
 **Blocks:** Phases 17 and 18 — both add surfaces (new chart views, new filters) that this phase restructures. Sequenced first so they build into the new shell instead of being retrofitted.
-**Plans:** 0 plans
+**Plans:** 9 plans in 7 waves
 **UI hint**: yes
 
 Scope (locked with the client 2026-09-30):
@@ -254,8 +254,18 @@ Scope (locked with the client 2026-09-30):
 
 Out of scope: ReadingsTable internals (it relocates to its own destination unchanged), AHA severity encoding, the 18px/48px floors, voice behavior.
 
+Superseded by `16.1-UI-SPEC.md` (client-approved 2026-10-01), two scope lines above: the accent is **`#0D826C`** light / `#33C1A6` dark, not `#0E8C74` (withdrawn in §4.3(3) — the 18px/400 Filters count badge is not WCAG large text, so `#0E8C74`'s 4.18:1 would be a real 1.4.3 failure); and `GuideOverlay` **has no focus trap** by design, so the nav panel and filter popover are non-trapping disclosures and the app's one modal stays `LogoutConfirmDialog` (§5.5).
+
 Plans:
-- [ ] TBD (run /gsd-plan-phase 16.1 to break down)
+- [ ] 16.1-01-PLAN.md — token rename --color-brass to --color-accent, values unchanged (UI-SPEC §4.2, own commit first)
+- [ ] 16.1-02-PLAN.md — palette values (teal accent, brass focus ring, violet diastolic, 12 category tints) and the contrast gate 38 to 92
+- [ ] 16.1-03-PLAN.md — shell primitives: useClearanceHeight lift, useMediaQuery, useDismissable, ShellNav, LogoutConfirmDialog extraction
+- [ ] 16.1-04-PLAN.md — filter pure layer: buildFilterSentence, activeFilterCount, 12% chip tint, FilterStateBlock
+- [ ] 16.1-05-PLAN.md — shell surfaces: LeftRail, SlimTopBar, NavPanel
+- [ ] 16.1-06-PLAN.md — AppShell wiring, inert reassignment to the rail, Header retirement, stale guide/banner copy
+- [ ] 16.1-07-PLAN.md — filter trigger row, FilterSurface popover/panel, live-sentence relocation
+- [ ] 16.1-08-PLAN.md — inline vitals strip and StatsSparkline deletion
+- [ ] 16.1-09-PLAN.md — Readings destination and the chart-view switcher View: prefix
 
 ### Phase 17: Analytical Views — BP heatmap and event correlation
 
