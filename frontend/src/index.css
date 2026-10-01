@@ -47,8 +47,8 @@
   --color-deck: #F5F7F6; /* page background */
   --color-mist: #E3EBE9; /* cards, filter bar surface */
   --color-depth: #101C2E; /* ALL text, icons, borders */
-  --color-brass: #8A5A1E; /* primary accent — One Signal Rule */
-  --color-brass-text: #FFFFFF;
+  --color-accent: #8A5A1E; /* primary accent — One Signal Rule */
+  --color-accent-text: #FFFFFF;
   --color-signal: #0F6E86; /* 3px focus-visible ring */
   --color-hazard: #9C2B22; /* reserved for destructive actions */
   --color-hazard-text: #FFFFFF;
@@ -59,7 +59,7 @@
   /* Chart series — systolic/diastolic share the mmHg axis, pulse owns the bpm
      axis. --line-pulse is a rust deliberately outside four existing hue
      families (systolic navy, diastolic teal, the three --overlay-* hues, and
-     --color-brass, which is reserved by the One Signal Rule). It is warmer and
+     --color-accent, which is reserved by the One Signal Rule). It is warmer and
      lighter than --color-hazard so a pulse line never reads as an alarm.
      Pulse also draws DASHED (see CombinedTimeline): its luminance ratio against
      systolic is only 1.89:1, so in greyscale the stroke pattern — not the hue —
@@ -92,8 +92,8 @@
   --color-deck: #0A121F;
   --color-mist: #101D30;
   --color-depth: #E7EEF2;
-  --color-brass: #D9A356;
-  --color-brass-text: #0A121F;
+  --color-accent: #D9A356;
+  --color-accent-text: #0A121F;
   --color-signal: #7ED4E8;
   --color-hazard: #E2685A;
   --color-hazard-text: #0A121F;

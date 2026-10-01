@@ -13,6 +13,6 @@ export const rdpSizing = {
   "--rdp-day-height": "48px",
   "--rdp-day_button-width": "48px",
   "--rdp-day_button-height": "48px",
-  "--rdp-accent-color": "var(--color-brass)",
+  "--rdp-accent-color": "var(--color-accent)",
   "--rdp-accent-background-color": "var(--color-mist)",
 } as CSSProperties;

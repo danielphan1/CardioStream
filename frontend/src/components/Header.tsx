@@ -5,8 +5,8 @@
 // Phase 5 (D-06) adds the caregiver-controls zone in the header-right
 // flex row: a view toggle ("Upload" / "Back to dashboard") and a "Log out"
 // control that opens a confirm dialog. Both are styled like the theme toggle
-// (2px depth border, mist surface, icon + text label) and are NEVER brass-
-// filled — the brass fill is reserved for the UI-SPEC list, which excludes
+// (2px depth border, mist surface, icon + text label) and are NEVER accent-
+// filled — the accent fill is reserved for the UI-SPEC list, which excludes
 // these. Phase 13 (D-06) removed the prior sub-floor carve-out for these
 // controls — they carry the same unconditional >=48px floor and 3px focus
 // ring as every other interactive control in the app.
@@ -113,7 +113,7 @@ function LogoutConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]"
+            className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
           >
             Log out
           </button>
@@ -183,7 +183,7 @@ export function Header() {
 
         {/* Header-right controls: theme toggle + the D-06 caregiver zone. Every
             control is icon + text (never icon-only) and styled as an inactive
-            control (border, not brass fill) — the brass fill is reserved
+            control (border, not accent fill) — the accent fill is reserved
             for the UI-SPEC list, which excludes all of these. */}
         <div className="flex flex-wrap items-center gap-4">
           {/* Theme toggle (D-15). */}
@@ -204,7 +204,7 @@ export function Header() {
           {/* Voice Replies toggle (D-02, TTS-02) — mute/quiet control for the
               spoken-confirmation feature; styled identically to the Theme
               toggle above (icon + text, aria-pressed, >=48px, bordered mist
-              surface, never brass-filled). */}
+              surface, never accent-filled). */}
           <button
             type="button"
             onClick={toggleSpeech}
@@ -222,7 +222,7 @@ export function Header() {
           {/* Guide toggle (D-02, GUIDE-01/02/04) — opens/closes the full-site
               guide overlay; styled identically to the Theme/Voice Replies
               toggles above (icon + text, aria-pressed, >=48px, bordered mist
-              surface, never brass-filled). Label stays "Guide" in both
+              surface, never accent-filled). Label stays "Guide" in both
               states — the dedicated Close (X) control inside the overlay
               already owns that verb (11-UI-SPEC.md Copywriting Contract).
               id is a stable focus-restoration target for GuideOverlay

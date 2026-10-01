@@ -160,7 +160,7 @@ export function LoginGate() {
             took brass-on-deck from 5.9:1 to roughly 2.6:1, under the WCAG
             4.5:1 floor, on the app's front door in its most common state.
             depth-on-mist measures 14.1:1 (light) / 14.4:1 (dark). The base
-            brass border is solid so the box does not resize when state flips. */}
+            accent border is solid so the box does not resize when state flips. */}
         <button
           type="submit"
           disabled={
@@ -168,7 +168,7 @@ export function LoginGate() {
             password.trim() === "" ||
             submitting
           }
-          className="min-h-12 rounded-xl border-2 border-[var(--color-brass)] bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
+          className="min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
         >
           Enter
         </button>
