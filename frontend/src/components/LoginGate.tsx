@@ -76,11 +76,16 @@ export function LoginGate() {
           <h1 className="text-heading leading-tight text-[var(--color-depth)]">
             Chris's Health Dashboard
           </h1>
-          <h2 className="text-heading leading-tight text-[var(--color-depth)]">
+          {/* An instruction sentence, not a section heading. It previously
+              carried the h1's exact classes, so the screen rendered two
+              identical "headings" and had no hierarchy at all; as an h2 it
+              also announced a second section to a screen reader that does not
+              exist. Body copy, with the h1 left as the screen's only heading. */}
+          <p className="text-base text-[var(--color-depth)]">
             {demoMode
               ? "Enter your guest credentials to continue"
               : "Enter the password to continue"}
-          </h2>
+          </p>
         </div>
 
         {demoMode && (
@@ -99,7 +104,7 @@ export function LoginGate() {
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="min-h-12 w-full rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-lg text-[var(--color-depth)]"
+              className="min-h-12 w-full rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)]"
             />
           </div>
         )}
@@ -120,7 +125,7 @@ export function LoginGate() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="min-h-12 w-full rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-lg text-[var(--color-depth)]"
+            className="min-h-12 w-full rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)]"
           />
         </div>
 
@@ -130,8 +135,10 @@ export function LoginGate() {
         {rejected && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-4 text-lg text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+            className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-4 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
           >
+            {/* optical alignment: 2px centres the 24px icon on the 27px first
+                text line (deliberately off the 4px spacing scale) */}
             <TriangleAlert
               aria-hidden="true"
               size={24}
@@ -148,6 +155,12 @@ export function LoginGate() {
           </div>
         )}
 
+        {/* Disabled = DESIGN.md's Dashed-Border Rule (2px dashed Ink on a
+            Sky/mist fill), never a dimmed solid: the old 50%-opacity fade
+            took brass-on-deck from 5.9:1 to roughly 2.6:1, under the WCAG
+            4.5:1 floor, on the app's front door in its most common state.
+            depth-on-mist measures 14.1:1 (light) / 14.4:1 (dark). The base
+            brass border is solid so the box does not resize when state flips. */}
         <button
           type="submit"
           disabled={
@@ -155,7 +168,7 @@ export function LoginGate() {
             password.trim() === "" ||
             submitting
           }
-          className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:opacity-50"
+          className="min-h-12 rounded-xl border-2 border-[var(--color-brass)] bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
         >
           Enter
         </button>

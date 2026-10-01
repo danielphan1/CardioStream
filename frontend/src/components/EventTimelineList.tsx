@@ -27,7 +27,7 @@ export function EventTimelineList({
         aria-label="Events by date"
         className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]"
       >
-        <p className="text-[18px] text-[var(--color-depth)]">
+        <p className="text-base text-[var(--color-depth)]">
           {enabledTypes.length > 0
             ? buildEmptyMessage(enabledTypes)
             : "Nothing selected — pick a dataset to see it."}
@@ -49,19 +49,19 @@ export function EventTimelineList({
               key={`${evt.type}-${evt.id}`}
               // Stacks below 640px rather than crushing four columns onto a
               // phone — the same reflow ReadingsTable took in 260827-2v2.
-              className="flex min-h-12 flex-col gap-1 border-b border-[var(--color-deck)] py-3 sm:grid sm:grid-cols-[minmax(150px,auto)_24px_1fr] sm:items-center sm:gap-4"
+              className="flex min-h-12 flex-col gap-1 border-b border-[var(--color-deck)] py-4 sm:grid sm:grid-cols-[minmax(150px,auto)_24px_1fr] sm:items-center sm:gap-4"
             >
-              <span className="text-[18px] text-[var(--color-depth)]">
+              <span className="text-base text-[var(--color-depth)]">
                 {evt.dateCell}
               </span>
               <span
                 aria-hidden="true"
-                className="hidden text-[18px] leading-none sm:block"
+                className="hidden text-base leading-none sm:block"
                 style={{ color }}
               >
                 {glyph}
               </span>
-              <span className="text-[18px] text-[var(--color-depth)]">
+              <span className="text-base text-[var(--color-depth)]">
                 {/* The type is carried as visible TEXT, not by the glyph —
                     the glyph is aria-hidden and decorative. */}
                 <span className="font-bold">{tableLabel}:</span>{" "}
@@ -71,7 +71,7 @@ export function EventTimelineList({
           );
         })}
       </ul>
-      <p className="mt-4 text-[18px] text-[var(--color-depth)]">
+      <p className="mt-4 text-base text-[var(--color-depth)]">
         Showing all {events.length}{" "}
         {events.length === 1 ? "event" : "events"} in this date range.
       </p>

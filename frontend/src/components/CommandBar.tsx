@@ -287,7 +287,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
       // exactly one bg layer. Only vertical padding + the state ring live here.
       className={`py-4 ${ringClass}`}
     >
-      <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-3">
+      <form onSubmit={onSubmit} className="flex flex-wrap items-center gap-4">
         {/* Mic button (D-01/D-13) — a ≥48px (min-h-12 min-w-12) ink-bordered
             control, NOT an accent fill; its glyph + aria-label swap with state.
             Absent on Firefox/unsupported so the text path stands alone (VOICE-08). */}
@@ -316,12 +316,15 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           disabled={anyWorking}
           aria-label="Type a dashboard command"
           placeholder={placeholder}
-          className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-[18px] text-[var(--color-depth)] disabled:opacity-70"
+          className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)] disabled:cursor-not-allowed disabled:border-dashed disabled:bg-[var(--color-mist)]"
         />
+        {/* Disabled = DESIGN.md's Dashed-Border Rule (2px dashed Ink, Sky/mist
+            fill), never a dimmed solid. The base brass border is solid so the
+            box does not resize when the state flips during a round-trip. */}
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:opacity-70"
+          className="min-h-12 rounded-xl border-2 border-[var(--color-brass)] bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
         >
           Send
         </button>
@@ -336,8 +339,8 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           control with no way out; Cancel re-enables the text path immediately
           or returns the voice session to "listening" (never "off"). */}
       {anyWorking && (
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <p className="flex items-center gap-2 text-[18px] font-bold text-[var(--color-panel-text)]">
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <p className="flex items-center gap-2 text-base font-bold text-[var(--color-panel-text)]">
             <span
               aria-hidden="true"
               className="inline-block h-5 w-5 rounded-full border-2 border-[var(--color-panel-text)] border-t-transparent motion-safe:animate-spin"
@@ -360,7 +363,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           itself) — a second live announcement here would double-speak the
           same event for screen-reader users. */}
       {isSpeaking && (
-        <p className="mt-3 flex items-center gap-2 text-[18px] font-bold text-[var(--color-panel-text)]">
+        <p className="mt-4 flex items-center gap-2 text-base font-bold text-[var(--color-panel-text)]">
           <Volume2
             aria-hidden="true"
             className="h-5 w-5 motion-safe:animate-pulse motion-reduce:animate-none"
@@ -377,9 +380,9 @@ export function CommandBar({ latestReading }: CommandBarProps) {
       {!anyWorking && lineText !== "" && (
         <p
           aria-live="polite"
-          className={`mt-3 flex items-start gap-2 text-[18px] ${
+          className={`mt-4 flex items-start gap-2 text-base ${
             lineGreen
-              ? "w-fit rounded-full bg-[var(--cat-normal)] px-3 py-1 text-[var(--cat-chip-text)]"
+              ? "w-fit rounded-full bg-[var(--cat-normal)] px-4 py-1 text-[var(--cat-chip-text)]"
               : "text-[var(--color-panel-text)]"
           }`}
         >

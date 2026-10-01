@@ -19,7 +19,7 @@
 /** Text-input styling at the accessibility floor (≥48px target, 18px text).
  *  One definition — this literal was previously copied into five components. */
 const inputClass =
-  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-3 text-[18px] text-[var(--color-depth)]";
+  "min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)]";
 
 /** Stacked label wrapper — the label text sits above its own control. */
 const labelClass = "flex flex-col gap-1 text-label text-[var(--color-depth)]";
@@ -80,7 +80,7 @@ export function TextField({
         />
       )}
       {error && (
-        <span role="alert" className="text-[18px] font-normal">
+        <span role="alert" className="text-base font-normal">
           {error}
         </span>
       )}

@@ -98,7 +98,7 @@ function LogoutConfirmDialog({
         >
           Log out?
         </h2>
-        <p id="logout-body" className="text-lg text-[var(--color-depth)]">
+        <p id="logout-body" className="text-base text-[var(--color-depth)]">
           You'll need the password to unlock the dashboard again.
         </p>
         <div className="flex justify-end gap-4">
@@ -173,7 +173,7 @@ export function Header() {
           {demoMode && (
             <span
               role="status"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-3 py-1 text-[18px] text-[var(--color-depth)]"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 py-1 text-base text-[var(--color-depth)]"
             >
               <Info aria-hidden="true" size={18} />
               Guest Demo · Synthetic Data

@@ -109,13 +109,13 @@ export function OverlayEventsList({
         Overlaid events
       </h2>
       {errorNotes.map((msg) => (
-        <p key={msg} role="alert" className="mb-2 text-[18px] text-[var(--color-depth)]">
+        <p key={msg} role="alert" className="mb-2 text-base text-[var(--color-depth)]">
           {msg}
         </p>
       ))}
       {merged.length === 0 ? (
         emptyMessage && (
-          <p className="text-[18px] text-[var(--color-depth)]">{emptyMessage}</p>
+          <p className="text-base text-[var(--color-depth)]">{emptyMessage}</p>
         )
       ) : (
         <section className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
@@ -145,7 +145,7 @@ export function OverlayEventsList({
           </table>
 
           {allShown ? (
-            <p className="mt-4 text-center text-lg">
+            <p className="mt-4 text-center text-base">
               Showing all {merged.length} overlaid events
             </p>
           ) : (
@@ -167,18 +167,18 @@ function OverlayEventRow({ event }: { event: OverlayEvent }) {
   const { Icon, color, tableLabel } = OVERLAY_META[event.type];
   return (
     <tr className="border-t border-[var(--color-deck)]">
-      <td className="p-2 text-lg">{event.dateCell}</td>
+      <td className="p-2 text-base">{event.dateCell}</td>
       <td className="p-2">
         <span
-          className="inline-block rounded-full px-3 py-1 text-lg"
+          className="inline-block rounded-full px-4 py-1 text-base"
           style={{ backgroundColor: color, color: "var(--overlay-chip-text)" }}
         >
           <Icon aria-hidden="true" size={16} /> {tableLabel}
         </span>
       </td>
-      <td className="p-2 text-lg">{event.whatHappened}</td>
+      <td className="p-2 text-base">{event.whatHappened}</td>
       {/* Plain React text node — notes is free text (T-09-08). */}
-      <td className="p-2 text-lg">{event.notes ?? ""}</td>
+      <td className="p-2 text-base">{event.notes ?? ""}</td>
     </tr>
   );
 }

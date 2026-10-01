@@ -79,7 +79,7 @@ export function EmptyState({
       <h2 className="text-heading leading-tight">
         No readings match these filters
       </h2>
-      <p className="text-lg">
+      <p className="text-base">
         {`There are no ${timeOfDayPrefix}readings in ${presetLabel}${bpCategoryClause}${pulseCategoryClause}.${newestSentence}`}
       </p>
       <button

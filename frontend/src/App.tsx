@@ -169,7 +169,7 @@ function Dashboard() {
         <h2 className="text-heading leading-tight">
           Couldn't load the readings
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           The dashboard couldn't reach the data server. It will keep retrying
           — or press Try again.
         </p>

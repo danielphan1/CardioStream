@@ -44,7 +44,7 @@ const activeClass =
 // Plain checkbox control (Time of Day) — reused verbatim from
 // ShowPanel.tsx's boxClass so the two surfaces share one control language.
 const boxClass =
-  "min-h-12 flex items-center gap-3 rounded-xl py-2 pl-3.5 pr-4 text-label " +
+  "min-h-12 flex items-center gap-2 rounded-xl py-2 px-4 text-label " +
   "bg-[var(--color-mist)] text-[var(--color-depth)] " +
   "border-2 border-[var(--color-depth)] shadow-[var(--shadow-elevation)] cursor-pointer";
 
@@ -268,7 +268,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
       )}
 
       {/* Filter-state sentence (D-20) — announced politely on change */}
-      <p aria-live="polite" className="mt-4 text-[18px] text-[var(--color-depth)]">
+      <p aria-live="polite" className="mt-4 text-base text-[var(--color-depth)]">
         {sentence}
       </p>
     </section>

@@ -130,7 +130,7 @@ export default function ChartTooltip({
       </p>
       {pulseFirst ? [pulseRow, bpRow] : [bpRow, pulseRow]}
       <span
-        className="self-start rounded-full px-3 py-1"
+        className="self-start rounded-full px-4 py-1"
         style={{
           background: categoryColor(reading.bp_category),
           color: CHIP_TEXT,
@@ -161,7 +161,7 @@ export default function ChartTooltip({
           e.stopPropagation();
           onClose();
         }}
-        className="min-h-12 min-w-12 self-end rounded-lg px-5"
+        className="min-h-12 min-w-12 self-end rounded-lg px-6"
         style={{
           background: "var(--color-brass)",
           color: "var(--color-brass-text)",

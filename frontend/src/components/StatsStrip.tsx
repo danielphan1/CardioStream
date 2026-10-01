@@ -57,7 +57,7 @@ function VitalTile({
       <p className="text-display text-[var(--color-depth)]">
         {vital !== null ? vital.avg : "—"}
       </p>
-      <p className="text-[18px] text-[var(--color-depth)]">
+      <p className="text-base text-[var(--color-depth)]">
         {vital !== null
           ? `min ${vital.min} · max ${vital.max}`
           : "min — · max —"}
@@ -67,7 +67,7 @@ function VitalTile({
       )}
       {statusCategory != null && (
         <span
-          className="mt-2 inline-block w-fit rounded-full px-3 py-1 text-[18px]"
+          className="mt-2 inline-block w-fit rounded-full px-4 py-1 text-base"
           style={{ backgroundColor: categoryColor(statusCategory), color: CHIP_TEXT }}
         >
           {statusCategory}
@@ -162,7 +162,7 @@ export function StatsStrip({ stats, isLoading, readings }: StatsStripProps) {
         {stats.categories.map((c) => (
           <li
             key={c.category}
-            className="flex items-center gap-2 rounded-lg bg-[var(--color-mist)] px-4 py-2 text-lg"
+            className="flex items-center gap-2 rounded-lg bg-[var(--color-mist)] px-4 py-2 text-base"
           >
             <span
               aria-hidden="true"
