@@ -32,7 +32,7 @@ Phase: 17
 Phase: 15 (unified-filter-surface-multi-select-checkboxes-pulse-categor) — PLANNED, ready to execute
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-09-19
+Last activity: 2026-09-30 - Completed quick task 260930-n7i: design audit fixes
 
 ## Performance Metrics
 
@@ -206,6 +206,7 @@ None yet.
 | 260914-kz3 | Replace favicon with a sailboat-on-water icon | 2026-09-14 | 685fae4 | | [260914-kz3-replace-favicon-with-a-sailboat-on-water](./quick/260914-kz3-replace-favicon-with-a-sailboat-on-water/) |
 | 260914-lff | Restyle favicon sailboat: white fills with navy blue outline, wavier water line | 2026-09-14 | a16c900 | | [260914-lff-restyle-favicon-sailboat-white-fills-wit](./quick/260914-lff-restyle-favicon-sailboat-white-fills-wit/) |
 | 260916-hu8 | Update PROJECT.md Requirements → Validated section (Phases 13, 14, 19) and correct the stale "no milestone currently in progress" Active/Next Milestone framing to name Phases 15-18 as the open continuation work | 2026-09-16 | d90d86e | | [260916-hu8-update-project-md-requirements-validated](./quick/260916-hu8-update-project-md-requirements-validated/) |
+| 260930-n7i | Fix 5 confirmed findings from an AI-slop design-cliche audit of the frontend: (1) replaced Inter + Space Grotesk with Atkinson Hyperlegible as the single family, deleting the --font-display token and restoring DESIGN.md's Two-Weight Rule (3 type tokens + 15 font-semibold + 8 inline fontWeight all 600 -> 700, since Atkinson ships only 400/700 static and every surviving 600 was a browser-synthesized fake weight); (2) collapsed three utilities rendering the same 18px (text-lg x46, text-[18px] x23, text-base) onto one token; (3) pulled off-scale spacing onto DESIGN.md's 4px scale, deliberately KEEPING mt-0.5 at 5 sites as documented optical alignment ((27-24)/2); (4) replaced 4 disabled:opacity fades with DESIGN.md's dashed-border rule - the LoginGate submit button went from ~2.6:1 (a WCAG failure) to 14.11:1 light / 14.44:1 dark; (5) rewrote 20 user-facing em-dash-joined strings, preserving the StatsStrip null placeholder and chart data labels. Follow-up CHIP_CHAR_WIDTH_FACTOR risk CLOSED by in-browser canvas measurement: Atkinson is ~10% wider than Inter but the 0.62 factor still over-estimates the longest label by 72px (required factor 0.498), so the constant and chartData.test.ts's 383/295/40 expectations stand unchanged | 2026-09-30 | 26f08e7, b4d9fb7, e99a236 | Verified | [260930-n7i-design-audit-fixes](./quick/260930-n7i-design-audit-fixes/) |
 
 ## Deferred Items
 
