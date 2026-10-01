@@ -64,7 +64,7 @@ export function EventTimelineList({
               <span className="text-[18px] text-[var(--color-depth)]">
                 {/* The type is carried as visible TEXT, not by the glyph —
                     the glyph is aria-hidden and decorative. */}
-                <span className="font-semibold">{tableLabel}:</span>{" "}
+                <span className="font-bold">{tableLabel}:</span>{" "}
                 {evt.whatHappened}
               </span>
             </li>

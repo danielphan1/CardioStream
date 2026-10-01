@@ -138,7 +138,7 @@ export function LoginGate() {
               className="mt-0.5 shrink-0"
             />
             <p>
-              <span className="font-semibold">
+              <span className="font-bold">
                 {demoMode
                   ? "That username or password didn't work."
                   : "That password didn't work."}

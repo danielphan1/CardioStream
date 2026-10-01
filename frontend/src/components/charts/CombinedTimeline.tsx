@@ -126,7 +126,7 @@ function makeBandLabelChip(cat: BPCategory) {
           x={x + chipWidth / 2}
           y={y + chipHeight / 2}
           fontSize={CHIP_FONT_SIZE}
-          fontWeight={600}
+          fontWeight={700}
           fill={CHIP_TEXT}
           textAnchor="middle"
           dominantBaseline="middle"
@@ -187,7 +187,7 @@ function makeEndLabel(
           x={chipX + chipWidth / 2}
           y={labelY}
           fontSize={CHIP_FONT_SIZE}
-          fontWeight={600}
+          fontWeight={700}
           fill={CHIP_TEXT}
           textAnchor="middle"
           dominantBaseline="middle"

@@ -176,7 +176,7 @@ export function UploadPage() {
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           {state.kind === "not-omron" ? (
             <p>
-              <span className="font-semibold">
+              <span className="font-bold">
                 This doesn't look like an OMRON export.
               </span>{" "}
               Nothing was added. Please choose the .xlsx file you exported from
@@ -184,7 +184,7 @@ export function UploadPage() {
             </p>
           ) : (
             <p>
-              <span className="font-semibold">
+              <span className="font-bold">
                 Something went wrong reading that file.
               </span>{" "}
               Nothing was added — please try again.

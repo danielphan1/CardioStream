@@ -182,24 +182,24 @@ function ReadingCard({ reading: r }: { reading: Reading }) {
       className="rounded-xl border border-[var(--color-deck)] p-4"
     >
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
-        <dt className="text-lg font-semibold">Date</dt>
+        <dt className="text-lg font-bold">Date</dt>
         <dd className="text-lg">{fmtDateCell(r.datetime)}</dd>
 
-        <dt className="text-lg font-semibold">Time</dt>
+        <dt className="text-lg font-bold">Time</dt>
         <dd className="text-lg">{fmtTimeCell(r.datetime)}</dd>
 
-        <dt className="text-lg font-semibold">AM/PM</dt>
+        <dt className="text-lg font-bold">AM/PM</dt>
         <dd className="text-lg">{r.am_pm}</dd>
 
-        <dt className="text-lg font-semibold">Blood pressure</dt>
+        <dt className="text-lg font-bold">Blood pressure</dt>
         <dd className="text-lg">
           {r.systolic} / {r.diastolic}
         </dd>
 
-        <dt className="text-lg font-semibold">Pulse</dt>
+        <dt className="text-lg font-bold">Pulse</dt>
         <dd className="text-lg">{r.pulse}</dd>
 
-        <dt className="text-lg font-semibold">Category</dt>
+        <dt className="text-lg font-bold">Category</dt>
         <dd className="text-lg">
           <span
             className="inline-block rounded-full px-3 py-1 text-lg"

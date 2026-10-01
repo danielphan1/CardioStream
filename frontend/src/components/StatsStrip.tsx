@@ -54,7 +54,7 @@ function VitalTile({
     <div className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
       <Icon aria-hidden="true" size={24} className="text-[var(--color-depth)]" />
       <p className="mt-2 text-label text-[var(--color-depth)]">{label}</p>
-      <p className="text-display font-display text-[var(--color-depth)]">
+      <p className="text-display text-[var(--color-depth)]">
         {vital !== null ? vital.avg : "—"}
       </p>
       <p className="text-[18px] text-[var(--color-depth)]">
@@ -151,7 +151,7 @@ export function StatsStrip({ stats, isLoading, readings }: StatsStripProps) {
         <div className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
           <ListChecks aria-hidden="true" size={24} className="text-[var(--color-depth)]" />
           <p className="mt-2 text-label text-[var(--color-depth)]">Readings</p>
-          <p className="text-display font-display text-[var(--color-depth)]">{stats.count}</p>
+          <p className="text-display text-[var(--color-depth)]">{stats.count}</p>
         </div>
       </div>
 

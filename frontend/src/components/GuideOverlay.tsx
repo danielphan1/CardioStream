@@ -389,7 +389,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
                 <h3 className="text-label text-[var(--color-depth)]">
                   {c.label}
                 </h3>
-                <p className="text-lg font-semibold text-[var(--color-depth)]">
+                <p className="text-lg font-bold text-[var(--color-depth)]">
                   "{c.example}"
                 </p>
                 <p className={bodyClass}>{SIMILAR_PHRASINGS_NOTE}</p>

@@ -125,7 +125,7 @@ export default function ChartTooltip({
         pointerEvents: "auto",
       }}
     >
-      <p className="m-0" style={{ fontSize: 20, fontWeight: 600 }}>
+      <p className="m-0" style={{ fontSize: 20, fontWeight: 700 }}>
         {fmtTooltipTitle(reading.datetime)}
       </p>
       {pulseFirst ? [pulseRow, bpRow] : [bpRow, pulseRow]}
@@ -135,7 +135,7 @@ export default function ChartTooltip({
           background: categoryColor(reading.bp_category),
           color: CHIP_TEXT,
           fontSize: 20,
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         {reading.bp_category}
@@ -166,7 +166,7 @@ export default function ChartTooltip({
           background: "var(--color-brass)",
           color: "var(--color-brass-text)",
           fontSize: 20,
-          fontWeight: 600,
+          fontWeight: 700,
         }}
       >
         Close
