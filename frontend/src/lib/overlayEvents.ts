@@ -99,10 +99,10 @@ export function buildEmptyMessage(onTypes: OverlayDataset[]): string {
   return `No ${joinWithOr(ordered)} recorded in this date range.`;
 }
 
-/** "Couldn't load {type} — try again in a moment." — isolated per dataset
+/** "Couldn't load {type}. Try again in a moment." — isolated per dataset
  * (Copywriting Contract). */
 export function buildErrorMessage(type: OverlayDataset): string {
-  return `Couldn't load ${type} — try again in a moment.`;
+  return `Couldn't load ${type}. Try again in a moment.`;
 }
 
 /** "{list} overlaid" joining the ON datasets' capitalized labels in fixed

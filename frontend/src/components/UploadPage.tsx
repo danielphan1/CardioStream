@@ -89,8 +89,8 @@ export function UploadPage() {
           Add new readings
         </h2>
         <p className="text-base text-[var(--color-depth)]">
-          Choose the .xlsx file you exported from the OMRON app. New readings are
-          added automatically — uploading the same file twice is safe.
+          Choose the .xlsx file you exported from the OMRON app. New readings
+          are added automatically. Uploading the same file twice is safe.
         </p>
       </div>
 
@@ -191,7 +191,7 @@ export function UploadPage() {
               <span className="font-bold">
                 Something went wrong reading that file.
               </span>{" "}
-              Nothing was added — please try again.
+              Nothing was added. Please try again.
             </p>
           )}
         </section>

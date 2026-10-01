@@ -22,7 +22,7 @@ import { buildShowSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
 
 const NOTE_COPY =
-  "These datasets show on the Timeline — switch back to see them.";
+  "These datasets show on the Timeline. Switch back to see them.";
 
 // Mirrors FilterBar's control contract (mist card, depth border, 48px floor).
 // No opacity dimming under ANY state: quick-task 260827-kir removed exactly

@@ -263,7 +263,7 @@ describe("CommandBar", () => {
 
     expect(
       await screen.findByText(
-        "One moment — a lot of commands at once. Try again in a few seconds.",
+        "One moment. That's a lot of commands at once. Try again in a few seconds.",
       ),
     ).toBeInTheDocument();
     // The raw ApiError message must never surface.
@@ -278,7 +278,7 @@ describe("CommandBar", () => {
     typeAndSubmit("show my pulse");
 
     const region = await screen.findByText(
-      "Couldn't reach the assistant — use the filters and buttons below instead.",
+      "Couldn't reach the assistant. Use the filters and buttons below instead.",
     );
     expect(region.textContent).not.toMatch(/Try:/);
   });
@@ -450,7 +450,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
     startSession();
 
     expect(
-      screen.getByText('LISTENING — say "dashboard…"'),
+      screen.getByText('LISTENING. Say "dashboard…"'),
     ).toBeInTheDocument();
   });
 
@@ -465,7 +465,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
     // Room speech never becomes a command; the bar stays armed.
     expect(mockPostAgent).not.toHaveBeenCalled();
     expect(
-      screen.getByText('LISTENING — say "dashboard…"'),
+      screen.getByText('LISTENING. Say "dashboard…"'),
     ).toBeInTheDocument();
   });
 
@@ -478,7 +478,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
     // Word stripped; the armed hint is replaced by the live transcript.
     expect(screen.getByText("show my pulse")).toBeInTheDocument();
     expect(
-      screen.queryByText('LISTENING — say "dashboard…"'),
+      screen.queryByText('LISTENING. Say "dashboard…"'),
     ).not.toBeInTheDocument();
   });
 
@@ -517,7 +517,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
     // D-14 fixed copy (never the raw recognizer error) + the text box still works.
     expect(
       screen.getByText(
-        "Voice is paused — tap the mic to start listening again.",
+        "Voice is paused. Tap the mic to start listening again.",
       ),
     ).toBeInTheDocument();
     const input = screen.getByRole("textbox", {
@@ -526,7 +526,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
     expect(input).not.toBeDisabled();
   });
 
-  it("Cancel on the voice path returns to listening and shows Cancelled — listening again. (impeccable critique P2)", async () => {
+  it("Cancel on the voice path returns to listening and shows Cancelled. Listening again. (impeccable critique P2)", async () => {
     mockPostAgent.mockReturnValue(new Promise<AgentReply>(() => {}));
     renderBar();
     const rec = startSession();
@@ -538,7 +538,7 @@ describe("CommandBar voice layer (D-06/D-07/D-10/D-11/D-14)", () => {
     fireEvent.click(cancelButton);
 
     expect(
-      screen.getByText("Cancelled — listening again."),
+      screen.getByText("Cancelled. Listening again."),
     ).toBeInTheDocument();
     expect(screen.queryByText("WORKING…")).not.toBeInTheDocument();
   });

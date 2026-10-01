@@ -186,18 +186,18 @@ describe("buildEmptyMessage", () => {
 
 describe("buildErrorMessage", () => {
   it("renders the labs error message", () => {
-    expect(buildErrorMessage("labs")).toBe("Couldn't load labs — try again in a moment.");
+    expect(buildErrorMessage("labs")).toBe("Couldn't load labs. Try again in a moment.");
   });
 
   it("renders the incidents error message", () => {
     expect(buildErrorMessage("incidents")).toBe(
-      "Couldn't load incidents — try again in a moment.",
+      "Couldn't load incidents. Try again in a moment.",
     );
   });
 
   it("renders the procedures error message", () => {
     expect(buildErrorMessage("procedures")).toBe(
-      "Couldn't load procedures — try again in a moment.",
+      "Couldn't load procedures. Try again in a moment.",
     );
   });
 });

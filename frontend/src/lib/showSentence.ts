@@ -28,7 +28,7 @@ export function buildShowSentence(
 ): string {
   const on = DATASET_ORDER.filter((d) => visible[d]);
 
-  if (on.length === 0) return "Nothing selected — pick a dataset to see it.";
+  if (on.length === 0) return "Nothing selected. Pick a dataset to see it.";
 
   const names = on.map((d) => DATASET_META[d].label.toLowerCase());
   const list = joinWithAnd(names);
@@ -37,7 +37,7 @@ export function buildShowSentence(
   // a dated list instead (D-05). Say so, rather than letting the sentence
   // imply a chart that isn't there.
   if (!hasVitals(visible)) {
-    return `Showing ${list} — no vitals selected, so these are listed by date.`;
+    return `Showing ${list}. No vitals selected, so these are listed by date.`;
   }
 
   return `Showing ${list}.`;

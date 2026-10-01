@@ -56,7 +56,7 @@ describe("EXAMPLES", () => {
 describe("SIMILAR_PHRASINGS_NOTE", () => {
   it("equals the exact locked string", () => {
     expect(SIMILAR_PHRASINGS_NOTE).toBe(
-      "Similar phrasings work too — you don't need the exact words.",
+      "Similar phrasings work too. You don't need the exact words.",
     );
   });
 });

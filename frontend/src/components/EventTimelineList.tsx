@@ -30,7 +30,7 @@ export function EventTimelineList({
         <p className="text-base text-[var(--color-depth)]">
           {enabledTypes.length > 0
             ? buildEmptyMessage(enabledTypes)
-            : "Nothing selected — pick a dataset to see it."}
+            : "Nothing selected. Pick a dataset to see it."}
         </p>
       </section>
     );

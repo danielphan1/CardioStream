@@ -85,7 +85,7 @@ function NothingSelected() {
           leave the heading to the parent. Repeating it stacked the same text
           twice on screen and announced it twice (found by ChartDeck.test). */}
       <p className="text-base">
-        Tick a box above to choose what to see — or show everything at once.
+        Tick a box above to choose what to see, or show everything at once.
       </p>
       <button
         type="button"

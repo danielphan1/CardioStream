@@ -50,7 +50,7 @@ export type VoiceState =
 // D-14 fatal fallback: a mic-permission/hardware error closes the session until a
 // fresh start(). Fixed friendly copy only — the raw recognizer error NEVER renders.
 const PAUSED_COPY =
-  "Voice is paused — tap the mic to start listening again.";
+  "Voice is paused. Tap the mic to start listening again.";
 
 type UseVoiceCommandOptions = { latestReading: string | null };
 
@@ -268,7 +268,7 @@ export function useVoiceCommand({
     if (state !== "working") return;
     seqRef.current++;
     setInterim("");
-    setMessage("Cancelled — listening again.");
+    setMessage("Cancelled. Listening again.");
     setVoiceState("listening");
   }
 

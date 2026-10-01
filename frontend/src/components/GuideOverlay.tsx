@@ -292,7 +292,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           <section id="filters" style={sectionScrollStyle}>
             <h2 className={h2Class}>Filters</h2>
             <p className={bodyClass}>
-              Filters narrow down which readings are shown — by date range, by
+              Filters narrow down which readings are shown: by date range, by
               time of day, by blood pressure category, or by pulse category.
             </p>
             <p className={bodyClass}>

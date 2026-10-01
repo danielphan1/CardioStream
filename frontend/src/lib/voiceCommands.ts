@@ -54,7 +54,7 @@ export const VOICE_COMMAND_CATEGORIES: VoiceCommandCategory[] = [
 ];
 
 export const SIMILAR_PHRASINGS_NOTE =
-  "Similar phrasings work too — you don't need the exact words.";
+  "Similar phrasings work too. You don't need the exact words.";
 
 // Flat placeholder-rotation list for CommandBar (D-02) — derived from the
 // categorized source above so there is exactly one authored copy.

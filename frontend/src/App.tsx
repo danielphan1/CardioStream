@@ -170,8 +170,8 @@ function Dashboard() {
           Couldn't load the readings
         </h2>
         <p className="text-base">
-          The dashboard couldn't reach the data server. It will keep retrying
-          — or press Try again.
+          The dashboard couldn't reach the data server. It will keep retrying.
+          You can also press Try again.
         </p>
         <button
           type="button"

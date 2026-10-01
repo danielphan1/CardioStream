@@ -356,6 +356,6 @@ describe("CombinedTimeline trend lines (Phase 16, D-01–D-05)", () => {
     const { container } = render(
       <CombinedTimeline readings={READINGS} showBP showPulse />,
     );
-    expect(container.textContent).toContain("you have 4 here");
+    expect(container.textContent).toContain("You have 4 here");
   });
 });

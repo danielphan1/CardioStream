@@ -239,7 +239,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
       lineText = voiceMessage; // confirmation replaces the transcript (D-11)
       lineGlyph = "mic";
     } else {
-      lineText = `LISTENING — say "${WAKE_WORD}…"`; // armed hint (D-10)
+      lineText = `LISTENING. Say "${WAKE_WORD}…"`; // armed hint (D-10)
       lineGreen = true;
       lineGlyph = "mic";
     }

@@ -265,7 +265,7 @@ export function AddRecordPage() {
             <span className="font-bold">
               Something went wrong saving that {submitState.noun}.
             </span>{" "}
-            Nothing was added — please try again.
+            Nothing was added. Please try again.
           </p>
         </section>
       )}
