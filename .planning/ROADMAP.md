@@ -256,6 +256,8 @@ Out of scope: ReadingsTable internals (it relocates to its own destination uncha
 
 Superseded by `16.1-UI-SPEC.md` (client-approved 2026-10-01), two scope lines above: the accent is **`#0D826C`** light / `#33C1A6` dark, not `#0E8C74` (withdrawn in §4.3(3) — the 18px/400 Filters count badge is not WCAG large text, so `#0E8C74`'s 4.18:1 would be a real 1.4.3 failure); and `GuideOverlay` **has no focus trap** by design, so the nav panel and filter popover are non-trapping disclosures and the app's one modal stays `LogoutConfirmDialog` (§5.5).
 
+Further superseded 2026-10-01 (client decision, recorded in §5.2's superseding note and §11 item 7): below 1024px the **Guide is its own always-visible slim-top-bar control**, not one of the drawer's utility items. Leaving it in the drawer made Menu → Guide the only route to the Guide, which stacks the nav panel over the guide (both `fixed z-50`, nav panel later in tree order — the screen does not change) and leaves `GuideOverlay`'s `getElementById("guide-toggle-button")` focus-restore with no target on the voice-openable path. `ShellNav` gains `includeGuide` (default `true`; the rail keeps it, the panel passes `false`).
+
 Plans:
 - [ ] 16.1-01-PLAN.md — token rename --color-brass to --color-accent, values unchanged (UI-SPEC §4.2, own commit first)
 - [ ] 16.1-02-PLAN.md — palette values (teal accent, brass focus ring, violet diastolic, 12 category tints) and the contrast gate 38 to 92
