@@ -219,7 +219,7 @@ describe("agent pulse parity (D-08)", () => {
     act(() => {
       useAgentPulse.getState().mark(["datasets"]);
     });
-    expect(container.innerHTML).toContain("ring-[var(--color-brass)]");
+    expect(container.innerHTML).toContain("ring-[var(--color-accent)]");
   });
 
   it("does not ring for an unrelated field", () => {
@@ -227,6 +227,6 @@ describe("agent pulse parity (D-08)", () => {
     act(() => {
       useAgentPulse.getState().mark(["bpCategory"]);
     });
-    expect(container.innerHTML).not.toContain("ring-[var(--color-brass)]");
+    expect(container.innerHTML).not.toContain("ring-[var(--color-accent)]");
   });
 });

@@ -98,7 +98,7 @@ export function UploadPage() {
           label is the large accent affordance (≥48px); the native OS button it
           triggers is browser-sized and exempt from the 48px floor. */}
       <div className="flex flex-col gap-2">
-        <label className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)]">
+        <label className="inline-flex min-h-12 w-fit cursor-pointer items-center gap-2 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]">
           <FileUp aria-hidden="true" size={24} />
           Choose a file
           <input

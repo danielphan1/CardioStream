@@ -163,8 +163,8 @@ export default function ChartTooltip({
         }}
         className="min-h-12 min-w-12 self-end rounded-lg px-6"
         style={{
-          background: "var(--color-brass)",
-          color: "var(--color-brass-text)",
+          background: "var(--color-accent)",
+          color: "var(--color-accent-text)",
           fontSize: 20,
           fontWeight: 700,
         }}

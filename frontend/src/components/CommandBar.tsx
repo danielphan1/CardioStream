@@ -218,7 +218,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   // pulse and a static ring-2 fallback for reduced motion (D-09), copying the
   // FilterBar pulseClass structure. Colors are existing tokens only (no hex).
   const ringClass = anyWorking
-    ? "rounded-lg ring-2 ring-[var(--color-brass)]"
+    ? "rounded-lg ring-2 ring-[var(--color-accent)]"
     : voiceState === "listening" || voiceState === "triggered"
       ? "rounded-lg ring-2 ring-[var(--cat-normal)] motion-safe:animate-pulse"
       : "";
@@ -319,12 +319,12 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)] disabled:cursor-not-allowed disabled:border-dashed disabled:bg-[var(--color-mist)]"
         />
         {/* Disabled = DESIGN.md's Dashed-Border Rule (2px dashed Ink, Sky/mist
-            fill), never a dimmed solid. The base brass border is solid so the
+            fill), never a dimmed solid. The base accent border is solid so the
             box does not resize when the state flips during a round-trip. */}
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl border-2 border-[var(--color-brass)] bg-[var(--color-brass)] px-6 text-label text-[var(--color-brass-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
+          className="min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
         >
           Send
         </button>

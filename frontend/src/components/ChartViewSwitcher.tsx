@@ -15,7 +15,7 @@ import { useFilters } from "../store/filters";
 const inactiveClass =
   "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
 const activeClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-brass)] text-[var(--color-brass-text)] border-2 border-[var(--color-brass)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 const VIEWS: { key: ChartView; label: string }[] = [
   { key: "timeline", label: "Timeline" },
@@ -29,7 +29,7 @@ export function ChartViewSwitcher() {
 
   const pulsing = useAgentPulseFlash();
   const pulseClass = pulsing.includes("chart")
-    ? " rounded-lg ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
+    ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
     : "";
 
   return (

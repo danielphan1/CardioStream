@@ -42,7 +42,7 @@ export function ShowPanel() {
   // agent-driven selection change reads as the same system as a manual click.
   const pulsing = useAgentPulseFlash();
   const pulseClass = pulsing.includes("datasets")
-    ? " rounded-lg ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
+    ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
     : "";
 
   const appliesHere = chartView === "timeline";
@@ -62,7 +62,7 @@ export function ShowPanel() {
                   type="checkbox"
                   checked={on}
                   onChange={() => setDataset(key, !on)}
-                  className="h-[26px] w-[26px] flex-none cursor-pointer accent-[var(--color-brass)]"
+                  className="h-[26px] w-[26px] flex-none cursor-pointer accent-[var(--color-accent)]"
                 />
                 {/* The legend mark. Vitals show the line's own stroke —
                     including its dash — so the panel and the chart cannot

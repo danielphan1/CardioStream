@@ -35,11 +35,11 @@ type FilterBarProps = {
 };
 
 // Shared control styling contract (13-UI-SPEC.md accent rules): inactive =
-// mist card with depth text + 2px depth border; active = brass accent fill.
+// mist card with depth text + 2px depth border; active = accent fill.
 const inactiveClass =
   "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
 const activeClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-brass)] text-[var(--color-brass-text)] border-2 border-[var(--color-brass)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 // Plain checkbox control (Time of Day) — reused verbatim from
 // ShowPanel.tsx's boxClass so the two surfaces share one control language.
@@ -81,7 +81,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
   // mount-fade already signals agent-driven chart changes (CONTEXT).
   const pulseClass = (field: PulseField) =>
     pulsing.includes(field)
-      ? " rounded-lg ring-2 ring-[var(--color-brass)] motion-safe:animate-pulse"
+      ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
       : "";
 
   const isDayPreset =
@@ -172,7 +172,7 @@ export function FilterBar({ latestReading }: FilterBarProps) {
                   type="checkbox"
                   checked={timeOfDay[bucket]}
                   onChange={() => toggleTimeOfDay(bucket, !timeOfDay[bucket])}
-                  className="h-[26px] w-[26px] flex-none cursor-pointer accent-[var(--color-brass)]"
+                  className="h-[26px] w-[26px] flex-none cursor-pointer accent-[var(--color-accent)]"
                 />
                 {bucket}
               </label>

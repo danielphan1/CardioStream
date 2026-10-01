@@ -1,5 +1,5 @@
 // WCAG contrast regression test for the Phase 13 "Slack Water" (light) /
-// "Night Watch" (dark) brass, hazard, and panel token trio. Mirrors
+// "Night Watch" (dark) accent, hazard, and panel token trio. Mirrors
 // index.css's :root/.dark hex literals so a future token edit that
 // regresses contrast fails this test rather than shipping.
 import { hex } from "wcag-contrast";
@@ -8,8 +8,8 @@ import { describe, expect, it } from "vitest";
 const LIGHT = {
   deck: "#F5F7F6",
   mist: "#E3EBE9",
-  brass: "#8A5A1E",
-  brassText: "#FFFFFF",
+  accent: "#8A5A1E",
+  accentText: "#FFFFFF",
   hazard: "#9C2B22",
   hazardText: "#FFFFFF",
   panel: "#101C2E",
@@ -28,8 +28,8 @@ const LIGHT = {
 const DARK = {
   deck: "#0A121F",
   mist: "#101D30",
-  brass: "#D9A356",
-  brassText: "#0A121F",
+  accent: "#D9A356",
+  accentText: "#0A121F",
   hazard: "#E2685A",
   hazardText: "#0A121F",
   panel: "#050A12",
@@ -62,31 +62,31 @@ const DIMMED_LINE_PAIRS = [
   ["linePulseDimmedVsMist", "mist"],
 ] as const;
 
-describe("light theme — brass contrast floors", () => {
-  it("brass text on brass fill clears AA normal text (4.5:1, WCAG 1.4.3)", () => {
-    expect(hex(LIGHT.brassText, LIGHT.brass)).toBeGreaterThanOrEqual(4.5);
+describe("light theme — accent contrast floors", () => {
+  it("accent text on accent fill clears AA normal text (4.5:1, WCAG 1.4.3)", () => {
+    expect(hex(LIGHT.accentText, LIGHT.accent)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("brass against deck clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
-    expect(hex(LIGHT.brass, LIGHT.deck)).toBeGreaterThanOrEqual(3);
+  it("accent against deck clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
+    expect(hex(LIGHT.accent, LIGHT.deck)).toBeGreaterThanOrEqual(3);
   });
 
-  it("brass against mist clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
-    expect(hex(LIGHT.brass, LIGHT.mist)).toBeGreaterThanOrEqual(3);
+  it("accent against mist clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
+    expect(hex(LIGHT.accent, LIGHT.mist)).toBeGreaterThanOrEqual(3);
   });
 });
 
-describe("dark theme — brass contrast floors", () => {
-  it("brass text on brass fill clears AA normal text (4.5:1, WCAG 1.4.3)", () => {
-    expect(hex(DARK.brassText, DARK.brass)).toBeGreaterThanOrEqual(4.5);
+describe("dark theme — accent contrast floors", () => {
+  it("accent text on accent fill clears AA normal text (4.5:1, WCAG 1.4.3)", () => {
+    expect(hex(DARK.accentText, DARK.accent)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("brass against deck clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
-    expect(hex(DARK.brass, DARK.deck)).toBeGreaterThanOrEqual(3);
+  it("accent against deck clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
+    expect(hex(DARK.accent, DARK.deck)).toBeGreaterThanOrEqual(3);
   });
 
-  it("brass against mist clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
-    expect(hex(DARK.brass, DARK.mist)).toBeGreaterThanOrEqual(3);
+  it("accent against mist clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
+    expect(hex(DARK.accent, DARK.mist)).toBeGreaterThanOrEqual(3);
   });
 });
 
