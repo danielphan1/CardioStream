@@ -28,7 +28,7 @@ const SECTIONS = [
 ];
 
 const h2Class = "text-heading leading-tight text-[var(--color-depth)]";
-const bodyClass = "text-lg text-[var(--color-depth)]";
+const bodyClass = "text-base text-[var(--color-depth)]";
 
 // See the `top` style comment below for what these mean and why they exist.
 // CLOSE_BAR_HEIGHT (64px = py-2 + the close button's min-h-12, both fixed
@@ -292,7 +292,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           <section id="filters" style={sectionScrollStyle}>
             <h2 className={h2Class}>Filters</h2>
             <p className={bodyClass}>
-              Filters narrow down which readings are shown — by date range, by
+              Filters narrow down which readings are shown: by date range, by
               time of day, by blood pressure category, or by pulse category.
             </p>
             <p className={bodyClass}>
@@ -389,7 +389,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
                 <h3 className="text-label text-[var(--color-depth)]">
                   {c.label}
                 </h3>
-                <p className="text-lg font-semibold text-[var(--color-depth)]">
+                <p className="text-base font-bold text-[var(--color-depth)]">
                   "{c.example}"
                 </p>
                 <p className={bodyClass}>{SIMILAR_PHRASINGS_NOTE}</p>

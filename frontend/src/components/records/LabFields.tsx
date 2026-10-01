@@ -97,7 +97,7 @@ export function LabFields({ onDraftChange }: LabFieldsProps) {
       />
 
       <TextField
-        label="Normal range — low"
+        label="Lowest normal value"
         inputMode="decimal"
         placeholder="e.g. 4.0"
         value={rangeLowText}
@@ -105,7 +105,7 @@ export function LabFields({ onDraftChange }: LabFieldsProps) {
       />
 
       <TextField
-        label="Normal range — high"
+        label="Highest normal value"
         inputMode="decimal"
         placeholder="e.g. 6.0"
         value={rangeHighText}

@@ -22,14 +22,14 @@ import { buildShowSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
 
 const NOTE_COPY =
-  "These datasets show on the Timeline — switch back to see them.";
+  "These datasets show on the Timeline. Switch back to see them.";
 
 // Mirrors FilterBar's control contract (mist card, depth border, 48px floor).
 // No opacity dimming under ANY state: quick-task 260827-kir removed exactly
 // that anti-pattern from OverlayToggle, and DESIGN.md's disabled-state rule is
 // dashed-border-only.
 const boxClass =
-  "min-h-12 flex items-center gap-3 rounded-xl py-2 pl-3.5 pr-4 text-label " +
+  "min-h-12 flex items-center gap-2 rounded-xl py-2 px-4 text-label " +
   "bg-[var(--color-mist)] text-[var(--color-depth)] " +
   "border-2 border-[var(--color-depth)] shadow-[var(--shadow-elevation)] cursor-pointer";
 
@@ -66,7 +66,10 @@ export function ShowPanel() {
                 />
                 {/* The legend mark. Vitals show the line's own stroke —
                     including its dash — so the panel and the chart cannot
-                    disagree about which series is which. */}
+                    disagree about which series is which. Rendered at full
+                    strength in both states: the mark is information (which
+                    series this is), and the checkbox's own checked state plus
+                    its tick already carry on/off without colour. */}
                 {kind === "vital" ? (
                   <svg
                     aria-hidden="true"
@@ -83,14 +86,13 @@ export function ShowPanel() {
                       stroke={color}
                       strokeWidth={4}
                       strokeDasharray={dash}
-                      opacity={on ? 1 : 0.45}
                     />
                   </svg>
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="flex-none text-[18px] leading-none"
-                    style={{ color, opacity: on ? 1 : 0.45 }}
+                    className="flex-none text-base leading-none"
+                    style={{ color }}
                   >
                     {glyph}
                   </span>
@@ -104,14 +106,14 @@ export function ShowPanel() {
       {!appliesHere && (
         <p
           aria-live="polite"
-          className="mt-2 text-[18px] text-[var(--color-depth)]"
+          className="mt-2 text-base text-[var(--color-depth)]"
         >
           {NOTE_COPY}
         </p>
       )}
       <p
         aria-live="polite"
-        className="mt-4 text-[18px] text-[var(--color-depth)]"
+        className="mt-4 text-base text-[var(--color-depth)]"
       >
         {sentence}
       </p>

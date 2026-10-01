@@ -313,7 +313,7 @@ describe("useVoiceCommand cancel (impeccable critique P2)", () => {
       );
     });
     expect(useFilters.getState().visibleDatasets.pulse).toBe(true); // unchanged post-cancel
-    expect(result.current.message).toBe("Cancelled — listening again."); // not overwritten
+    expect(result.current.message).toBe("Cancelled. Listening again."); // not overwritten
   });
 
   it("cancel() is a no-op when not working", () => {

@@ -88,9 +88,9 @@ export function UploadPage() {
         <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           Add new readings
         </h2>
-        <p className="text-lg text-[var(--color-depth)]">
-          Choose the .xlsx file you exported from the OMRON app. New readings are
-          added automatically — uploading the same file twice is safe.
+        <p className="text-base text-[var(--color-depth)]">
+          Choose the .xlsx file you exported from the OMRON app. New readings
+          are added automatically. Uploading the same file twice is safe.
         </p>
       </div>
 
@@ -109,12 +109,12 @@ export function UploadPage() {
           />
         </label>
         {filename !== null && (
-          <p className="text-lg text-[var(--color-depth)]">Selected: {filename}</p>
+          <p className="text-base text-[var(--color-depth)]">Selected: {filename}</p>
         )}
       </div>
 
       {state.status === "loading" && (
-        <p aria-busy="true" className="text-lg text-[var(--color-depth)]">
+        <p aria-busy="true" className="text-base text-[var(--color-depth)]">
           Reading your file…
         </p>
       )}
@@ -126,10 +126,12 @@ export function UploadPage() {
           className="flex flex-col gap-4 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           <div className="flex items-start gap-2">
+            {/* optical alignment: 2px centres the 24px icon on the 27px first
+                text line (deliberately off the 4px spacing scale) */}
             <CheckCircle2 aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
             <div className="flex flex-col gap-2">
               {assembleSentences(state.summary).map((sentence) => (
-                <p key={sentence} className="text-lg text-[var(--color-depth)]">
+                <p key={sentence} className="text-base text-[var(--color-depth)]">
                   {sentence}
                 </p>
               ))}
@@ -156,7 +158,7 @@ export function UploadPage() {
               {showRejects && (
                 <ul className="flex flex-col gap-1 pl-1">
                   {state.summary.rejected.map((row) => (
-                    <li key={row.row_index} className="text-lg text-[var(--color-depth)]">
+                    <li key={row.row_index} className="text-base text-[var(--color-depth)]">
                       Row {row.row_index}: {row.reason}.
                     </li>
                   ))}
@@ -171,12 +173,14 @@ export function UploadPage() {
         <section
           role="alert"
           aria-label="Upload notice"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-lg text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
+          {/* optical alignment: 2px centres the 24px icon on the 27px first
+              text line (deliberately off the 4px spacing scale) */}
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           {state.kind === "not-omron" ? (
             <p>
-              <span className="font-semibold">
+              <span className="font-bold">
                 This doesn't look like an OMRON export.
               </span>{" "}
               Nothing was added. Please choose the .xlsx file you exported from
@@ -184,10 +188,10 @@ export function UploadPage() {
             </p>
           ) : (
             <p>
-              <span className="font-semibold">
+              <span className="font-bold">
                 Something went wrong reading that file.
               </span>{" "}
-              Nothing was added — please try again.
+              Nothing was added. Please try again.
             </p>
           )}
         </section>

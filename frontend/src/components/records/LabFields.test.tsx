@@ -57,10 +57,10 @@ describe("LabFields (Plan 08-02)", () => {
     fireEvent.change(screen.getByLabelText("Result"), {
       target: { value: "5.4" },
     });
-    fireEvent.change(screen.getByLabelText("Normal range — low"), {
+    fireEvent.change(screen.getByLabelText("Lowest normal value"), {
       target: { value: "4.0" },
     });
-    fireEvent.change(screen.getByLabelText("Normal range — high"), {
+    fireEvent.change(screen.getByLabelText("Highest normal value"), {
       target: { value: "6.0" },
     });
 

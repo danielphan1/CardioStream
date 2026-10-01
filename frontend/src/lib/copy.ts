@@ -7,9 +7,9 @@
 // error.message (which may leak status/stack) and raw recognizer errors are
 // NEVER rendered — only these strings are.
 export const RATE_LIMIT_COPY =
-  "One moment — a lot of commands at once. Try again in a few seconds.";
+  "One moment. That's a lot of commands at once. Try again in a few seconds.";
 export const OFFLINE_COPY =
-  "Couldn't reach the assistant — use the filters and buttons below instead.";
+  "Couldn't reach the assistant. Use the filters and buttons below instead.";
 
 // AGENT_UNAVAILABLE_BANNER_COPY is the THIRD independently-worded "can't
 // reach the assistant" string in this codebase, alongside OFFLINE_COPY above

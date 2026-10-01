@@ -117,7 +117,7 @@ export function ReadingsTable({ readings }: ReadingsTableProps) {
       )}
 
       {allShown ? (
-        <p className="mt-4 text-center text-lg">
+        <p className="mt-4 text-center text-base">
           Showing all {sorted.length} readings
         </p>
       ) : (
@@ -138,18 +138,18 @@ function ReadingRow({ reading: r }: { reading: Reading }) {
   return (
     <>
       <tr className="border-t border-[var(--color-deck)]">
-        <td className="p-2 text-lg">{fmtDateCell(r.datetime)}</td>
-        <td className="p-2 text-lg">{fmtTimeCell(r.datetime)}</td>
-        <td className="p-2 text-lg">{r.am_pm}</td>
-        <td className="p-2 text-lg">
+        <td className="p-2 text-base">{fmtDateCell(r.datetime)}</td>
+        <td className="p-2 text-base">{fmtTimeCell(r.datetime)}</td>
+        <td className="p-2 text-base">{r.am_pm}</td>
+        <td className="p-2 text-base">
           {r.systolic} / {r.diastolic}
         </td>
-        <td className="p-2 text-lg">{r.pulse}</td>
+        <td className="p-2 text-base">{r.pulse}</td>
         <td className="p-2">
           {/* Display-only chip — UI-SPEC table-chip exemption allows
               shorter than 48px. Solid category fill + contrast text pair. */}
           <span
-            className="inline-block rounded-full px-3 py-1 text-lg"
+            className="inline-block rounded-full px-4 py-1 text-base"
             style={{
               backgroundColor: categoryColor(r.bp_category),
               color: CHIP_TEXT,
@@ -162,7 +162,7 @@ function ReadingRow({ reading: r }: { reading: Reading }) {
       {hasNote && (
         <tr>
           {/* Plain React text node — notes is free text (T-02-08). */}
-          <td colSpan={6} className="p-2 pt-0 text-lg">
+          <td colSpan={6} className="p-2 pt-0 text-base">
             Note: {r.notes}
           </td>
         </tr>
@@ -182,27 +182,27 @@ function ReadingCard({ reading: r }: { reading: Reading }) {
       className="rounded-xl border border-[var(--color-deck)] p-4"
     >
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
-        <dt className="text-lg font-semibold">Date</dt>
-        <dd className="text-lg">{fmtDateCell(r.datetime)}</dd>
+        <dt className="text-base font-bold">Date</dt>
+        <dd className="text-base">{fmtDateCell(r.datetime)}</dd>
 
-        <dt className="text-lg font-semibold">Time</dt>
-        <dd className="text-lg">{fmtTimeCell(r.datetime)}</dd>
+        <dt className="text-base font-bold">Time</dt>
+        <dd className="text-base">{fmtTimeCell(r.datetime)}</dd>
 
-        <dt className="text-lg font-semibold">AM/PM</dt>
-        <dd className="text-lg">{r.am_pm}</dd>
+        <dt className="text-base font-bold">AM/PM</dt>
+        <dd className="text-base">{r.am_pm}</dd>
 
-        <dt className="text-lg font-semibold">Blood pressure</dt>
-        <dd className="text-lg">
+        <dt className="text-base font-bold">Blood pressure</dt>
+        <dd className="text-base">
           {r.systolic} / {r.diastolic}
         </dd>
 
-        <dt className="text-lg font-semibold">Pulse</dt>
-        <dd className="text-lg">{r.pulse}</dd>
+        <dt className="text-base font-bold">Pulse</dt>
+        <dd className="text-base">{r.pulse}</dd>
 
-        <dt className="text-lg font-semibold">Category</dt>
-        <dd className="text-lg">
+        <dt className="text-base font-bold">Category</dt>
+        <dd className="text-base">
           <span
-            className="inline-block rounded-full px-3 py-1 text-lg"
+            className="inline-block rounded-full px-4 py-1 text-base"
             style={{
               backgroundColor: categoryColor(r.bp_category),
               color: CHIP_TEXT,
@@ -213,7 +213,7 @@ function ReadingCard({ reading: r }: { reading: Reading }) {
         </dd>
       </dl>
       {hasNote && (
-        <p className="mt-2 text-lg">
+        <p className="mt-2 text-base">
           {/* Plain React text node — notes is free text (T-02-08). */}
           Note: {r.notes}
         </p>

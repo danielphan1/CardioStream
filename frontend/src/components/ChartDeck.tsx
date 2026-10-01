@@ -84,8 +84,8 @@ function NothingSelected() {
           region title above, and EventTimelineList/CombinedTimeline likewise
           leave the heading to the parent. Repeating it stacked the same text
           twice on screen and announced it twice (found by ChartDeck.test). */}
-      <p className="text-lg">
-        Tick a box above to choose what to see — or show everything at once.
+      <p className="text-base">
+        Tick a box above to choose what to see, or show everything at once.
       </p>
       <button
         type="button"

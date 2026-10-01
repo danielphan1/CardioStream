@@ -138,7 +138,7 @@ describe("per-type error isolation", () => {
     );
 
     const alert = screen.getByRole("alert");
-    expect(alert).toHaveTextContent("Couldn't load labs — try again in a moment.");
+    expect(alert).toHaveTextContent("Couldn't load labs. Try again in a moment.");
 
     // header + 2 incident rows — the labs error never suppresses these.
     expect(rowCount()).toBe(3);
@@ -156,7 +156,7 @@ describe("per-type error isolation", () => {
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Couldn't load labs — try again in a moment.",
+      "Couldn't load labs. Try again in a moment.",
     );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(

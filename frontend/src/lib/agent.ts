@@ -224,7 +224,7 @@ export function composeConfirmation(
   if (state.chartView === "timeline") {
     const phrase = datasetsPhrase(state.visibleDatasets);
     if (phrase === null) {
-      return "Nothing selected — pick a dataset to see it";
+      return "Nothing selected. Pick a dataset to see it";
     }
     chartPhrase = phrase;
   } else {

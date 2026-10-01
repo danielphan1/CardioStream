@@ -158,9 +158,18 @@ export function isDotCrowded(width: number, pointCount: number): boolean {
 }
 
 /**
- * Average glyph width as a fraction of font-size for the bold 14px Inter
- * band-label chip text — deliberately generous so the estimate errs toward
- * a slightly wider chip rather than one that clips its own label.
+ * Average glyph width as a fraction of font-size for the bold 14px
+ * Atkinson Hyperlegible band-label chip text.
+ *
+ * ponytail: 0.62 was calibrated against Inter, where it was deliberately
+ * generous so the estimate erred toward a slightly wider chip rather than one
+ * that clipped its own label. Atkinson Hyperlegible has wider letterforms, so
+ * the factor is now only roughly exact and that safety margin is gone — the
+ * ceiling is that a long label at a narrow viewport could clip again (the
+ * failure 16-VERIFICATION.md logged as a BLOCKER). Upgrade path: bump it only
+ * against a real observed clip, never a guess — `chartData.test.ts` hardcodes
+ * this function's outputs (383/295/40) as the regression test for that fix, so
+ * a speculative change would break a verified test to chase a hypothetical.
  */
 const CHIP_CHAR_WIDTH_FACTOR = 0.62;
 

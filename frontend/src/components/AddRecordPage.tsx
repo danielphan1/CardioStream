@@ -179,7 +179,7 @@ export function AddRecordPage() {
         <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           Add a record
         </h2>
-        <p className="text-lg text-[var(--color-depth)]">
+        <p className="text-base text-[var(--color-depth)]">
           Log a new lab result, incident, or procedure. Choose a type below,
           then fill in the details.
         </p>
@@ -195,7 +195,13 @@ export function AddRecordPage() {
             onClick={() => handleTypeChange(key)}
             className={
               (recordType === key ? activeClass : inactiveClass) +
-              (isSubmitting ? " cursor-not-allowed opacity-60" : "")
+              // Dashed, never dimmed (DESIGN.md Dashed-Border Rule). The fill
+              // stays solid so the selected type is still readable while the
+              // dash carries "not ready"; both classes already set border-2,
+              // so switching style causes no box-size shift. aria-disabled
+              // rather than `disabled` keeps the control in the tab order for
+              // a switch-access/keyboard user.
+              (isSubmitting ? " cursor-not-allowed border-dashed" : "")
             }
           >
             {label}
@@ -237,8 +243,10 @@ export function AddRecordPage() {
           aria-label="Add record result"
           className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
+          {/* optical alignment: 2px centres the 24px icon on the 27px first
+              text line (deliberately off the 4px spacing scale) */}
           <CheckCircle2 aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
-          <p className="text-lg text-[var(--color-depth)]">
+          <p className="text-base text-[var(--color-depth)]">
             Added 1 {submitState.noun}.
           </p>
         </section>
@@ -248,14 +256,16 @@ export function AddRecordPage() {
         <section
           role="alert"
           aria-label="Add record notice"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-lg text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
+          {/* optical alignment: 2px centres the 24px icon on the 27px first
+              text line (deliberately off the 4px spacing scale) */}
           <TriangleAlert aria-hidden="true" size={24} className="mt-0.5 shrink-0" />
           <p>
-            <span className="font-semibold">
+            <span className="font-bold">
               Something went wrong saving that {submitState.noun}.
             </span>{" "}
-            Nothing was added — please try again.
+            Nothing was added. Please try again.
           </p>
         </section>
       )}

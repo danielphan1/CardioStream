@@ -184,7 +184,7 @@ describe("AddRecordPage (Plan 08-03)", () => {
 
     const region = await screen.findByRole("alert", { name: "Add record notice" });
     expect(region).toHaveTextContent(
-      "Something went wrong saving that lab result. Nothing was added — please try again.",
+      "Something went wrong saving that lab result. Nothing was added. Please try again.",
     );
     expect(screen.queryByText(/422/)).not.toBeInTheDocument();
     expect(screen.queryByText(/API request failed/)).not.toBeInTheDocument();

@@ -126,7 +126,7 @@ function makeBandLabelChip(cat: BPCategory) {
           x={x + chipWidth / 2}
           y={y + chipHeight / 2}
           fontSize={CHIP_FONT_SIZE}
-          fontWeight={600}
+          fontWeight={700}
           fill={CHIP_TEXT}
           textAnchor="middle"
           dominantBaseline="middle"
@@ -187,7 +187,7 @@ function makeEndLabel(
           x={chipX + chipWidth / 2}
           y={labelY}
           fontSize={CHIP_FONT_SIZE}
-          fontWeight={600}
+          fontWeight={700}
           fill={CHIP_TEXT}
           textAnchor="middle"
           dominantBaseline="middle"
@@ -264,7 +264,7 @@ export default function CombinedTimeline({
       <p className="m-0 shrink-0" style={{ fontSize: 18, color: "var(--color-depth)" }}>
         {hasTrend
           ? "Bold lines show a 7-reading rolling average. Lighter lines show each individual reading."
-          : `Trend line needs at least 7 readings to show — you have ${points.length} here. Showing individual readings only.`}
+          : `Trend line needs at least 7 readings to show. You have ${points.length} here, so only individual readings are shown.`}
       </p>
       <div className="min-h-0 flex-1">
       <ResponsiveContainer width="100%" height="100%">

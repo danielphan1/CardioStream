@@ -16,7 +16,7 @@ const sel = (on: SeriesDataset[]): Record<SeriesDataset, boolean> => ({
 describe("buildShowSentence", () => {
   it("prompts when nothing is selected", () => {
     expect(buildShowSentence(sel([]))).toBe(
-      "Nothing selected — pick a dataset to see it.",
+      "Nothing selected. Pick a dataset to see it.",
     );
   });
 
@@ -47,7 +47,7 @@ describe("buildShowSentence", () => {
 
   it("flags the events-only case instead of implying a chart", () => {
     expect(buildShowSentence(sel(["incidents"]))).toBe(
-      "Showing incidents — no vitals selected, so these are listed by date.",
+      "Showing incidents. No vitals selected, so these are listed by date.",
     );
   });
 
