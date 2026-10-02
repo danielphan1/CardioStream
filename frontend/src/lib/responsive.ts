@@ -7,9 +7,11 @@
  * this stays as testable as chartData.ts's pure functions.
  */
 
-/** Tailwind's `sm` breakpoint (already used by StatsStrip's `sm:grid-cols-2`
- * and documented in DESIGN.md's breakpoint scale) — reused here as the
- * table/card cutover width rather than inventing a new value. */
+/** Tailwind's `sm` breakpoint, documented in DESIGN.md's breakpoint scale —
+ * reused here as the table/card cutover width rather than inventing a new
+ * value. (It used to cite StatsStrip's `sm:grid-cols-2` as the precedent;
+ * 16.1-08 moved that grid to `grid-cols-2 lg:grid-cols-4`, so the scale
+ * itself is now the only citation that stays true.) */
 export const CARD_LAYOUT_MAX_WIDTH_PX = 640;
 
 /**

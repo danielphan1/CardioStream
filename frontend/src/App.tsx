@@ -430,7 +430,7 @@ function Dashboard() {
           down instead. */}
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 pb-8 md:px-8 xl:px-16">
         <div className="flex flex-col gap-8">
-          <StatsStrip stats={stats.data} isLoading={stats.isPending} readings={readings.data ?? []} />
+          <StatsStrip stats={stats.data} isLoading={stats.isPending} />
           <ChartViewSwitcher />
           {chartRegion}
         </div>
