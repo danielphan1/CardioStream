@@ -8,8 +8,8 @@
 // Error presentation is centralized here (T-02-11): only the UI-SPEC copy
 // renders — never raw error messages, status codes, or stack traces
 // (ApiError details stay in the console at most).
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode, RefObject } from "react";
+import { useMemo, useRef } from "react";
+import type { ReactNode } from "react";
 
 import { AddRecordPage } from "./components/AddRecordPage";
 import { AgentStatusBanner } from "./components/AgentStatusBanner";
@@ -26,6 +26,7 @@ import { ShowPanel } from "./components/ShowPanel";
 import { ReadingsTable } from "./components/ReadingsTable";
 import { StatsStrip } from "./components/StatsStrip";
 import { UploadPage } from "./components/UploadPage";
+import { useClearanceHeight } from "./hooks/useClearanceHeight";
 import { useIncidents, useLabs, useProcedures } from "./hooks/useRecordEvents";
 import { useReadings } from "./hooks/useReadings";
 import { useResolvedFilters, useStats } from "./hooks/useStats";
@@ -41,33 +42,6 @@ import { useAuth } from "./store/auth";
 import { useFilters } from "./store/filters";
 import { useGuide } from "./store/guide";
 import { useView } from "./store/view";
-
-/** Sums the live rendered height of one or two elements and keeps it in
- *  sync via ResizeObserver — gives GuideOverlay an exact `clearanceAbove`
- *  instead of a guessed fixed padding (see its paddingTop comment for why
- *  a fixed value can't work: Header/CommandBar wrap to more rows, and grow
- *  taller, on narrower viewports). `primaryRef`/`secondaryRef` come from
- *  `useRef` so they're referentially stable — the effect attaches its
- *  observer once and never needs to re-run. */
-function useClearanceHeight(
-  primaryRef: RefObject<HTMLElement | null>,
-  secondaryRef?: RefObject<HTMLElement | null>,
-): number {
-  const [height, setHeight] = useState(0);
-  useEffect(() => {
-    const elements = [primaryRef.current, secondaryRef?.current].filter(
-      (el): el is HTMLElement => el != null,
-    );
-    if (elements.length === 0) return;
-    const recompute = () =>
-      setHeight(elements.reduce((sum, el) => sum + el.getBoundingClientRect().height, 0));
-    recompute();
-    const observer = new ResizeObserver(recompute);
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [primaryRef, secondaryRef]);
-  return height;
-}
 
 /** Skeleton hero + mini placeholders for the initial load only — after
  *  first load keepPreviousData keeps charts on screen (no spinner). */
