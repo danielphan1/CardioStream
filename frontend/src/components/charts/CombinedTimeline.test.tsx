@@ -2,12 +2,13 @@
 // dual-axis chart that replaced the mutually-exclusive BPTimeline/PulseTrend
 // pair. Ports the still-live assertions from both retired suites.
 //
-// jsdom has no layout, so Recharts' ResponsiveContainer normally measures 0x0
-// and nothing paints (see StatsSparkline.test.tsx's note). Unlike a sparkline,
-// this component's contract IS its rendered structure — which axes are
-// mounted, which series exist, whether pulse is dashed — so asserting
-// "does not throw" would be vacuous here. The mock below hands the chart a
-// real size so the SVG actually renders and can be inspected.
+// jsdom has no layout, so Recharts' ResponsiveContainer measures 0x0 and
+// nothing paints unless a test hands it a real size. For a purely decorative
+// chart, "does not throw" is therefore the only assertion worth making. Not
+// so here: this component's contract IS its rendered structure — which axes
+// are mounted, which series exist, whether pulse is dashed — so a
+// does-not-throw assertion would be vacuous. The mock below hands the chart
+// a real size so the SVG actually renders and can be inspected.
 import { render } from "@testing-library/react";
 import { cloneElement, isValidElement } from "react";
 import type { ReactElement } from "react";
