@@ -2,9 +2,12 @@
 // AppShell (the left rail at ≥1024px, the slim top bar below it) → Command Bar
 // → <main>, whose content each view supplies itself.
 //
-// Data is wired ONCE here: useResolvedFilters bridges the zustand filter
-// store into concrete query params; useReadings/useStats fetch; everything
-// below receives props and stays presentational.
+// Data is wired per DATA VIEW rather than once: each of the two data
+// surfaces mounts useResolvedFilters (the zustand filter store → concrete
+// query params bridge) plus useReadings/useStats itself. TanStack Query
+// dedupes them by key onto one in-flight request and one cache entry, so
+// nothing has to be threaded through the shell. Everything below those two
+// receives props and stays presentational.
 //
 // Error presentation is centralized here (T-02-11): only the UI-SPEC copy
 // renders — never raw error messages, status codes, or stack traces
@@ -284,6 +287,34 @@ function ChartSkeleton() {
   );
 }
 
+/** The ONE fetch-failure surface, shared by both data views (T-02-11).
+ *  UI-SPEC §6 pins this copy as "unchanged and centralized in App.tsx", so it
+ *  is a component rather than a second literal copy inside the readings
+ *  destination: a user-visible string with two homes drifts. Renders UI-SPEC
+ *  copy ONLY — no raw error text, status code or stack trace ever reaches the
+ *  screen. */
+function DataUnavailable({ onRetry }: { onRetry: () => void }) {
+  return (
+    <section
+      aria-label="Data unavailable"
+      className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-mist)] p-8 text-center shadow-[var(--shadow-elevation)]"
+    >
+      <h2 className="text-heading leading-tight">Couldn't load the readings</h2>
+      <p className="text-base">
+        The dashboard couldn't reach the data server. It will keep retrying. You
+        can also press Try again.
+      </p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
+      >
+        Try again
+      </button>
+    </section>
+  );
+}
+
 /** The authenticated dashboard. Extracted from App so that ALL data hooks
  *  (useReadings/useStats via useResolvedFilters) live behind the auth gate —
  *  when there is no token this component never mounts, so no request fires
@@ -356,30 +387,13 @@ function Dashboard() {
   if (initialPending) {
     chartRegion = <ChartSkeleton />;
   } else if (hasError) {
-    // UI-SPEC error copy ONLY (T-02-11) — no raw error text ever renders.
     chartRegion = (
-      <section
-        aria-label="Data unavailable"
-        className="flex flex-col items-center gap-4 rounded-xl bg-[var(--color-mist)] p-8 text-center shadow-[var(--shadow-elevation)]"
-      >
-        <h2 className="text-heading leading-tight">
-          Couldn't load the readings
-        </h2>
-        <p className="text-base">
-          The dashboard couldn't reach the data server. It will keep retrying.
-          You can also press Try again.
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            void readings.refetch();
-            void stats.refetch();
-          }}
-          className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
-        >
-          Try again
-        </button>
-      </section>
+      <DataUnavailable
+        onRetry={() => {
+          void readings.refetch();
+          void stats.refetch();
+        }}
+      />
     );
   } else if ((readings.data ?? []).length === 0 && regionNeedsReadings) {
     // Zero-result filters → guided empty state in place of the deck (D-11);
@@ -414,11 +428,16 @@ function Dashboard() {
   return (
     <AppShell showCommandBar showFilters latestReading={latestReading}>
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); single column
-          (UI-SPEC responsive). Content is grouped into 2 wrapper clusters —
-          visualizations (StatsStrip+chart region) and detail-records (the
-          readings table+OverlayEventsList) — gap-8 rhythm within a cluster,
-          gap-12 (48px) between clusters. This wrapper is the view's own, not
-          the shell's.
+          (UI-SPEC responsive). One wrapper cluster now — the visualizations
+          (vitals strip, view switcher, chart region) — with the overlay-event
+          detail list a sibling 48px below it. The tabular records moved to
+          their own rail destination in 16.1-09 (§5.8), which is the last
+          piece of this phase's vertical-length reduction.
+
+          Inside the cluster: the 32px cluster rhythm falls below the vitals
+          strip, and an inner 24px wrapper pairs the view switcher with the
+          chart it switches (§5.7's two spacing deltas, expressed on-scale
+          with no negative margin).
 
           The old full-width controls band that opened this column is gone
           (16.1-07): the four control groups now live in the shell's trigger
@@ -431,19 +450,20 @@ function Dashboard() {
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 pb-8 md:px-8 xl:px-16">
         <div className="flex flex-col gap-8">
           <StatsStrip stats={stats.data} isLoading={stats.isPending} />
-          <ChartViewSwitcher />
-          {chartRegion}
+          <div className="flex flex-col gap-6">
+            <ChartViewSwitcher />
+            {chartRegion}
+          </div>
         </div>
-        <div className="flex flex-col gap-8">
-          <section aria-label="Readings table">
-            <h2 className="mb-4 text-heading leading-tight text-[var(--color-depth)]">
-              Readings
-            </h2>
-            <ReadingsTable readings={readings.data ?? []} />
-          </section>
-          {/* Suppressed when the chart slot has become the event list — see
-              eventsAreTheChart (CR-02). */}
-          {!eventsAreTheChart && (
+        {/* The event list is now a direct child of the 48px cluster gap: the
+            wrapper that used to pair it with the tabular records has nothing
+            left to pair it with, and dropping it leaves this element's own
+            spacing untouched while removing the empty 48px tail the wrapper
+            left behind in the suppressed case.
+
+            Suppressed when the chart slot has itself become the event list —
+            see eventsAreTheChart (CR-02). */}
+        {!eventsAreTheChart && (
           <OverlayEventsList
             labs={{ enabled: visibleDatasets.labs, events: labsEvents, isError: labs.isError }}
             incidents={{
@@ -457,8 +477,67 @@ function Dashboard() {
               isError: procedures.isError,
             }}
           />
+        )}
+      </div>
+    </AppShell>
+  );
+}
+
+/** The Readings destination (UI-SPEC §5.8) — the filtered table on its own
+ *  surface rather than pinned below the chart. The rail has offered this item
+ *  since plan 16.1-03 and the View union has accepted the value since then;
+ *  this is the renderer it was waiting for.
+ *
+ *  THE FILTER CLUSTER IS NOT OPTIONAL HERE (T-16.1-39). The trigger row and
+ *  the always-visible state block both arrive from AppShell's showFilters
+ *  cluster — the SAME mounted components the dashboard uses, never second
+ *  copies, so the DOM still holds exactly one state-block region
+ *  (T-16.1-41). They belong on this surface because the table is narrowed by
+ *  the same store: without them, a user who narrowed to Stage 2 elsewhere
+ *  would land on a silently filtered table and read it as the complete
+ *  record of his own blood pressure.
+ *
+ *  Hooks are mounted here rather than hoisted into the shell — see the file
+ *  header for why that costs no extra request. */
+function ReadingsView() {
+  const resolved = useResolvedFilters();
+  const readings = useReadings(resolved);
+  const stats = useStats(resolved);
+
+  // The UNFILTERED newest-reading anchor (D-20), exactly as Dashboard takes
+  // it: both the Command Bar and the live state block need it, and
+  // latest_reading is unfiltered in every stats response.
+  const latestReading = stats.data?.latest_reading ?? null;
+
+  return (
+    <AppShell showCommandBar showFilters latestReading={latestReading}>
+      {/* Same gutters and same bottom-padding-only rule as Dashboard's
+          wrapper: the shell's filter cluster above already supplies §5.4's
+          24px, so a top padding here would stack on it. */}
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 pb-8 md:px-8 xl:px-16">
+        <section aria-label="Readings table">
+          <h2 className="mb-4 text-heading leading-tight text-[var(--color-depth)]">
+            Readings
+          </h2>
+          {/* Neither of the two guards below existed when the table sat under
+              the chart, because Dashboard's chart region absorbed both states
+              for the whole column. On its own surface the table is the only
+              thing here, and it renders "Showing all 0 readings" for whatever
+              array it is handed — which during a loading or failed fetch is a
+              false statement about a person's medical record, on the one
+              surface whose entire job is to be the complete record. So the
+              table is handed data only once there is data. */}
+          {readings.isPending ? (
+            <div
+              aria-busy="true"
+              className="h-[420px] animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]"
+            />
+          ) : readings.isError ? (
+            <DataUnavailable onRetry={() => void readings.refetch()} />
+          ) : (
+            <ReadingsTable readings={readings.data ?? []} />
           )}
-        </div>
+        </section>
       </div>
     </AppShell>
   );
@@ -491,13 +570,16 @@ function RecordsView() {
  *  no shell, no dashboard chrome, and crucially no data hooks mount (the
  *  Dashboard tree is not rendered), so nothing fetches before authentication.
  *  Once authed, a zustand view swap (D-05, no react-router) chooses between the
- *  dashboard and the caregiver upload/records pages. */
+ *  four rail destinations: the two data views and the two caregiver write
+ *  surfaces. The dashboard is the fall-through, so it is also the landing
+ *  surface and the recovery target for any unrecognised value. */
 function App() {
   const token = useAuth((s) => s.token);
   const view = useView((s) => s.view);
   if (token === null) return <LoginGate />;
   if (view === "upload") return <UploadView />;
   if (view === "records") return <RecordsView />;
+  if (view === "readings") return <ReadingsView />;
   return <Dashboard />;
 }
 

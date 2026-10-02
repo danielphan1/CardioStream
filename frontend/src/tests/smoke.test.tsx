@@ -15,6 +15,7 @@ import type { StatsSummary } from '../api/types'
 import App from '../App'
 import { useAuth } from '../store/auth'
 import { useGuide } from '../store/guide'
+import { useView } from '../store/view'
 
 const zeroStats: StatsSummary = {
   count: 0,
@@ -57,6 +58,10 @@ afterEach(() => {
   // it so an open guide can never leak into the dashboard-heading test above
   // (or into plan 16.1-09's readings test).
   useGuide.setState({ open: false })
+  // Same reasoning for the view store (16.1-09): the readings and upload tests
+  // below seed it, and every other test in this file assumes the dashboard is
+  // what mounts.
+  useView.setState({ view: 'dashboard' })
 })
 
 test('renders the assembled dashboard heading', async () => {
@@ -82,6 +87,15 @@ test('renders the assembled dashboard heading', async () => {
       name: 'No readings match these filters',
     }),
   ).toBeInTheDocument()
+
+  // The tabular records left this view in 16.1-09 (UI-SPEC §5.8) — they are
+  // their own rail destination now, not a block pinned under the chart. The
+  // overlay-event list is the companion that STAYS (CR-02 suppression intact).
+  expect(
+    screen.queryByRole('heading', { level: 2, name: 'Readings' }),
+  ).toBeNull()
+  expect(screen.queryByRole('region', { name: 'Readings table' })).toBeNull()
+  expect(screen.queryByRole('table', { name: 'Readings' })).toBeNull()
 })
 
 // Compensating unit coverage for what used to be browser-only (UI-SPEC §5.2
@@ -129,4 +143,94 @@ test('opens the Guide from the slim top bar and restores focus to it on close', 
   // in the top band, which is never made inert, so it is still focusable.
   expect(document.activeElement).toBe(guideButton)
   expect(document.querySelector('#nav-panel')).toBeNull()
+})
+
+// The Readings destination (16.1-09, UI-SPEC §5.8). The load-bearing claim is
+// not "the table renders" — it is that the table renders TOGETHER WITH the
+// controls that state how it is narrowed (T-16.1-39), from the shell's single
+// filter cluster rather than a second copy (T-16.1-41).
+test('renders the Readings destination with the shell, Command Bar and one filter cluster', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  useView.setState({ view: 'readings' })
+
+  render(
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>,
+  )
+
+  // jsdom measures 0px, so ReadingsTable renders its table layout, not the
+  // sub-640px cards. Awaiting it also settles the stubbed queries.
+  expect(
+    await screen.findByRole('table', { name: 'Readings' }),
+  ).toBeInTheDocument()
+  expect(
+    screen.getByRole('heading', { level: 2, name: 'Readings' }),
+  ).toBeInTheDocument()
+
+  // The shell's filter cluster, exactly once each.
+  expect(document.querySelectorAll('#dates-trigger-button')).toHaveLength(1)
+  expect(document.querySelectorAll('#filters-trigger-button')).toHaveLength(1)
+  expect(screen.getByRole('region', { name: 'Command bar' })).toBeInTheDocument()
+
+  // ONE polite region inside <main> — the state block, from the shell's
+  // single filter cluster, not a per-view copy (T-16.1-41).
+  //
+  // Scoped to <main> deliberately, and the scope is the honest form of the
+  // claim rather than a weakening of it. The never-inert top band holds
+  // polite regions of its own that are nothing to do with this view's filter
+  // state: the Command Bar's reply line, and AgentStatusBanner — which the
+  // stubbed /health here actually renders, and which FilterStateBlock's own
+  // header names as the fallback announcement channel for exactly the case
+  // where <main> has gone inert. A bare document-wide count of 1 would
+  // therefore assert that those two cannot exist, which is the opposite of
+  // the design.
+  expect(document.querySelector('main')).not.toBeNull()
+  const regions = document.querySelectorAll('main [aria-live]')
+  expect(regions).toHaveLength(1)
+  expect(regions[0].getAttribute('aria-live')).toBe('polite')
+  expect(document.querySelectorAll('[aria-live="assertive"]')).toHaveLength(0)
+
+  // Chart-side surfaces stay on the dashboard. The view switcher is the
+  // chart's own control, and the overlay-event list is the companion to the
+  // plotted markers — neither belongs on a table-only surface.
+  expect(screen.queryByRole('group', { name: 'Chart view' })).toBeNull()
+  expect(screen.queryByRole('region', { name: 'Overlaid events' })).toBeNull()
+  expect(
+    screen.queryByRole('heading', {
+      level: 2,
+      name: 'No readings match these filters',
+    }),
+  ).toBeNull()
+})
+
+// The other half of the §5.8 contract: the Command Bar and the filter cluster
+// are on the two DATA views only. A caregiver typing into an upload form has
+// no filter state to state, and nothing for a voice command to apply.
+test('the caregiver write surfaces carry no Command Bar, no filter triggers and no live region', async () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  useView.setState({ view: 'upload' })
+
+  render(
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>,
+  )
+
+  // The shell itself is still here — only the two data-view clusters are not.
+  expect(
+    await screen.findByRole('heading', {
+      level: 1,
+      name: "Chris's Health Dashboard",
+    }),
+  ).toBeInTheDocument()
+
+  expect(screen.queryByRole('region', { name: 'Command bar' })).toBeNull()
+  expect(document.querySelector('#dates-trigger-button')).toBeNull()
+  expect(document.querySelector('#filters-trigger-button')).toBeNull()
+  expect(document.querySelectorAll('[aria-live]')).toHaveLength(0)
 })
