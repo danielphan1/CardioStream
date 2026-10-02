@@ -30,6 +30,24 @@ export function categoryColor(cat: BPCategory): string {
   return CATEGORY_VARS[cat];
 }
 
+// Selected-chip fill tints, mirroring CATEGORY_VARS exactly. The tint values
+// themselves are precomputed per theme in index.css (16.1-UI-SPEC section
+// 4.4: 12% of the category hue over --color-deck). These accessors exist so
+// that no component ever has to carry one of those literals.
+const CATEGORY_TINT_VARS: Record<BPCategory, string> = {
+  Hypotension: "var(--cat-hypotension-tint)",
+  Normal: "var(--cat-normal-tint)",
+  Elevated: "var(--cat-elevated-tint)",
+  "Stage 1": "var(--cat-stage1-tint)",
+  "Stage 2": "var(--cat-stage2-tint)",
+  "Hypertensive Crisis": "var(--cat-crisis-tint)",
+};
+
+/** CSS var string for a category's selected-chip tint fill. */
+export function categoryTint(cat: BPCategory): string {
+  return CATEGORY_TINT_VARS[cat];
+}
+
 /** Text color on category-colored chips (contrast pair in index.css). */
 export const CHIP_TEXT = "var(--cat-chip-text)";
 
@@ -49,4 +67,17 @@ const PULSE_CATEGORY_VARS: Record<PulseCategory, string> = {
 /** CSS var string for a Pulse Category — reuses existing CSS vars, no new ones. */
 export function pulseCategoryColor(cat: PulseCategory): string {
   return PULSE_CATEGORY_VARS[cat];
+}
+
+// Same token reuse as PULSE_CATEGORY_VARS above: pulse has no tints of its
+// own, it borrows the bradycardia reference and two category tints.
+const PULSE_CATEGORY_TINT_VARS: Record<PulseCategory, string> = {
+  Bradycardia: "var(--ref-bradycardia-tint)",
+  Normal: "var(--cat-normal-tint)",
+  Tachycardia: "var(--cat-elevated-tint)",
+};
+
+/** CSS var string for a Pulse Category's selected-chip tint fill. */
+export function pulseCategoryTint(cat: PulseCategory): string {
+  return PULSE_CATEGORY_TINT_VARS[cat];
 }
