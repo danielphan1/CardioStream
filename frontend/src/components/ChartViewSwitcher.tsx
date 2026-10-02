@@ -2,12 +2,22 @@
 // replaces ChartDeck's hero/mini rotation.
 //
 // Only three views exist now: the combined timeline, and the two summaries.
-// BP Categories and AM vs PM are aggregates over the filtered range, not time
-// series, so there is no honest way to overlay them onto the timeline — they
-// stay their own views rather than becoming Show-panel checkboxes.
+// Both summaries are aggregates over the filtered range, not time series, so
+// there is no honest way to overlay them onto the timeline — they stay their
+// own views rather than becoming Show-panel checkboxes. Their three labels are
+// declared exactly once, in the table below, and the plan greps this file for
+// exactly three lines carrying them: name the concept in these comments, never
+// the button copy.
 //
-// Reuses FilterBar's exact active/inactive class pair so the switcher reads as
-// the same control family as the date and AM/PM segments beside it.
+// IT IS NOT A FILTER (16.1-09, UI-SPEC section 5.7). Everything else that used
+// to sit on this row moved into the filter popover; this stayed, because the
+// chart view is a property of the chart and store/filters.ts already holds
+// chartView separately from the filter groups. Do not move it in there.
+//
+// Reuses FilterBar's exact active/inactive class pair, and takes its visible
+// label prefix from the same place, so a standalone row still reads as one
+// member of the control family rather than three unnamed buttons. The groups
+// it used to sit beside are now behind the two triggers above it.
 import type { ChartView } from "../api/types";
 import { useAgentPulseFlash } from "../lib/agent";
 import { useFilters } from "../store/filters";
@@ -33,22 +43,28 @@ export function ChartViewSwitcher() {
     : "";
 
   return (
-    <div
-      role="group"
-      aria-label="Chart view"
-      className={`flex flex-wrap gap-2${pulseClass}`}
-    >
-      {VIEWS.map(({ key, label }) => (
-        <button
-          key={key}
-          type="button"
-          aria-pressed={chartView === key}
-          onClick={() => setChartView(key)}
-          className={chartView === key ? activeClass : inactiveClass}
-        >
-          {label}
-        </button>
-      ))}
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-label text-[var(--color-depth)]">View:</span>
+      {/* The prefix is a SIBLING of the group, not inside it: the group's
+          accessible name is unchanged, and the pulse ring still wraps the
+          buttons only rather than the label too. */}
+      <div
+        role="group"
+        aria-label="Chart view"
+        className={`flex flex-wrap gap-2${pulseClass}`}
+      >
+        {VIEWS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={chartView === key}
+            onClick={() => setChartView(key)}
+            className={chartView === key ? activeClass : inactiveClass}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
