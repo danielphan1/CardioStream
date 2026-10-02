@@ -12,21 +12,17 @@ import { useState } from "react";
 
 import { useAgentPulseFlash } from "../lib/agent";
 import type { PulseField } from "../lib/agent";
-import {
-  fmtLongDate,
-  presetLabel,
-  selectedOrAll,
-  TIME_OF_DAY_ORDER,
-} from "../lib/dates";
+import { TIME_OF_DAY_ORDER } from "../lib/dates";
 import type { DatePreset } from "../lib/dates";
 import {
   categoryColor,
-  CHIP_TEXT,
+  categoryTint,
   CLINICAL_ORDER,
   PULSE_CLINICAL_ORDER,
   pulseCategoryColor,
+  pulseCategoryTint,
 } from "../lib/palette";
-import { joinWithAnd } from "../lib/showSentence";
+import { buildFilterSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
 import { DateRangePicker } from "./DateRangePicker";
 
@@ -84,39 +80,18 @@ export function FilterBar({ latestReading }: FilterBarProps) {
       ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
       : "";
 
-  const isDayPreset =
-    datePreset === "7d" || datePreset === "30d" || datePreset === "90d";
-
   // Filter-state sentence (D-20): reads left-to-right, always visible,
-  // honest about the newest-reading anchor for day presets. Each group
-  // collapses to "All …" under the zero-or-all convention; a strict subset
-  // joins with joinWithAnd (no Oxford comma — spoken text).
-  const sentenceParts = [presetLabel(datePreset)];
-  if (isDayPreset && latestReading !== null) {
-    sentenceParts.push(`to ${fmtLongDate(latestReading)}`);
-  }
-  const timeOfDaySegment = selectedOrAll(timeOfDay, "All times of day");
-  sentenceParts.push(
-    Array.isArray(timeOfDaySegment)
-      ? joinWithAnd(timeOfDaySegment)
-      : timeOfDaySegment,
-  );
-  const bpCategorySegment = selectedOrAll(bpCategory, "All categories");
-  sentenceParts.push(
-    Array.isArray(bpCategorySegment)
-      ? joinWithAnd(bpCategorySegment)
-      : bpCategorySegment,
-  );
-  const pulseCategorySegment = selectedOrAll(
+  // honest about the newest-reading anchor for day presets. The builder moved
+  // to lib/showSentence.ts in Phase 16.1 so the shell can render this same
+  // sentence outside FilterBar without the wording drifting (16.1-UI-SPEC
+  // §5.4) — the strings are byte-identical, only their home changed.
+  const sentence = buildFilterSentence({
+    datePreset,
+    latestReading,
+    timeOfDay,
+    bpCategory,
     pulseCategory,
-    "All pulse categories",
-  );
-  sentenceParts.push(
-    Array.isArray(pulseCategorySegment)
-      ? joinWithAnd(pulseCategorySegment)
-      : pulseCategorySegment,
-  );
-  const sentence = sentenceParts.join(" · ");
+  });
 
   return (
     <section className="bg-[var(--color-mist)] p-4">
@@ -180,10 +155,17 @@ export function FilterBar({ latestReading }: FilterBarProps) {
           </div>
         </div>
 
-        {/* BP Category segment — converted from aria-pressed buttons to real
-            checkboxes (Phase 15); clinical colors stay solid regardless of
-            checked state (D-14) — the checked ring is a second, non-color
-            signal alongside the native tick. */}
+        {/* BP Category segment — real checkboxes (Phase 15), re-treated in
+            Phase 16.1 per UI-SPEC section 4.4. Selection is carried by THREE
+            simultaneous changes — a 12% tint of the category's own hue as
+            fill, a 2px border in that same hue, and the native tick — plus a
+            category dot present in BOTH states, so clinical identity (D-14)
+            never disappears. The accent goes nowhere near these chips: a teal
+            border on the green Normal chip is the exact combination the
+            client rejected. The old 3px ink box-shadow ring is gone; it only
+            existed because both states used to be solid clinical fills that
+            could differ by colour alone, and dropping it leaves
+            :focus-visible's outline as the only ring on the control. */}
         <div className="flex flex-wrap items-center gap-2">
           <span className={headingClass}>BP Category:</span>
           <div
@@ -194,15 +176,14 @@ export function FilterBar({ latestReading }: FilterBarProps) {
             {CLINICAL_ORDER.map((cat) => (
               <label
                 key={cat}
-                className="min-h-12 flex items-center gap-2 rounded-full px-4 text-label cursor-pointer"
+                className="min-h-12 flex items-center gap-2 rounded-full border-2 px-4 text-label text-[var(--color-depth)] cursor-pointer"
                 style={{
-                  backgroundColor: categoryColor(cat),
-                  color: CHIP_TEXT,
-                  // 3px ink ring on the checked chip — box-shadow so the
-                  // :focus-visible outline stays independently visible.
-                  boxShadow: bpCategory[cat]
-                    ? "0 0 0 3px var(--color-depth)"
-                    : undefined,
+                  backgroundColor: bpCategory[cat]
+                    ? categoryTint(cat)
+                    : "var(--color-deck)",
+                  borderColor: bpCategory[cat]
+                    ? categoryColor(cat)
+                    : "var(--color-depth)",
                 }}
               >
                 <input
@@ -210,7 +191,15 @@ export function FilterBar({ latestReading }: FilterBarProps) {
                   checked={bpCategory[cat]}
                   onChange={() => toggleBpCategory(cat, !bpCategory[cat])}
                   className="h-[26px] w-[26px] flex-none cursor-pointer"
-                  style={{ accentColor: CHIP_TEXT }}
+                  style={{ accentColor: "var(--color-depth)" }}
+                />
+                {/* 12px category dot — rendered in both rest and selected
+                    states. Same markup as StatsStrip's legend dot so the two
+                    surfaces cannot drift. */}
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-3 w-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: categoryColor(cat) }}
                 />
                 {cat}
               </label>
@@ -230,13 +219,14 @@ export function FilterBar({ latestReading }: FilterBarProps) {
             {PULSE_CLINICAL_ORDER.map((cat) => (
               <label
                 key={cat}
-                className="min-h-12 flex items-center gap-2 rounded-full px-4 text-label cursor-pointer"
+                className="min-h-12 flex items-center gap-2 rounded-full border-2 px-4 text-label text-[var(--color-depth)] cursor-pointer"
                 style={{
-                  backgroundColor: pulseCategoryColor(cat),
-                  color: CHIP_TEXT,
-                  boxShadow: pulseCategory[cat]
-                    ? "0 0 0 3px var(--color-depth)"
-                    : undefined,
+                  backgroundColor: pulseCategory[cat]
+                    ? pulseCategoryTint(cat)
+                    : "var(--color-deck)",
+                  borderColor: pulseCategory[cat]
+                    ? pulseCategoryColor(cat)
+                    : "var(--color-depth)",
                 }}
               >
                 <input
@@ -246,7 +236,12 @@ export function FilterBar({ latestReading }: FilterBarProps) {
                     togglePulseCategory(cat, !pulseCategory[cat])
                   }
                   className="h-[26px] w-[26px] flex-none cursor-pointer"
-                  style={{ accentColor: CHIP_TEXT }}
+                  style={{ accentColor: "var(--color-depth)" }}
+                />
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-3 w-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: pulseCategoryColor(cat) }}
                 />
                 {cat}
               </label>
