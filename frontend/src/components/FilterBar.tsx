@@ -12,12 +12,7 @@ import { useState } from "react";
 
 import { useAgentPulseFlash } from "../lib/agent";
 import type { PulseField } from "../lib/agent";
-import {
-  fmtLongDate,
-  presetLabel,
-  selectedOrAll,
-  TIME_OF_DAY_ORDER,
-} from "../lib/dates";
+import { TIME_OF_DAY_ORDER } from "../lib/dates";
 import type { DatePreset } from "../lib/dates";
 import {
   categoryColor,
@@ -26,7 +21,7 @@ import {
   PULSE_CLINICAL_ORDER,
   pulseCategoryColor,
 } from "../lib/palette";
-import { joinWithAnd } from "../lib/showSentence";
+import { buildFilterSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
 import { DateRangePicker } from "./DateRangePicker";
 
@@ -84,39 +79,18 @@ export function FilterBar({ latestReading }: FilterBarProps) {
       ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
       : "";
 
-  const isDayPreset =
-    datePreset === "7d" || datePreset === "30d" || datePreset === "90d";
-
   // Filter-state sentence (D-20): reads left-to-right, always visible,
-  // honest about the newest-reading anchor for day presets. Each group
-  // collapses to "All …" under the zero-or-all convention; a strict subset
-  // joins with joinWithAnd (no Oxford comma — spoken text).
-  const sentenceParts = [presetLabel(datePreset)];
-  if (isDayPreset && latestReading !== null) {
-    sentenceParts.push(`to ${fmtLongDate(latestReading)}`);
-  }
-  const timeOfDaySegment = selectedOrAll(timeOfDay, "All times of day");
-  sentenceParts.push(
-    Array.isArray(timeOfDaySegment)
-      ? joinWithAnd(timeOfDaySegment)
-      : timeOfDaySegment,
-  );
-  const bpCategorySegment = selectedOrAll(bpCategory, "All categories");
-  sentenceParts.push(
-    Array.isArray(bpCategorySegment)
-      ? joinWithAnd(bpCategorySegment)
-      : bpCategorySegment,
-  );
-  const pulseCategorySegment = selectedOrAll(
+  // honest about the newest-reading anchor for day presets. The builder moved
+  // to lib/showSentence.ts in Phase 16.1 so the shell can render this same
+  // sentence outside FilterBar without the wording drifting (16.1-UI-SPEC
+  // §5.4) — the strings are byte-identical, only their home changed.
+  const sentence = buildFilterSentence({
+    datePreset,
+    latestReading,
+    timeOfDay,
+    bpCategory,
     pulseCategory,
-    "All pulse categories",
-  );
-  sentenceParts.push(
-    Array.isArray(pulseCategorySegment)
-      ? joinWithAnd(pulseCategorySegment)
-      : pulseCategorySegment,
-  );
-  const sentence = sentenceParts.join(" · ");
+  });
 
   return (
     <section className="bg-[var(--color-mist)] p-4">

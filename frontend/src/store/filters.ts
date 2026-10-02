@@ -42,7 +42,7 @@ export const DATASET_KEYS: SeriesDataset[] = [
 
 /** D-10: blood pressure and pulse on, events off. Governs a brand-new device
  *  only — an existing session is restored from localStorage below. */
-const DEFAULT_DATASETS: Record<SeriesDataset, boolean> = {
+export const DEFAULT_DATASETS: Record<SeriesDataset, boolean> = {
   blood_pressure: true,
   pulse: true,
   labs: false,
@@ -52,14 +52,14 @@ const DEFAULT_DATASETS: Record<SeriesDataset, boolean> = {
 
 /** All-false default maps for the three v3 category filter groups — same
  *  "governs a brand-new device only" caveat as DEFAULT_DATASETS above. */
-const DEFAULT_BP_CATEGORY: Record<BPCategory, boolean> = Object.fromEntries(
+export const DEFAULT_BP_CATEGORY: Record<BPCategory, boolean> = Object.fromEntries(
   CLINICAL_ORDER.map((c) => [c, false]),
 ) as Record<BPCategory, boolean>;
-const DEFAULT_PULSE_CATEGORY: Record<PulseCategory, boolean> =
+export const DEFAULT_PULSE_CATEGORY: Record<PulseCategory, boolean> =
   Object.fromEntries(
     PULSE_CLINICAL_ORDER.map((c) => [c, false]),
   ) as Record<PulseCategory, boolean>;
-const DEFAULT_TIME_OF_DAY: Record<TimeOfDayBucket, boolean> =
+export const DEFAULT_TIME_OF_DAY: Record<TimeOfDayBucket, boolean> =
   Object.fromEntries(
     TIME_OF_DAY_ORDER.map((c) => [c, false]),
   ) as Record<TimeOfDayBucket, boolean>;
