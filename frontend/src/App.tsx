@@ -1,5 +1,6 @@
-// App — the assembled dashboard (D-20/D-22, UI-SPEC vertical order):
-// Header → FilterBar → StatsStrip → chart region → ReadingsTable.
+// App — the assembled surfaces (D-20/D-22, UI-SPEC §5.0 vertical order):
+// AppShell (the left rail at ≥1024px, the slim top bar below it) → Command Bar
+// → <main>, whose content each view supplies itself.
 //
 // Data is wired ONCE here: useResolvedFilters bridges the zustand filter
 // store into concrete query params; useReadings/useStats fetch; everything
@@ -8,7 +9,7 @@
 // Error presentation is centralized here (T-02-11): only the UI-SPEC copy
 // renders — never raw error messages, status codes, or stack traces
 // (ApiError details stay in the console at most).
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { AddRecordPage } from "./components/AddRecordPage";
@@ -19,14 +20,17 @@ import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
 import { GuideOverlay } from "./components/GuideOverlay";
-import { Header } from "./components/Header";
+import { LeftRail } from "./components/LeftRail";
 import { LoginGate } from "./components/LoginGate";
+import { NavPanel } from "./components/NavPanel";
 import { OverlayEventsList } from "./components/OverlayEventsList";
 import { ShowPanel } from "./components/ShowPanel";
 import { ReadingsTable } from "./components/ReadingsTable";
+import { SlimTopBar } from "./components/SlimTopBar";
 import { StatsStrip } from "./components/StatsStrip";
 import { UploadPage } from "./components/UploadPage";
 import { useClearanceHeight } from "./hooks/useClearanceHeight";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 import { useIncidents, useLabs, useProcedures } from "./hooks/useRecordEvents";
 import { useReadings } from "./hooks/useReadings";
 import { useResolvedFilters, useStats } from "./hooks/useStats";
@@ -42,6 +46,170 @@ import { useAuth } from "./store/auth";
 import { useFilters } from "./store/filters";
 import { useGuide } from "./store/guide";
 import { useView } from "./store/view";
+
+/** The one shell every authenticated view renders inside (UI-SPEC §5.0).
+ *  It owns four things no individual view can own correctly on its own:
+ *  exactly one navigation surface per breakpoint, one measured top band, one
+ *  overlay state, and the `inert` map that keeps the keyboard path honest.
+ *
+ *  Tree: the rail and the content column are SIBLINGS; the column holds the
+ *  measured band, GuideOverlay, the nav panel and <main>, all siblings of
+ *  each other. Nothing here nests one of those surfaces under another. */
+function AppShell({
+  children,
+  showCommandBar = false,
+  latestReading = null,
+}: {
+  children: ReactNode;
+  /** True on the dashboard only, exactly as today — plan 16.1-09 turns it on
+   *  for the Readings view too. */
+  showCommandBar?: boolean;
+  latestReading?: string | null;
+}) {
+  const guideOpen = useGuide((s) => s.open);
+  const setGuideOpen = useGuide((s) => s.setOpen);
+
+  // One state for the three overlays this phase adds — mutually exclusive by
+  // construction, so there are no booleans that can desynchronise.
+  // Deliberately component state and NOT store/filters.ts (§8): that store is
+  // the agent command schema, and transient UI state must never become
+  // reachable or mutable by model output.
+  const [openOverlay, setOpenOverlay] = useState<
+    "nav" | "filters" | "dates" | null
+  >(null);
+  const anyOverlayOpen = guideOpen || openOverlay !== null;
+
+  // Two queries, named at the point of use, never interchangeable: the first
+  // is the rail-vs-slim-bar switch, the second the popover-vs-panel switch
+  // (plan 16.1-07 consumes it; it already gates <main> below).
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isWide = useMediaQuery("(min-width: 768px)");
+
+  // Mutual exclusion with the guide, REVERSE direction (§5.2 superseding
+  // note) — load-bearing, not symmetry for its own sake. The Guide is a
+  // control in the top band, which is never made inert, so it stays clickable
+  // while a panel covers the content; and lib/agent.ts can open the guide by
+  // voice at any moment. Without this, guideOpen and openOverlay === "nav"
+  // can coexist, and since both surfaces are fixed on the panel layer over
+  // backdrops on the layer beneath, with NavPanel after GuideOverlay in this
+  // tree, the nav panel paints over the guide and tapping Guide appears to do
+  // nothing. One effect covers every entry point — slim bar, rail and agent —
+  // rather than three handlers scattered across the controls. It also closes
+  // a ≥768px filter popover when the rail's Guide is used.
+  useEffect(() => {
+    if (guideOpen) setOpenOverlay(null);
+  }, [guideOpen]);
+
+  // Crossing to ≥1024px mounts the rail and unmounts the slim bar, so an
+  // already-open nav panel must not be left sitting over a newly visible
+  // rail with its trigger gone.
+  useEffect(() => {
+    if (isDesktop) setOpenOverlay((o) => (o === "nav" ? null : o));
+  }, [isDesktop]);
+
+  const shellTopRef = useRef<HTMLDivElement>(null);
+  const clearance = useClearanceHeight(shellTopRef);
+
+  function toggleNav() {
+    // A second tap on the still-live trigger closes the panel it opened
+    // (§5.2 dismiss route (d)). Opening also closes the guide, so the two
+    // can never stack.
+    setOpenOverlay((o) => (o === "nav" ? null : "nav"));
+    setGuideOpen(false);
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      {/* The rail's root carries the reassignment of the `inert` that used to
+          sit on the deleted horizontal band's wrapper (§5.0): the eight
+          controls moved in here, so the attribute moved with them. Without
+          it, Tab still walks a keyboard or switch-access user through eight
+          invisible, unusable controls before reaching the guide — the rail
+          has no stacking offset of its own, so the guide's backdrop covers it
+          completely.
+
+          Scoped to the guide alone, deliberately, and NOT to every overlay:
+          the nav panel exists only below 1024px where this rail is unmounted,
+          the <768px panels likewise never coexist with it, and the ≥768px
+          anchored popover deliberately leaves the content behind it live — it
+          is a disclosure that covers nothing, so disabling the rail there
+          would remove working navigation for no benefit. */}
+      {isDesktop && <LeftRail inert={guideOpen} />}
+      <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-deck)]">
+        {/* The ONE measured top band: the slim bar plus the Command Bar in a
+            single wrapper, which goes sticky above every overlay layer while
+            any overlay is open. One measurement of this one ref then supplies
+            every panel's top offset, the guide's included.
+
+            This wrapper is NEVER made inert (D-03/D-04). The mic and the live
+            session it drives must stay reachable with any overlay open, and
+            the menu trigger inside it must stay live so a second tap closes
+            the panel it opened. */}
+        <div
+          ref={shellTopRef}
+          className={anyOverlayOpen ? "sticky top-0 z-[60]" : undefined}
+        >
+          {!isDesktop && (
+            <SlimTopBar
+              menuOpen={openOverlay === "nav"}
+              onToggleMenu={toggleNav}
+            />
+          )}
+          {/* Command bar (D-01) — full-width sky band, top billing for the
+              primary control. Its inner div matches the content column's
+              gutters so the input aligns with the dashboard below. The
+              panel-surface marker below is what resolves the focus ring
+              inside this always-dark fill to the non-inverting signal token,
+              closing a pre-existing 2.90:1 gap. */}
+          {showCommandBar && (
+            <section data-surface="panel" className="bg-[var(--color-panel)]">
+              <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
+                <CommandBar latestReading={latestReading} />
+                <AgentStatusBanner />
+              </div>
+            </section>
+          )}
+        </div>
+        <GuideOverlay clearanceAbove={clearance} />
+        {!isDesktop && (
+          <NavPanel
+            open={openOverlay === "nav"}
+            onClose={() => setOpenOverlay(null)}
+            clearanceAbove={clearance}
+          />
+        )}
+        {/* <main> deliberately carries NO layout classes: every view supplies
+            its own gutter and spacing wrapper, so this commit changes no
+            view's spacing. Its `inert` is UI-SPEC §5.0's table verbatim — the
+            guide, the nav panel, and the <768px full-viewport filter/dates
+            panels each cover this content, while the ≥768px anchored popover
+            covers nothing and leaves it live. The band above is never made
+            inert, for the reason stated on it.
+
+            PLAN 16.1-07 INSERTION POINT: its showFilters-gated trigger
+            cluster goes first inside <main>, in its own
+            `mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16 pt-2 pb-6` div —
+            gutters matching the Command Bar's inner gutters, pt-2 for §5.3's
+            8px below the band (this element has no padding of its own, so
+            without it the row butts against the band at 0px), pb-6 for
+            §5.4's 24px above the vitals strip — with `flex flex-col gap-2`
+            inside it for §5.4's 8px between the trigger row and the state
+            block. That plan also swaps Dashboard's children wrapper from
+            py-8 to pb-8, or its 32px top padding stacks on the cluster's
+            24px and pushes the vitals strip 56px down. */}
+        <main
+          inert={
+            guideOpen ||
+            openOverlay === "nav" ||
+            (openOverlay !== null && !isWide)
+          }
+        >
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
 
 /** Skeleton hero + mini placeholders for the initial load only — after
  *  first load keepPreviousData keeps charts on screen (no spinner). */
@@ -64,10 +232,6 @@ function ChartSkeleton() {
  *  before authentication (D-01, T-05-10). */
 function Dashboard() {
   const resolved = useResolvedFilters();
-  const guideOpen = useGuide((s) => s.open);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const commandBarRef = useRef<HTMLElement>(null);
-  const guideClearance = useClearanceHeight(headerRef, commandBarRef);
   const readings = useReadings(resolved);
   const stats = useStats(resolved);
 
@@ -190,41 +354,14 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* inert (GUIDE-03/04 keyboard fix): while the guide's opaque overlay
-          covers the header, it's still in normal document flow underneath —
-          without `inert`, Tab would walk into its invisible, unusable
-          controls before ever reaching CommandBar. `inert` removes it from
-          the tab sequence and screen-reader tree until the guide closes,
-          matching what's actually visible on screen. CommandBar and
-          GuideOverlay itself are deliberately left interactive (GUIDE-03). */}
-      <div inert={guideOpen} ref={headerRef}>
-        <Header />
-      </div>
-      {/* Command bar (D-01) — full-width sky band under the header, top billing
-          for the primary control. Inner div matches main's content-column
-          gutters so the input aligns with the dashboard below. Phase 4 mounts
-          the mic button into this same bar. */}
-      <section
-        ref={commandBarRef}
-        className={`bg-[var(--color-panel)]${guideOpen ? " sticky top-0 z-[60]" : ""}`}
-      >
-        <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
-          <CommandBar latestReading={latestReading} />
-          <AgentStatusBanner />
-        </div>
-      </section>
-      <GuideOverlay clearanceAbove={guideClearance} />
+    <AppShell showCommandBar latestReading={latestReading}>
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); single column
           (UI-SPEC responsive). Content is grouped into 3 wrapper clusters —
           controls (FilterBar+ShowPanel), visualizations (StatsStrip+chart
-          region), and detail-records (ReadingsTable+OverlayEventsList) —
+          region), and detail-records (the readings table+OverlayEventsList) —
           gap-4/gap-8 rhythm within a cluster, gap-12 (48px) between clusters.
-          inert while the guide is open — see Header's comment above. */}
-      <main
-        inert={guideOpen}
-        className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 py-8 md:px-8 xl:px-16"
-      >
+          This wrapper is the view's own, not the shell's. */}
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 py-8 md:px-8 xl:px-16">
         <div className="flex flex-col gap-4">
           <FilterBar latestReading={latestReading} />
           <ShowPanel />
@@ -259,57 +396,36 @@ function Dashboard() {
           />
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
 
-/** The caregiver upload surface (D-05, post-auth). The Header persists across
- *  both views; UploadPage mounts no data hooks so switching here fires no fetch.
- *  Foam background matches the dashboard's min-h-screen wrapper. */
+/** The caregiver upload surface (D-05, post-auth). The shell persists across
+ *  every view; UploadPage mounts no data hooks so switching here fires no
+ *  fetch. It supplies its own gutter wrapper, so it needs no layout classes
+ *  and no Command Bar from the shell. */
 function UploadView() {
-  const guideOpen = useGuide((s) => s.open);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const guideClearance = useClearanceHeight(headerRef);
   return (
-    <div className="min-h-screen bg-[var(--color-deck)]">
-      {/* inert while the guide overlay covers this view — see Dashboard's
-          Header comment for why (GUIDE-03/04 keyboard fix). */}
-      <div inert={guideOpen} ref={headerRef}>
-        <Header />
-      </div>
-      <GuideOverlay clearanceAbove={guideClearance} />
-      <div inert={guideOpen}>
-        <UploadPage />
-      </div>
-    </div>
+    <AppShell>
+      <UploadPage />
+    </AppShell>
   );
 }
 
-/** The caregiver "Add Record" surface (Phase 8, D-01). Same wrapper shape as
- *  UploadView — Header persists, AddRecordPage mounts no read-data hooks so
- *  switching here fires no fetch (only its own POST mutations on submit). */
+/** The caregiver "Add Record" surface (Phase 8, D-01). Same shape as
+ *  UploadView — AddRecordPage mounts no read-data hooks so switching here
+ *  fires no fetch (only its own POST mutations on submit). */
 function RecordsView() {
-  const guideOpen = useGuide((s) => s.open);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const guideClearance = useClearanceHeight(headerRef);
   return (
-    <div className="min-h-screen bg-[var(--color-deck)]">
-      {/* inert while the guide overlay covers this view — see Dashboard's
-          Header comment for why (GUIDE-03/04 keyboard fix). */}
-      <div inert={guideOpen} ref={headerRef}>
-        <Header />
-      </div>
-      <GuideOverlay clearanceAbove={guideClearance} />
-      <div inert={guideOpen}>
-        <AddRecordPage />
-      </div>
-    </div>
+    <AppShell>
+      <AddRecordPage />
+    </AppShell>
   );
 }
 
 /** Auth gate (D-01): until a token exists the app renders ONLY the LoginGate —
- *  no header, no dashboard chrome, and crucially no data hooks mount (the
+ *  no shell, no dashboard chrome, and crucially no data hooks mount (the
  *  Dashboard tree is not rendered), so nothing fetches before authentication.
  *  Once authed, a zustand view swap (D-05, no react-router) chooses between the
  *  dashboard and the caregiver upload/records pages. */

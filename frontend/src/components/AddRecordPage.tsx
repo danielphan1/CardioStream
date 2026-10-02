@@ -173,8 +173,11 @@ export function AddRecordPage() {
 
   const canSubmit = draftBody !== null && !isSubmitting;
 
+  // A plain div, deliberately: AppShell owns the app's single <main> landmark
+  // (UI-SPEC §5.0) and renders this page as its children, so declaring one
+  // here too would nest two of them (16.1-06).
   return (
-    <main className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-deck)] px-4 py-8 md:px-8 xl:px-16">
+    <div className="mx-auto flex max-w-[720px] flex-col gap-8 bg-[var(--color-deck)] px-4 py-8 md:px-8 xl:px-16">
       <div className="flex flex-col gap-4">
         <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           Add a record
@@ -269,6 +272,6 @@ export function AddRecordPage() {
           </p>
         </section>
       )}
-    </main>
+    </div>
   );
 }
