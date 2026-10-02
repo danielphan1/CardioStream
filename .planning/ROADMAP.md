@@ -86,6 +86,7 @@ Deferred items acknowledged but not in the v1.1 roadmap (see REQUIREMENTS.md →
 | 14. Show Panel & Combined Timeline | v1.2 | 6/6 | Complete    | 2026-09-12 |
 | 15. Unified Filter Surface | v1.2 | 8/8 | Complete    | 2026-09-17 |
 | 16. Trend Clarity & Chart Polish | v1.2 | 5/5 | Complete    | 2026-09-19 |
+| 16.1. Dashboard Shell Redesign | v1.2 | 9/9 | Executed (browser verification pending) | 2026-10-02 |
 | 17. Analytical Views | v1.2 | 0/0 | Not planned | — |
 | 18. Deep Query | v1.2 | 0/0 | Not planned | — |
 | 19. Guest Demo Mode | v1.2 | 7/7 | Complete   | 2026-09-16 |
@@ -240,7 +241,7 @@ Plans:
 **Requirements**: Client-driven request (2026-09-30), "make the visuals more the focus while the filtering system can be smaller", with three reference dashboards supplied.
 **Depends on:** Phase 16
 **Blocks:** Phases 17 and 18 — both add surfaces (new chart views, new filters) that this phase restructures. Sequenced first so they build into the new shell instead of being retrofitted.
-**Plans:** 9 plans in 7 waves
+**Plans:** 9 plans in 7 waves — **all 9 executed 2026-10-02** (748 tests green; awaiting human browser verification)
 **UI hint**: yes
 
 Scope (locked with the client 2026-09-30):
