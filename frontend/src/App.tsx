@@ -17,16 +17,15 @@ import { AgentStatusBanner } from "./components/AgentStatusBanner";
 import { ChartDeck } from "./components/ChartDeck";
 import { ChartViewSwitcher } from "./components/ChartViewSwitcher";
 import { CommandBar } from "./components/CommandBar";
-import { DatesPanel } from "./components/DatesPanel";
 import { EmptyState } from "./components/EmptyState";
-import { FilterBar } from "./components/FilterBar";
 import { FilterStateBlock } from "./components/FilterStateBlock";
+import { FilterSurface } from "./components/FilterSurface";
+import { FilterTriggerRow } from "./components/FilterTriggerRow";
 import { GuideOverlay } from "./components/GuideOverlay";
 import { LeftRail } from "./components/LeftRail";
 import { LoginGate } from "./components/LoginGate";
 import { NavPanel } from "./components/NavPanel";
 import { OverlayEventsList } from "./components/OverlayEventsList";
-import { ShowPanel } from "./components/ShowPanel";
 import { ReadingsTable } from "./components/ReadingsTable";
 import { SlimTopBar } from "./components/SlimTopBar";
 import { StatsStrip } from "./components/StatsStrip";
@@ -125,6 +124,14 @@ function AppShell({
     setGuideOpen(false);
   }
 
+  // Same mutual-exclusion contract as toggleNav: one overlay state means a
+  // filter surface and the guide can never stack. The row owns the
+  // second-press-closes case itself, so this only ever opens.
+  function openFilterSurface(which: "filters" | "dates") {
+    setOpenOverlay(which);
+    setGuideOpen(false);
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* The rail's root carries the reassignment of the `inert` that used to
@@ -212,17 +219,51 @@ function AppShell({
           {showFilters && (
             <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16 pt-2 pb-6">
               <div className="flex flex-col gap-2">
+                {/* The trigger row sits ABOVE the sentence it summarises —
+                    §5.4's reading order. At ≥768px each trigger carries its
+                    own anchored popover; below that the surfaces are the
+                    sibling panels further down, outside <main>. */}
+                <FilterTriggerRow
+                  openOverlay={openOverlay}
+                  onOpen={openFilterSurface}
+                  onClose={() => setOpenOverlay(null)}
+                  isWide={isWide}
+                />
                 {/* The D-20 state block is rendered HERE, unconditionally and
                     outside every popover (§5.4) — it is how the primary user
-                    knows what is applied without opening anything. Plan
-                    16.1-07 task 3 inserts the trigger row above it inside
-                    this same column. Do not move either into a disclosure. */}
+                    knows what is applied without opening anything. Do not
+                    move it into a disclosure. */}
                 <FilterStateBlock latestReading={latestReading} />
               </div>
             </div>
           )}
           {children}
         </main>
+        {/* The <768px filter surfaces are SIBLINGS of <main>, never children,
+            and that placement is required rather than tidy (§5.0's structure
+            table, T-16.1-30): <main> is inert while either is open, so a
+            panel rendered inside it would have its own controls disabled.
+            The anchored ≥768px popovers are the opposite case — they cover
+            nothing, leave the content live, and therefore belong inside
+            <main> next to their triggers, where FilterTriggerRow puts them. */}
+        {showFilters && !isWide && (
+          <>
+            <FilterSurface
+              kind="filters"
+              presentation="panel"
+              open={openOverlay === "filters"}
+              onClose={() => setOpenOverlay(null)}
+              clearanceAbove={clearance}
+            />
+            <FilterSurface
+              kind="dates"
+              presentation="panel"
+              open={openOverlay === "dates"}
+              onClose={() => setOpenOverlay(null)}
+              clearanceAbove={clearance}
+            />
+          </>
+        )}
       </div>
     </div>
   );
@@ -373,22 +414,21 @@ function Dashboard() {
   return (
     <AppShell showCommandBar showFilters latestReading={latestReading}>
       {/* Page gutters 16px / 32px (≥768px) / 64px (≥1280px); single column
-          (UI-SPEC responsive). Content is grouped into 3 wrapper clusters —
-          controls (FilterBar+ShowPanel), visualizations (StatsStrip+chart
-          region), and detail-records (the readings table+OverlayEventsList) —
-          gap-4/gap-8 rhythm within a cluster, gap-12 (48px) between clusters.
-          This wrapper is the view's own, not the shell's.
+          (UI-SPEC responsive). Content is grouped into 2 wrapper clusters —
+          visualizations (StatsStrip+chart region) and detail-records (the
+          readings table+OverlayEventsList) — gap-8 rhythm within a cluster,
+          gap-12 (48px) between clusters. This wrapper is the view's own, not
+          the shell's.
+
+          The old full-width controls band that opened this column is gone
+          (16.1-07): the four control groups now live in the shell's trigger
+          row above, reachable only through FilterSurface.
 
           Bottom padding ONLY, no top padding: the shell's filter cluster
           above already supplies §5.4's 24px below the state block, and a 32px
           top padding here would stack on it and put the vitals strip 56px
           down instead. */}
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 pb-8 md:px-8 xl:px-16">
-        <div className="flex flex-col gap-4">
-          <DatesPanel />
-          <FilterBar />
-          <ShowPanel />
-        </div>
         <div className="flex flex-col gap-8">
           <StatsStrip stats={stats.data} isLoading={stats.isPending} readings={readings.data ?? []} />
           <ChartViewSwitcher />
