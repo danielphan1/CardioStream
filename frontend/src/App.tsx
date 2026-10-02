@@ -17,6 +17,7 @@ import { AgentStatusBanner } from "./components/AgentStatusBanner";
 import { ChartDeck } from "./components/ChartDeck";
 import { ChartViewSwitcher } from "./components/ChartViewSwitcher";
 import { CommandBar } from "./components/CommandBar";
+import { DatesPanel } from "./components/DatesPanel";
 import { EmptyState } from "./components/EmptyState";
 import { FilterBar } from "./components/FilterBar";
 import { GuideOverlay } from "./components/GuideOverlay";
@@ -363,6 +364,7 @@ function Dashboard() {
           This wrapper is the view's own, not the shell's. */}
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 py-8 md:px-8 xl:px-16">
         <div className="flex flex-col gap-4">
+          <DatesPanel />
           <FilterBar latestReading={latestReading} />
           <ShowPanel />
         </div>

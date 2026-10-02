@@ -1,19 +1,16 @@
 // Filter bar (DASH-07 UI half; D-17/D-19/D-20) — the exact interactive
-// surface Phase 3 voice commands will mirror. Date stays single-select
-// exclusive buttons; Time of Day, BP Category, and Pulse Category are real
-// multi-select checkboxes (Phase 15) — every group is ≥48px, 20px-labeled,
-// and the current filter state is always readable left-to-right as a
-// sentence.
+// surface Phase 3 voice commands will mirror. Time of Day, BP Category, and
+// Pulse Category are real multi-select checkboxes (Phase 15) — every group is
+// ≥48px and 20px-labeled.
 //
-// All filter state lives in the zustand store (store/filters.ts) — this
-// component only takes `latestReading` for the honest preset-anchor date
-// (RESEARCH Open Question 1: presets anchor to the newest reading).
-import { useState } from "react";
-
+// The date machinery moved to DatesPanel.tsx in Phase 16.1 (plan 16.1-07): it
+// owns its own trigger in the filter row, so the two surfaces are separate
+// popover bodies rather than one 624px band.
+//
+// All filter state lives in the zustand store (store/filters.ts).
 import { useAgentPulseFlash } from "../lib/agent";
 import type { PulseField } from "../lib/agent";
 import { TIME_OF_DAY_ORDER } from "../lib/dates";
-import type { DatePreset } from "../lib/dates";
 import {
   categoryColor,
   categoryTint,
@@ -24,18 +21,10 @@ import {
 } from "../lib/palette";
 import { buildFilterSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
-import { DateRangePicker } from "./DateRangePicker";
 
 type FilterBarProps = {
   latestReading: string | null;
 };
-
-// Shared control styling contract (13-UI-SPEC.md accent rules): inactive =
-// mist card with depth text + 2px depth border; active = accent fill.
-const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
-const activeClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 // Plain checkbox control (Time of Day) — reused verbatim from
 // ShowPanel.tsx's boxClass so the two surfaces share one control language.
@@ -48,28 +37,14 @@ const boxClass =
 // ShowPanel.tsx's own "Show:" prefix span.
 const headingClass = "text-label text-[var(--color-depth)]";
 
-const DAY_PRESETS: { key: Exclude<DatePreset, "custom">; label: string }[] = [
-  { key: "7d", label: "7 days" },
-  { key: "30d", label: "30 days" },
-  { key: "90d", label: "90 days" },
-  { key: "all", label: "All" },
-];
-
 export function FilterBar({ latestReading }: FilterBarProps) {
   const datePreset = useFilters((s) => s.datePreset);
-  const customRange = useFilters((s) => s.customRange);
   const bpCategory = useFilters((s) => s.bpCategory);
   const pulseCategory = useFilters((s) => s.pulseCategory);
   const timeOfDay = useFilters((s) => s.timeOfDay);
-  const setDatePreset = useFilters((s) => s.setDatePreset);
-  const setCustomRange = useFilters((s) => s.setCustomRange);
   const toggleBpCategory = useFilters((s) => s.toggleBpCategory);
   const togglePulseCategory = useFilters((s) => s.togglePulseCategory);
   const toggleTimeOfDay = useFilters((s) => s.toggleTimeOfDay);
-
-  // "Custom…" opens a keyboard-friendly inline disclosure (not a popover —
-  // no focus-trap complexity, D-18).
-  const [customOpen, setCustomOpen] = useState(false);
 
   const pulsing = useAgentPulseFlash();
 
@@ -96,41 +71,6 @@ export function FilterBar({ latestReading }: FilterBarProps) {
   return (
     <section className="bg-[var(--color-mist)] p-4">
       <div className="flex flex-wrap gap-4">
-        {/* Date preset segmented row (D-17) — unchanged button markup, new
-            visible heading prefix (UI-SPEC §3). */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className={headingClass}>Date:</span>
-          <div
-            role="group"
-            aria-label="Date range"
-            className={`flex flex-wrap gap-2${pulseClass("dateRange")}`}
-          >
-            {DAY_PRESETS.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={datePreset === key}
-                onClick={() => {
-                  setDatePreset(key);
-                  setCustomOpen(false);
-                }}
-                className={datePreset === key ? activeClass : inactiveClass}
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-pressed={datePreset === "custom"}
-              aria-expanded={customOpen}
-              onClick={() => setCustomOpen((open) => !open)}
-              className={datePreset === "custom" ? activeClass : inactiveClass}
-            >
-              Custom…
-            </button>
-          </div>
-        </div>
-
         {/* Time of Day segment (Phase 15) — real multi-select checkboxes,
             replacing the old AM/PM single-select buttons; claims the
             "Time of day" aria-label the removed group used to own. */}
@@ -249,18 +189,6 @@ export function FilterBar({ latestReading }: FilterBarProps) {
           </div>
         </div>
       </div>
-
-      {/* Custom range disclosure — inline expanding section, not a popover.
-          Part of the "dateRange" group, so it pulses with the presets (D-08). */}
-      {customOpen && (
-        <div className={`mt-4${pulseClass("dateRange")}`}>
-          <DateRangePicker
-            from={customRange.from}
-            to={customRange.to}
-            onApply={setCustomRange}
-          />
-        </div>
-      )}
 
       {/* Filter-state sentence (D-20) — announced politely on change */}
       <p aria-live="polite" className="mt-4 text-base text-[var(--color-depth)]">
