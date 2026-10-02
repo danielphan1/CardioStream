@@ -1,178 +1,169 @@
-// Stats strip (DASH-08, D-21/D-22) — renders the GET /stats/summary payload
-// VERBATIM as accessible tiles. Every number on screen comes straight from
-// the `stats` prop: avg/min/max per vital, reading count, and percent per
-// category are all computed by the backend (API-02). NO client-side
-// arithmetic over readings happens here — the strip must agree with the API
-// tile-for-tile (Architectural Responsibility Map).
+// Vitals strip (DASH-08, D-21/D-22, 16.1-UI-SPEC §5.6) — renders the
+// GET /stats/summary payload VERBATIM as one island row of four readouts.
+// Every number on screen comes straight from the `stats` prop: avg/min/max
+// per vital and the reading count are all computed by the backend (API-02).
+// NO client-side arithmetic over the raw series happens here — the strip must
+// agree with the API cell-for-cell (Architectural Responsibility Map).
 //
-// Note on `latest_reading`: it is part of the StatsSummary payload but is
-// NOT a tile — it is the UNFILTERED newest-reading anchor consumed by the
-// date presets (lib/dates.ts) and the D-11 EmptyState copy, so it renders
-// there, not here.
+// Note on `latest_reading`: it is part of the StatsSummary payload but is NOT
+// a readout — it is the UNFILTERED newest-reading anchor consumed by the date
+// presets (lib/dates.ts) and the D-11 EmptyState copy, so it renders there,
+// not here.
 //
 // Presentational only: data is fetched at App level (plan 02-07) and passed
 // down. `isLoading` covers the initial load; after first load TanStack
-// Query's keepPreviousData prevents blank tiles on filter changes.
+// Query's keepPreviousData prevents blank cells on filter changes.
 //
-// 13-11: rewired to the structural reference's icon + label + large value +
-// sparkline + status-pill card language (13-UI-SPEC.md Component Language
-// item 2). `readings` is a new prop — the sparkline needs the raw per-reading
-// series (verbatim, no derivation) that `stats` alone doesn't carry.
-import { Activity, Gauge, HeartPulse, ListChecks } from "lucide-react";
-
-import type { BPCategory, Reading, StatsSummary, VitalStats } from "../api/types";
-import { categoryColor, CHIP_TEXT } from "../lib/palette";
-
-import StatsSparkline from "./charts/StatsSparkline";
+// 16.1-08: the four stat cards plus the category-percent list (588px
+// measured) collapse into this one ~90px row. Four things were REMOVED, each
+// for a recorded reason — do not restore any of them as an oversight:
+//   - the per-cell sparkline and the latest-category status pill: both
+//     restate the chart directly below at worse fidelity. Dropping them made
+//     the sparkline component dead code (deleted in the same plan) and left
+//     the raw per-reading prop with no consumer, so this component now takes
+//     only the backend-computed payload.
+//   - the four decorative lucide tile icons: aria-hidden decoration naming
+//     nothing the label does not already name, the cell has exactly two line
+//     boxes and no third slot, and an inline icon would spend 32px of a cell
+//     that is only 156.0px wide at the 1024px worst case.
+//   - the six-chip category-percent list: it duplicates the `BP Categories`
+//     chart view, which renders the same distribution larger, labelled, and
+//     one voice command away (§5.6, decision closed 2026-09-30). Dropped
+//     outright — not relocated below the chart, not made collapsible, not
+//     kept at a smaller size.
+import type { StatsSummary, VitalStats } from "../api/types";
 
 type StatsStripProps = {
   stats: StatsSummary | undefined;
   isLoading: boolean;
-  readings: Reading[];
 };
 
-/** One vital tile: icon, label, Display avg, sparkline, 18px min/max line,
- *  and (Systolic/Diastolic only) a status pill for the latest category. */
-function VitalTile({
+/** The row IS the island (§5.6): one mist surface, 24px horizontal and 12px
+ *  vertical padding. The 12px vertical value is the phase's one declared
+ *  off-scale exception because the locked ~90px row height derives from it —
+ *  it belongs here and nowhere else, so do not generalise it. */
+const ROW =
+  "rounded-xl bg-[var(--color-mist)] px-6 py-3 shadow-[var(--shadow-elevation)]";
+
+/** Two columns on phones, four from 1024px up. The four-column breakpoint
+ *  stays at 1024px deliberately: moving it down to 768px would make THAT the
+ *  real worst case at 152.0px against the 146.1px the inline value-plus-range
+ *  layout needs — a 5.9px margin, tighter than the 9.9px §9.4 records as the
+ *  floor, and §9.4 is the number a future editor will trust. Four readouts at
+ *  375px would be ~82px each, which cannot hold a 20px/700 label, and
+ *  shrinking the type below the 18px floor is forbidden. */
+const GRID = "grid grid-cols-2 lg:grid-cols-4 gap-4";
+
+/** The 2px desktop divider is painted INSIDE the 16px grid gap by a
+ *  pseudo-element rather than as a left border on the cell: preflight sets
+ *  box-sizing to border-box, so a real border would eat 2px of the 156.0px
+ *  cell at the 1024px worst case and silently shrink §9.4's recorded slack to
+ *  7.9px. A pseudo-element costs the cell's content width nothing. */
+const DIVIDER =
+  "lg:relative lg:before:absolute lg:before:inset-y-0 lg:before:-left-2 lg:before:w-0.5 lg:before:bg-[var(--color-depth)] lg:before:content-['']";
+
+/** One vital readout: label on line 1, value with its range inline to the
+ *  right on line 2. Exactly two line boxes at every width ≥640px. */
+function VitalCell({
   label,
   vital,
-  Icon,
-  values,
-  sparklineColor,
-  statusCategory,
+  divided,
 }: {
   label: string;
   vital: VitalStats | null;
-  Icon: typeof Gauge;
-  values: number[];
-  sparklineColor: string;
-  statusCategory?: BPCategory | null;
+  divided: boolean;
 }) {
-  // count === 0 → VitalStats is null → em dash for ALL THREE values
-  // (never 0, never blank — D-22 null contract).
   return (
-    <div className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
-      <Icon aria-hidden="true" size={24} className="text-[var(--color-depth)]" />
-      <p className="mt-2 text-label text-[var(--color-depth)]">{label}</p>
-      <p className="text-display text-[var(--color-depth)]">
-        {vital !== null ? vital.avg : "—"}
-      </p>
-      <p className="text-base text-[var(--color-depth)]">
-        {vital !== null
-          ? `min ${vital.min} · max ${vital.max}`
-          : "min — · max —"}
-      </p>
-      {vital !== null && values.length >= 2 && (
-        <StatsSparkline values={values} color={sparklineColor} />
-      )}
-      {statusCategory != null && (
-        <span
-          className="mt-2 inline-block w-fit rounded-full px-4 py-1 text-base"
-          style={{ backgroundColor: categoryColor(statusCategory), color: CHIP_TEXT }}
-        >
-          {statusCategory}
-        </span>
-      )}
+    <div className={divided ? DIVIDER : undefined}>
+      <p className="text-label text-[var(--color-depth)]">{label}</p>
+      <div className="flex items-baseline gap-2">
+        {/* count === 0 → VitalStats is null → em dash for the value AND for
+            the range (never 0, never blank — the D-22 null contract). */}
+        <p className="text-display text-[var(--color-depth)]">
+          {vital !== null ? vital.avg : "—"}
+        </p>
+        {/* The VISIBLE range is a bare numeric range; the min/max WORDS live
+            in the visually-hidden span, so shortening what is drawn costs a
+            screen-reader user nothing. A visually-hidden span rather than an
+            aria-label on this paragraph because aria-label on a generic-role
+            element is not reliably honoured, and sr-only is already this
+            codebase's idiom (ReadingsTable, OverlayEventsList, UploadPage).
+
+            MEASURED in a browser against real Atkinson metrics (2026-09-30),
+            not estimated from character counts: this inline layout needs
+            146.1px of the 156.0px cell at the 1024px worst case — 9.9px of
+            slack, about 6%. DO NOT LENGTHEN THE VISIBLE STRING: no unit, no
+            spaces around the separator, no four-digit value, no third inline
+            element. Any of those breaks the locked row height, and the only
+            correct response is a fresh in-browser measurement pass.
+
+            The separator is U+2013, correct typography for a numeric range.
+            It is NOT the em-dash sentence joiner quick task 260930-n7i
+            retired from user-facing copy, and it must not be "fixed" to a
+            hyphen-minus or to the word "to". */}
+        <p className="text-base text-[var(--color-depth)]">
+          {vital !== null ? (
+            <>
+              <span aria-hidden="true">{`${vital.min}–${vital.max}`}</span>
+              <span className="sr-only">{`minimum ${vital.min}, maximum ${vital.max}`}</span>
+            </>
+          ) : (
+            <>
+              <span aria-hidden="true">—</span>
+              <span className="sr-only">minimum and maximum unavailable</span>
+            </>
+          )}
+        </p>
+      </div>
     </div>
   );
 }
 
-/** Skeleton tile for the initial-load state (UI-SPEC loading contract). */
-function SkeletonTile() {
+/** Skeleton cell for the initial-load state (§5.6 loading contract) — same
+ *  grid, same two line boxes, so the row does not jump when data lands. */
+function SkeletonCell() {
   return (
-    <div className="animate-pulse rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
+    <div className="animate-pulse">
       <div className="h-6 w-24 rounded bg-[var(--color-deck)]" />
-      <div className="mt-2 h-9 w-16 rounded bg-[var(--color-deck)]" />
-      <div className="mt-2 h-5 w-32 rounded bg-[var(--color-deck)]" />
+      <div className="mt-1 h-9 w-20 rounded bg-[var(--color-deck)]" />
     </div>
   );
 }
 
-export function StatsStrip({ stats, isLoading, readings }: StatsStripProps) {
-  if (isLoading) {
-    return (
-      <section
-        aria-label="Summary statistics"
-        aria-busy="true"
-        className="flex flex-col gap-4"
-      >
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <SkeletonTile />
-          <SkeletonTile />
-          <SkeletonTile />
-          <SkeletonTile />
-        </div>
-      </section>
-    );
-  }
-
-  if (stats === undefined) {
+export function StatsStrip({ stats, isLoading }: StatsStripProps) {
+  if (!isLoading && stats === undefined) {
     // Not loading and no data: the error surface is centralized in App
     // (plan 02-07, T-02-11) — this component never renders error copy.
     return null;
   }
 
-  // `readings` already arrives oldest-to-newest (backend `ORDER BY
-  // datetime_` — readings.py) — sparkline reads left-to-right forward in
-  // time for free, no client sort needed.
-  const chronological = readings;
-  // Drives the status pill — only Systolic/Diastolic show it (BP category is
-  // a joint systolic+diastolic classification; Pulse has no AHA category
-  // ladder, only a bradycardia reference line; Readings count isn't a vital).
-  const latestCategory = chronological.at(-1)?.bp_category ?? null;
-
   return (
-    <section aria-label="Summary statistics" className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <VitalTile
-          label="Systolic"
-          vital={stats.systolic}
-          Icon={Gauge}
-          values={chronological.map((r) => r.systolic)}
-          sparklineColor="var(--line-systolic)"
-          statusCategory={latestCategory}
-        />
-        <VitalTile
-          label="Diastolic"
-          vital={stats.diastolic}
-          Icon={Activity}
-          values={chronological.map((r) => r.diastolic)}
-          sparklineColor="var(--line-diastolic)"
-          statusCategory={latestCategory}
-        />
-        <VitalTile
-          label="Pulse"
-          vital={stats.pulse}
-          Icon={HeartPulse}
-          values={chronological.map((r) => r.pulse)}
-          sparklineColor="var(--line-systolic)"
-          statusCategory={null}
-        />
-        <div className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]">
-          <ListChecks aria-hidden="true" size={24} className="text-[var(--color-depth)]" />
-          <p className="mt-2 text-label text-[var(--color-depth)]">Readings</p>
-          <p className="text-display text-[var(--color-depth)]">{stats.count}</p>
-        </div>
+    <section aria-label="Summary statistics" aria-busy={isLoading} className={ROW}>
+      <div className={GRID}>
+        {isLoading || stats === undefined ? (
+          <>
+            <SkeletonCell />
+            <SkeletonCell />
+            <SkeletonCell />
+            <SkeletonCell />
+          </>
+        ) : (
+          <>
+            <VitalCell label="Systolic" vital={stats.systolic} divided={false} />
+            <VitalCell label="Diastolic" vital={stats.diastolic} divided />
+            <VitalCell label="Pulse" vital={stats.pulse} divided />
+            <div className={DIVIDER}>
+              <p className="text-label text-[var(--color-depth)]">Readings</p>
+              {/* NO secondary line here: a count has no minimum or maximum, a
+                  fabricated range would be meaningless, and the other three
+                  cells set the row height anyway. Do not add a "total" or
+                  "all time" filler string to balance the cell visually — on a
+                  data surface an invented word is worse than white space. */}
+              <p className="text-display text-[var(--color-depth)]">{stats.count}</p>
+            </div>
+          </>
+        )}
       </div>
-
-      {/* Category percent row — payload order IS clinical order (API-02
-          always returns all six labels, zero-filled). Display-only chips:
-          the UI-SPEC table-chip exemption allows shorter than 48px. */}
-      <ul className="flex flex-wrap gap-2" aria-label="Readings by category">
-        {stats.categories.map((c) => (
-          <li
-            key={c.category}
-            className="flex items-center gap-2 rounded-lg bg-[var(--color-mist)] px-4 py-2 text-base"
-          >
-            <span
-              aria-hidden="true"
-              className="inline-block h-3 w-3 shrink-0 rounded-full"
-              style={{ backgroundColor: categoryColor(c.category) }}
-            />
-            {c.category} {c.percent}%
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
