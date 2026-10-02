@@ -37,7 +37,8 @@
  *    Pressure, which is precisely the "pulse and hospital stays" combination
  *    he asked for. `markerAxis` below is the fix.
  *
- * Parent supplies the fixed height (h-[420px]).
+ * Parent supplies the height: a viewport-relative clamp with a 420px floor,
+ * so the chart grows on tall screens and never shrinks below its original size.
  */
 import { useState } from "react";
 import {

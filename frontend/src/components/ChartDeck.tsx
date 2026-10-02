@@ -158,7 +158,7 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
         <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           {title}
         </h2>
-        <div key={key} className={fixedHeight ? "h-[420px]" : undefined}>
+        <div key={key} className={fixedHeight ? "h-[clamp(420px,calc(100vh_-_300px),760px)]" : undefined}>
           <FadeSwap>{body}</FadeSwap>
         </div>
       </div>
