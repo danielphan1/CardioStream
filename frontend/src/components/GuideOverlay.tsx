@@ -296,8 +296,9 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
               time of day, by blood pressure category, or by pulse category.
             </p>
             <p className={bodyClass}>
-              <strong>By click:</strong> Tap a filter checkbox (like "Last 30
-              Days" or "Morning") to turn it on or off.
+              <strong>By click:</strong> Tap "Filters" to open the filter
+              panel, then tap a checkbox (like "Morning"). Dates have their own
+              button beside it.
             </p>
             <p className={bodyClass}>
               <strong>By voice:</strong> Say a filter phrase, like "last 30
@@ -309,12 +310,11 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
             <h2 className={h2Class}>Charts</h2>
             <p className={bodyClass}>
               Four charts are available: Blood Pressure Timeline, Pulse Trend,
-              Blood Pressure Categories, and AM vs PM. The chart-picker cards
-              switch which one is shown on the dashboard.
+              Blood Pressure Categories, and AM vs PM. The View buttons above
+              the chart switch which one is shown.
             </p>
             <p className={bodyClass}>
-              <strong>By click:</strong> Tap a chart-picker card to switch to
-              that chart.
+              <strong>By click:</strong> Tap a View button to switch charts.
             </p>
             <p className={bodyClass}>
               <strong>By voice:</strong> Say a chart's name, like "show my
@@ -348,7 +348,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
             </p>
             <p className={bodyClass}>
               <strong>By click:</strong> Tap the "Voice Replies" button in the
-              header to turn spoken confirmations on or off.
+              menu to turn spoken confirmations on or off.
             </p>
             <p className={bodyClass}>
               <strong>By voice:</strong> Say "mute the voice replies" or "turn
@@ -363,8 +363,8 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
               from an OMRON monitor's exported file.
             </p>
             <p className={bodyClass}>
-              <strong>By click:</strong> Tap the "Upload" button in the header,
-              then choose the exported file to add its readings.
+              <strong>By click:</strong> Tap "Upload" in the menu, then choose
+              the exported file to add its readings.
             </p>
           </section>
 
@@ -376,9 +376,8 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
               procedure.
             </p>
             <p className={bodyClass}>
-              <strong>By click:</strong> Tap the "Add Record" button in the
-              header, choose Lab, Incident, or Procedure, then fill in and
-              submit the form.
+              <strong>By click:</strong> Tap "Add Record" in the menu, choose
+              Lab, Incident, or Procedure, then fill in and submit the form.
             </p>
           </section>
 
@@ -400,9 +399,9 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
           <section id="about-this-guide" style={sectionScrollStyle}>
             <h2 className={h2Class}>About This Guide</h2>
             <p className={bodyClass}>
-              You can reopen this guide any time by clicking the "Guide" button
-              in the header. Close it with the Close button above or by
-              pressing Escape.
+              You can reopen this guide any time by tapping "Guide" in the
+              menu. Close it with the Close button above or by pressing
+              Escape.
             </p>
           </section>
         </div>

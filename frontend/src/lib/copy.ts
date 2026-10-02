@@ -19,4 +19,4 @@ export const OFFLINE_COPY =
 // one another — see 06-UI-SPEC.md's "Precedent for a third,
 // independently-authored string" note.
 export const AGENT_UNAVAILABLE_BANNER_COPY =
-  "Voice and text commands aren't working right now. Filters, charts, and uploads below still work by tap.";
+  "Voice and text commands aren't working right now. Filters, charts, and the menu still work by tap.";
