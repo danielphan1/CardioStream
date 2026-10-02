@@ -47,25 +47,35 @@
   --color-deck: #F5F7F6; /* page background */
   --color-mist: #E3EBE9; /* cards, filter bar surface */
   --color-depth: #101C2E; /* ALL text, icons, borders */
-  --color-accent: #8A5A1E; /* primary accent — One Signal Rule */
+  --color-accent: #0D826C; /* primary accent — One Signal Rule */
   --color-accent-text: #FFFFFF;
-  --color-signal: #0F6E86; /* 3px focus-visible ring */
+  --color-signal: #8A5A1E; /* 3px focus-visible ring */
   --color-hazard: #9C2B22; /* reserved for destructive actions */
   --color-hazard-text: #FFFFFF;
   --color-panel: #101C2E; /* Command Bar feature-panel background — always dark, non-inverting */
   --color-panel-text: #F5F7F6; /* Command Bar feature-panel text — always light, non-inverting */
+  /* Focus ring INSIDE the always-dark Command Bar panel. Declared with the
+     same literal in :root and .dark — deliberately NON-INVERTING, exactly the
+     --color-panel-text precedent two lines above: the ground it is judged
+     against (--color-panel) does not invert either, so neither may this.
+     The light --color-signal scores only 2.90:1 on --color-panel (below the
+     3:1 floor); this token scores 7.60:1 there (16.1-UI-SPEC §4.3(2)).
+     Do NOT "fix" the duplication by making it theme-dependent. */
+  --color-signal-on-panel: #D9A356;
   --shadow-elevation: 0 8px 24px -4px rgba(16, 28, 46, 0.10), 0 2px 6px -2px rgba(16, 28, 46, 0.06);
 
   /* Chart series — systolic/diastolic share the mmHg axis, pulse owns the bpm
      axis. --line-pulse is a rust deliberately outside four existing hue
-     families (systolic navy, diastolic teal, the three --overlay-* hues, and
+     families (systolic navy, diastolic violet, the three --overlay-* hues, and
      --color-accent, which is reserved by the One Signal Rule). It is warmer and
      lighter than --color-hazard so a pulse line never reads as an alarm.
      Pulse also draws DASHED (see CombinedTimeline): its luminance ratio against
-     systolic is only 1.89:1, so in greyscale the stroke pattern — not the hue —
-     is what keeps the two series apart. */
+     systolic is only 1.89:1 light / 1.14:1 dark — unchanged by phase 16.1 — so
+     for pulse-vs-systolic the stroke pattern, not the hue, remains the only
+     greyscale separator. Systolic-vs-diastolic and diastolic-vs-pulse DO
+     separate in greyscale and are gated in contrast.test.ts. */
   --line-systolic: #1E3A5F;
-  --line-diastolic: #1F7A6C;
+  --line-diastolic: #AC40BF;
   --line-pulse: #9E4A24;
   --ref-bradycardia: #3E6E8E;
 
@@ -78,6 +88,20 @@
   --cat-crisis: #7A1F1A;
   --band-opacity: 0.10;
   --cat-chip-text: #FFFFFF;
+
+  /* Selected category-chip fills (16.1-UI-SPEC §4.4).
+     = 12% --cat-* over --color-deck. Precomputed so contrast.test.ts can
+     mirror the literal — do not re-derive. A CSS mixing function is
+     deliberately NOT used here: the gate has to mirror a literal.
+     Reach these from components only via palette.ts categoryTint() /
+     pulseCategoryTint() — never as a hex. */
+  --cat-hypotension-tint: #DFE7EA;
+  --cat-normal-tint: #DDE8E3;
+  --cat-elevated-tint: #E8E6D8;
+  --cat-stage1-tint: #EDE4DC;
+  --cat-stage2-tint: #EBDFDD;
+  --cat-crisis-tint: #E6DDDC;
+  --ref-bradycardia-tint: #DFE7EA; /* = hypotension tint; --ref-bradycardia shares its hex */
 
   /* Overlay dataset marker/toggle colors — violet/magenta/olive hue
      families, chosen to sit outside every existing clinical/chart hue range */
@@ -92,17 +116,18 @@
   --color-deck: #0A121F;
   --color-mist: #101D30;
   --color-depth: #E7EEF2;
-  --color-accent: #D9A356;
+  --color-accent: #33C1A6;
   --color-accent-text: #0A121F;
-  --color-signal: #7ED4E8;
+  --color-signal: #D9A356;
   --color-hazard: #E2685A;
   --color-hazard-text: #0A121F;
   --color-panel: #050A12; /* genuinely dark on its own — NOT derived from --color-depth's dark-theme (near-white) value */
   --color-panel-text: #F5F7F6; /* same literal hex as light theme — intentionally non-inverting */
+  --color-signal-on-panel: #D9A356; /* same literal hex as light theme — intentionally non-inverting, see :root */
   --shadow-elevation: 0 8px 24px -4px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(231, 238, 242, 0.05);
 
   --line-systolic: #9DBFE0;
-  --line-diastolic: #7FD6C4;
+  --line-diastolic: #B055BE;
   --line-pulse: #E3A07C;
   --ref-bradycardia: #8FB3D1;
 
@@ -114,6 +139,16 @@
   --cat-crisis: #F0584C;
   --band-opacity: 0.14;
   --cat-chip-text: #0A121F;
+
+  /* = 12% --cat-* over --color-deck (#0A121F). Precomputed so
+     contrast.test.ts can mirror the literal — do not re-derive. */
+  --cat-hypotension-tint: #1A2534;
+  --cat-normal-tint: #14272C;
+  --cat-elevated-tint: #242625;
+  --cat-stage1-tint: #242125;
+  --cat-stage2-tint: #251E28;
+  --cat-crisis-tint: #261A24;
+  --ref-bradycardia-tint: #1A2534; /* = hypotension tint; --ref-bradycardia shares its hex */
 
   --overlay-labs: #C3A0E8;
   --overlay-incidents: #EFA0C9;
@@ -129,10 +164,22 @@ body {
   line-height: 1.5;
 }
 
-/* UI-SPEC focus contract (ACC-02): visible ring on every interactive element */
+/* UI-SPEC focus contract (ACC-02): visible ring on every interactive element.
+   The 2px outline-offset is LOAD-BEARING (16.1-UI-SPEC §4.3(2)): ring-against-
+   accent-fill is 1.24:1 light / 1.00:1 dark — luminance-identical in dark — so
+   the ring is only ever judged against the deck/mist band the offset exposes
+   behind the control. Do not zero the offset; do not convert to box-shadow
+   (which has no offset semantics here). */
 :focus-visible {
   outline: 3px solid var(--color-signal);
   outline-offset: 2px;
+}
+
+/* Focus inside the always-dark Command Bar panel: --color-signal is 2.90:1 on
+   --color-panel in light theme, under the 3:1 floor. The non-inverting
+   on-panel token scores 7.60:1 light / 8.81:1 dark (16.1-UI-SPEC §4.3(2)). */
+[data-surface="panel"] :focus-visible {
+  outline-color: var(--color-signal-on-panel);
 }
 
 /*
