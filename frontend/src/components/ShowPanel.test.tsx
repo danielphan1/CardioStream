@@ -1,8 +1,9 @@
 // Behavior tests for ShowPanel (Phase 14, D-01/D-02/D-07/D-08) — the
 // five-dataset checkbox row that replaced the chart picker AND OverlayToggle.
 // Locks real checkbox semantics, the 48px target floor, independent toggling
-// of the two vitals, the live sentence, and the never-disabled indicator
-// ported from the deleted OverlayToggle suite.
+// of the two vitals, and the never-disabled indicator ported from the deleted
+// OverlayToggle suite. The sentence and note assertions moved out in 16.1-07
+// with the paragraphs themselves — see the two notes further down.
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -110,20 +111,11 @@ describe("ShowPanel checkbox group", () => {
 });
 
 describe("not-applicable indicator (OVERLAY-05 carry-over, D-01 lock)", () => {
-  it("shows the note when the view cannot render datasets", () => {
-    act(() => {
-      useFilters.setState({ chartView: "bp_categories" });
-    });
-    render(<ShowPanel />);
-    expect(
-      screen.getByText(/These datasets show on the Timeline/),
-    ).toBeTruthy();
-  });
-
-  it("hides the note on the timeline", () => {
-    render(<ShowPanel />);
-    expect(screen.queryByText(/These datasets show on the Timeline/)).toBeNull();
-  });
+  // The two note-rendering tests that used to open this describe moved with
+  // the note itself (16.1-07, UI-SPEC 5.4): ShowPanel renders no note any
+  // more, so both assertions are owned by FilterStateBlock.test.tsx, which
+  // shipped in plan 16.1-04. What stays below is control BEHAVIOUR, which is
+  // unaffected by the relocation.
 
   // Ported from the deleted OverlayToggle suite. This encodes a real
   // regression (quick-task 260827-kir): the indicator must never become a
@@ -156,62 +148,12 @@ describe("not-applicable indicator (OVERLAY-05 carry-over, D-01 lock)", () => {
   });
 });
 
-describe("live selection sentence (D-20)", () => {
-  it("names the selection in fixed order, not click order", () => {
-    act(() => {
-      useFilters.setState({
-        visibleDatasets: {
-          blood_pressure: true,
-          pulse: true,
-          labs: false,
-          incidents: true,
-          procedures: false,
-        },
-      });
-    });
-    render(<ShowPanel />);
-    expect(
-      screen.getByText("Showing blood pressure, pulse and incidents."),
-    ).toBeTruthy();
-  });
-
-  it("explains the events-only case rather than implying a chart", () => {
-    act(() => {
-      useFilters.setState({
-        visibleDatasets: {
-          blood_pressure: false,
-          pulse: false,
-          labs: false,
-          incidents: true,
-          procedures: false,
-        },
-      });
-    });
-    render(<ShowPanel />);
-    expect(screen.getByText(/listed by date/)).toBeTruthy();
-  });
-
-  it("prompts when nothing is selected", () => {
-    act(() => {
-      useFilters.setState({
-        visibleDatasets: {
-          blood_pressure: false,
-          pulse: false,
-          labs: false,
-          incidents: false,
-          procedures: false,
-        },
-      });
-    });
-    render(<ShowPanel />);
-    expect(screen.getByText(/Nothing selected/)).toBeTruthy();
-  });
-
-  it("is announced politely", () => {
-    const { container } = render(<ShowPanel />);
-    expect(container.querySelectorAll('[aria-live="polite"]').length).toBeGreaterThan(0);
-  });
-});
+// The "live selection sentence (D-20)" describe that used to sit here is gone
+// with the sentence itself (16.1-07, UI-SPEC 5.4). Its four assertions all
+// have live owners that shipped in plan 16.1-04: the three string cases in
+// lib/showSentence.test.ts, and the polite-announcement case in
+// FilterStateBlock.test.tsx — where it became the stronger claim that EXACTLY
+// ONE live region serves all three lines, rather than merely more than zero.
 
 describe("agent pulse parity (D-08)", () => {
   it("rings the group when the agent touches datasets", () => {

@@ -38,10 +38,11 @@
 import { buildFilterSentence, buildShowSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
 
-// Identical text to ShowPanel.tsx's own NOTE_COPY. Deliberately re-declared
-// rather than imported: plan 16.1-07 is what strips ShowPanel's two sentence
-// paragraphs and mounts this block, and it collapses the duplication then.
-// If you are editing one of these strings, edit both.
+// THE ONLY declaration of this string in the app. Plan 16.1-04 briefly
+// duplicated it from ShowPanel.tsx because that file was outside its scope
+// while plan 16.1-05 ran in parallel; plan 16.1-07 stripped ShowPanel's two
+// sentence paragraphs and collapsed the duplication onto this line. Keep it
+// that way — a user-visible string with two homes drifts.
 const NOTE_COPY =
   "These datasets show on the Timeline. Switch back to see them.";
 

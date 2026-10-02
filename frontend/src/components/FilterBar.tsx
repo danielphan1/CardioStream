@@ -7,7 +7,16 @@
 // owns its own trigger in the filter row, so the two surfaces are separate
 // popover bodies rather than one 624px band.
 //
-// All filter state lives in the zustand store (store/filters.ts).
+// All filter state lives in the zustand store (store/filters.ts), so this
+// component takes no props at all — which is what lets FilterSurface render
+// it as a popover body with no wiring.
+//
+// THE D-20 STATE SENTENCE IS DELIBERATELY NOT HERE (16.1-UI-SPEC 5.4). It
+// moved to FilterStateBlock.tsx, which the shell renders unconditionally in
+// the content column, because the primary user cannot see a sentence inside a
+// popover he has not opened. This file therefore carries no live region of
+// its own: three regions across two components became exactly one. Do not
+// reintroduce one here.
 import { useAgentPulseFlash } from "../lib/agent";
 import type { PulseField } from "../lib/agent";
 import { TIME_OF_DAY_ORDER } from "../lib/dates";
@@ -19,12 +28,7 @@ import {
   pulseCategoryColor,
   pulseCategoryTint,
 } from "../lib/palette";
-import { buildFilterSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
-
-type FilterBarProps = {
-  latestReading: string | null;
-};
 
 // Plain checkbox control (Time of Day) — reused verbatim from
 // ShowPanel.tsx's boxClass so the two surfaces share one control language.
@@ -37,8 +41,7 @@ const boxClass =
 // ShowPanel.tsx's own "Show:" prefix span.
 const headingClass = "text-label text-[var(--color-depth)]";
 
-export function FilterBar({ latestReading }: FilterBarProps) {
-  const datePreset = useFilters((s) => s.datePreset);
+export function FilterBar() {
   const bpCategory = useFilters((s) => s.bpCategory);
   const pulseCategory = useFilters((s) => s.pulseCategory);
   const timeOfDay = useFilters((s) => s.timeOfDay);
@@ -55,22 +58,11 @@ export function FilterBar({ latestReading }: FilterBarProps) {
       ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
       : "";
 
-  // Filter-state sentence (D-20): reads left-to-right, always visible,
-  // honest about the newest-reading anchor for day presets. The builder moved
-  // to lib/showSentence.ts in Phase 16.1 so the shell can render this same
-  // sentence outside FilterBar without the wording drifting (16.1-UI-SPEC
-  // §5.4) — the strings are byte-identical, only their home changed.
-  const sentence = buildFilterSentence({
-    datePreset,
-    latestReading,
-    timeOfDay,
-    bpCategory,
-    pulseCategory,
-  });
-
+  // No surface chrome of its own: FilterSurface supplies the mist fill, the
+  // border and the padding. The groups stack in a column so each gets a full
+  // row inside the 560px popover, which is also 5.5's reading order.
   return (
-    <section className="bg-[var(--color-mist)] p-4">
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-col gap-4">
         {/* Time of Day segment (Phase 15) — real multi-select checkboxes,
             replacing the old AM/PM single-select buttons; claims the
             "Time of day" aria-label the removed group used to own. */}
@@ -189,11 +181,5 @@ export function FilterBar({ latestReading }: FilterBarProps) {
           </div>
         </div>
       </div>
-
-      {/* Filter-state sentence (D-20) — announced politely on change */}
-      <p aria-live="polite" className="mt-4 text-base text-[var(--color-depth)]">
-        {sentence}
-      </p>
-    </section>
   );
 }

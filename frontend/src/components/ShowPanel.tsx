@@ -14,15 +14,19 @@
 // Dataset state is deliberately independent of chartView (D-01's original
 // lock, carried forward from OverlayToggle): the boxes NEVER disable, even on
 // a summary view that can't render them — a caregiver can pre-set datasets
-// before switching back to the timeline. The note below is a visible
-// indicator only, never a functional gate.
+// before switching back to the timeline.
+//
+// THE TWO STATE SENTENCES ARE DELIBERATELY NOT HERE (16.1-UI-SPEC 5.4). The
+// Show sentence and the not-applicable note both moved to
+// FilterStateBlock.tsx, which the shell renders unconditionally in the
+// content column — the primary user cannot see a sentence inside a popover he
+// has not opened, and the note's copy now has exactly one declaration instead
+// of the two it briefly had. This file therefore carries no live region of
+// its own: three regions across two components became exactly one. Do not
+// reintroduce one here, and do not re-declare the note copy.
 import { useAgentPulseFlash } from "../lib/agent";
 import { DATASET_META, DATASET_ORDER } from "../lib/datasetMeta";
-import { buildShowSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
-
-const NOTE_COPY =
-  "These datasets show on the Timeline. Switch back to see them.";
 
 // Mirrors FilterBar's control contract (mist card, depth border, 48px floor).
 // No opacity dimming under ANY state: quick-task 260827-kir removed exactly
@@ -36,7 +40,6 @@ const boxClass =
 export function ShowPanel() {
   const visibleDatasets = useFilters((s) => s.visibleDatasets);
   const setDataset = useFilters((s) => s.setDataset);
-  const chartView = useFilters((s) => s.chartView);
 
   // D-08 pulse — identical treatment to FilterBar's own groups so an
   // agent-driven selection change reads as the same system as a manual click.
@@ -45,11 +48,9 @@ export function ShowPanel() {
     ? " rounded-lg ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse"
     : "";
 
-  const appliesHere = chartView === "timeline";
-  const sentence = buildShowSentence(visibleDatasets);
-
+  // No surface chrome of its own: FilterSurface supplies the mist fill, the
+  // border and the padding.
   return (
-    <section className="bg-[var(--color-mist)] p-4">
       <div className="flex flex-wrap items-center gap-4">
         <span className="text-label text-[var(--color-depth)]">Show:</span>
         <div className={`flex flex-wrap gap-2${pulseClass}`}>
@@ -103,20 +104,5 @@ export function ShowPanel() {
           })}
         </div>
       </div>
-      {!appliesHere && (
-        <p
-          aria-live="polite"
-          className="mt-2 text-base text-[var(--color-depth)]"
-        >
-          {NOTE_COPY}
-        </p>
-      )}
-      <p
-        aria-live="polite"
-        className="mt-4 text-base text-[var(--color-depth)]"
-      >
-        {sentence}
-      </p>
-    </section>
   );
 }
