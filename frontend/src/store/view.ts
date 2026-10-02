@@ -6,7 +6,12 @@
 // (CLAUDE.md separation).
 import { create } from "zustand";
 
-export type View = "dashboard" | "upload" | "records";
+// "readings" is a DATA view (UI-SPEC §5.8) — the filtered ReadingsTable on its
+// own surface, alongside the Command Bar and the filter trigger row, rather
+// than pinned under the chart. Its renderer arrives in plan 16.1-09; until then
+// App() has no branch for it and falls through to the Dashboard, which
+// type-checks and is harmless (nothing navigates here yet).
+export type View = "dashboard" | "upload" | "records" | "readings";
 
 interface ViewState {
   view: View;
