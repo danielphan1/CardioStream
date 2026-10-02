@@ -180,9 +180,29 @@ describe("loading and absent states", () => {
 });
 
 describe("what the strip no longer renders (§5.6)", () => {
-  it("draws no chart of its own: the sparkline and its svg are gone", () => {
+  it("draws no chart of its own: the sparkline is gone", () => {
     const { container } = render(<StatsStrip stats={STATS} isLoading={false} />);
-    expect(container.querySelectorAll("svg")).toHaveLength(0);
+    // Not a bare svg count, and not a path count: since 2026-10-02 each
+    // readout carries a decorative lucide symbol, and those are svgs made of
+    // paths. What must stay absent is a PLOTTED chart. The sparkline was a
+    // Recharts component, so its wrapper class is the honest marker — and the
+    // structural guarantee behind it is that this component no longer accepts
+    // the raw per-reading series at all, so it cannot plot one.
+    expect(container.querySelectorAll('[class*="recharts"]')).toHaveLength(0);
+    expect(container.querySelectorAll("polyline")).toHaveLength(0);
+  });
+
+  it("gives each readout a decorative symbol that adds nothing to the announced text", () => {
+    const { container } = render(<StatsStrip stats={STATS} isLoading={false} />);
+    const icons = container.querySelectorAll("svg");
+    expect(icons).toHaveLength(4);
+    // Decoration only: the adjacent word names the vital, so no symbol may
+    // reach the accessibility tree or the announced string.
+    icons.forEach((i) => expect(i.getAttribute("aria-hidden")).toBe("true"));
+    // The labels still carry the meaning on their own.
+    for (const label of ["Systolic", "Diastolic", "Pulse", "Readings"]) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
   });
 
   it("shows no status pill naming a blood-pressure category", () => {

@@ -22,15 +22,26 @@
 //     the sparkline component dead code (deleted in the same plan) and left
 //     the raw per-reading prop with no consumer, so this component now takes
 //     only the backend-computed payload.
-//   - the four decorative lucide tile icons: aria-hidden decoration naming
-//     nothing the label does not already name, the cell has exactly two line
-//     boxes and no third slot, and an inline icon would spend 32px of a cell
-//     that is only 156.0px wide at the 1024px worst case.
+//   - the per-cell sparkline's svg (see above).
+//
+// 2026-10-02, client request: the four lucide symbols are BACK, and the row
+// is tighter (~90px -> ~70px). 16.1-08 dropped them because an icon would
+// spend 32px of a 156.0px cell — but that reasoning applied to the VALUE
+// line, which has only 9.9px of slack. Re-measured against real Atkinson
+// metrics: the LABEL line's worst case ("Readings" at 20px/700) is 87.7px,
+// so a 20px symbol plus an 8px gap totals 115.7px and leaves 40.3px spare.
+// The symbols sit on the label line for exactly that reason; putting one on
+// the value line is still forbidden. The value also drops 36px -> 24px,
+// which is what buys the height AND widens the value line's own slack from
+// 9.9px to roughly 36px.
 //   - the six-chip category-percent list: it duplicates the `BP Categories`
 //     chart view, which renders the same distribution larger, labelled, and
 //     one voice command away (§5.6, decision closed 2026-09-30). Dropped
 //     outright — not relocated below the chart, not made collapsible, not
 //     kept at a smaller size.
+import { Activity, Gauge, HeartPulse, ListChecks } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
 import type { StatsSummary, VitalStats } from "../api/types";
 
 type StatsStripProps = {
@@ -38,12 +49,11 @@ type StatsStripProps = {
   isLoading: boolean;
 };
 
-/** The row IS the island (§5.6): one mist surface, 24px horizontal and 12px
- *  vertical padding. The 12px vertical value is the phase's one declared
- *  off-scale exception because the locked ~90px row height derives from it —
- *  it belongs here and nowhere else, so do not generalise it. */
+/** The row IS the island (§5.6): one mist surface, 24px horizontal and 8px
+ *  vertical padding (tightened from 12px on 2026-10-02 with the smaller
+ *  value type; the row is now ~70px, not ~90px). */
 const ROW =
-  "rounded-xl bg-[var(--color-mist)] px-6 py-3 shadow-[var(--shadow-elevation)]";
+  "rounded-xl bg-[var(--color-mist)] px-6 py-2 shadow-[var(--shadow-elevation)]";
 
 /** Two columns on phones, four from 1024px up. The four-column breakpoint
  *  stays at 1024px deliberately: moving it down to 768px would make THAT the
@@ -68,18 +78,25 @@ function VitalCell({
   label,
   vital,
   divided,
+  Icon,
 }: {
   label: string;
   vital: VitalStats | null;
   divided: boolean;
+  Icon: LucideIcon;
 }) {
   return (
     <div className={divided ? DIVIDER : undefined}>
-      <p className="text-label text-[var(--color-depth)]">{label}</p>
+      {/* The symbol is decoration: the adjacent word already names the vital,
+          so it is aria-hidden and adds nothing to the announced string. */}
+      <p className="flex items-center gap-2 text-label text-[var(--color-depth)]">
+        <Icon aria-hidden="true" size={20} className="shrink-0" />
+        {label}
+      </p>
       <div className="flex items-baseline gap-2">
         {/* count === 0 → VitalStats is null → em dash for the value AND for
             the range (never 0, never blank — the D-22 null contract). */}
-        <p className="text-display text-[var(--color-depth)]">
+        <p className="text-heading text-[var(--color-depth)]">
           {vital !== null ? vital.avg : "—"}
         </p>
         {/* The VISIBLE range is a bare numeric range; the min/max WORDS live
@@ -149,17 +166,20 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
           </>
         ) : (
           <>
-            <VitalCell label="Systolic" vital={stats.systolic} divided={false} />
-            <VitalCell label="Diastolic" vital={stats.diastolic} divided />
-            <VitalCell label="Pulse" vital={stats.pulse} divided />
+            <VitalCell label="Systolic" vital={stats.systolic} divided={false} Icon={Gauge} />
+            <VitalCell label="Diastolic" vital={stats.diastolic} divided Icon={Activity} />
+            <VitalCell label="Pulse" vital={stats.pulse} divided Icon={HeartPulse} />
             <div className={DIVIDER}>
-              <p className="text-label text-[var(--color-depth)]">Readings</p>
+              <p className="flex items-center gap-2 text-label text-[var(--color-depth)]">
+                <ListChecks aria-hidden="true" size={20} className="shrink-0" />
+                Readings
+              </p>
               {/* NO secondary line here: a count has no minimum or maximum, a
                   fabricated range would be meaningless, and the other three
                   cells set the row height anyway. Do not add a "total" or
                   "all time" filler string to balance the cell visually — on a
                   data surface an invented word is worse than white space. */}
-              <p className="text-display text-[var(--color-depth)]">{stats.count}</p>
+              <p className="text-heading text-[var(--color-depth)]">{stats.count}</p>
             </div>
           </>
         )}
