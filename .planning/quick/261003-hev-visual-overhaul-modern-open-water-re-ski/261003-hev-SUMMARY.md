@@ -36,6 +36,8 @@ decisions:
   - "Bars got rounded caps but NOT gradient fills: a fade would lighten every clinical bar against the white card and weaken the contrast the gate protects"
   - "The dark card surface is capped by data, not taste — #102A42 dropped the dimmed dark diastolic to 2.82:1, so #0D2234 it is"
   - "Clinical, overlay and chart-series hues are byte-identical; only their grounds moved"
+  - "Second pass: WCAG 1.4.11's 3:1 boundary rule governs INTERACTIVE components, so static cards may drop their borders entirely while controls keep theirs — over-applying it to containers is what kept the first pass looking outlined"
+  - "Second pass: --color-muted at regular weight for labels/ranges/utilities; full ink and 700 reserved for values and headings"
 metrics:
   duration: ~70min
   completed: 2026-10-03
@@ -86,6 +88,37 @@ Resolved by splitting the role rather than compromising either side:
 
 So the brightest blue lands in the signature component and all over the charts,
 while the controls that carry text stay legible.
+
+## Second pass — composition, after the user said it still did not look like the photos
+
+The first pass changed the palette and kept the composition. The user's verdict
+was that it still did not look like the references, and that was correct: what
+those two photos share is not a hue. It is light-weight muted type, borderless
+cards, a greeting that leads the page, and one dark feature tile. Commit
+`8942947` does those:
+
+- **`--color-muted`** (`#4A6480` light / `#9DB4C9` dark, both ≥4.5:1 on BOTH
+  grounds): labels, ranges and rail utilities sit a step back at regular weight
+  while only values and headings hold full ink and 700. Every line at 20px/700
+  navy is what made the old dashboard read as a wall of bold text. Hierarchy,
+  not low-contrast styling — every value still clears AA.
+- **Cards lost their borders.** WCAG 1.4.11's 3:1 boundary rule governs
+  *interactive* components; applying it to static containers too is what kept
+  the first pass looking outlined rather than floating. Controls keep hairlines.
+- **A greeting header leads the page**, above the filter cluster. It reads the
+  stats query itself — same key, served from cache, no extra request — so it can
+  sit in the shell without threading props. No controls, so nothing new to reach
+  by voice.
+- **The Readings tile is now the dark navy feature card**, reference 1's "Status
+  Summary" idiom in the stat row. It was already the odd cell out, being the one
+  readout with no min–max.
+- **Rail nav rows lost their boxes.** A column of outlined buttons is what made
+  the rail read like a stack of form controls.
+- **Band opacity 0.10 → 0.06 light** (0.14 → 0.10 dark).
+
+One thing was tried and reverted: floating the rail on a shadow instead of an
+edge. It broke the documented Flat-Sea Rule and LeftRail's own test, and the
+edge was never the problem — the buttons inside it were.
 
 ## Deviations from Plan
 
