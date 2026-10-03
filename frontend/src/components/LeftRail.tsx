@@ -41,7 +41,7 @@ export function LeftRail({
     // a parent or a child of either.
     <div
       inert={inert}
-      className="w-60 shrink-0 sticky top-0 h-screen overflow-y-auto bg-[var(--color-mist)] border-r-2 border-[var(--color-depth)] px-4 pt-4 pb-6"
+      className="w-60 shrink-0 sticky top-0 h-screen overflow-y-auto bg-[var(--color-mist)] border-r border-[var(--color-hairline)] px-4 pt-4 pb-6"
     >
       {/* Stacked header group: 8px gap, 24px below. The decorative curved
           divider that used to close the horizontal band is dropped — it was an
@@ -64,7 +64,7 @@ export function LeftRail({
         {demoMode && (
           <span
             role="status"
-            className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 py-1 text-base text-[var(--color-depth)]"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-1 text-base text-[var(--color-depth)]"
           >
             <Info aria-hidden="true" size={18} />
             Guest Demo · Synthetic Data

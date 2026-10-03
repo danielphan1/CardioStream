@@ -126,7 +126,7 @@ export function UploadPage() {
         <section
           role="status"
           aria-label="Upload result"
-          className="flex flex-col gap-4 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+          className="flex flex-col gap-4 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           <div className="flex items-start gap-2">
             {/* optical alignment: 2px centres the 24px icon on the 27px first
@@ -147,7 +147,7 @@ export function UploadPage() {
                 type="button"
                 aria-expanded={showRejects}
                 onClick={() => setShowRejects((v) => !v)}
-                className="flex w-fit items-center gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 py-2 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+                className="flex w-fit items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-2 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
               >
                 <ChevronDown
                   aria-hidden="true"
@@ -176,7 +176,7 @@ export function UploadPage() {
         <section
           role="alert"
           aria-label="Upload notice"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           {/* optical alignment: 2px centres the 24px icon on the 27px first
               text line (deliberately off the 4px spacing scale) */}

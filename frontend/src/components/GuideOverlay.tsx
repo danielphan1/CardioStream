@@ -215,7 +215,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
             ref={closeButtonRef}
             type="button"
             onClick={() => setOpen(false)}
-            className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+            className="flex min-h-12 items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
           >
             <X aria-hidden="true" size={24} />
             Close
@@ -263,7 +263,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
-                    className="flex min-h-12 items-center rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+                    className="flex min-h-12 items-center rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
                   >
                     {s.label}
                   </a>

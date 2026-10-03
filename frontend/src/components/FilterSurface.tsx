@@ -121,7 +121,7 @@ export function FilterSurface({
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
-          className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+          className="flex min-h-12 items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
         >
           <X aria-hidden="true" size={24} />
           Close
@@ -163,7 +163,7 @@ export function FilterSurface({
         role="group"
         {...naming}
         style={{ maxHeight: "min(70vh, 640px)" }}
-        className={`absolute left-0 top-[calc(100%+8px)] z-30 w-[560px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
+        className={`absolute left-0 top-[calc(100%+8px)] z-30 w-[560px] max-w-[calc(100vw-32px)] overflow-y-auto rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
           shown ? "opacity-100" : "opacity-0"
         }`}
       >

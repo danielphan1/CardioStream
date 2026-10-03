@@ -69,7 +69,7 @@ export function LogoutConfirmDialog({
         aria-labelledby="logout-title"
         aria-describedby="logout-body"
         onKeyDown={handleKeyDown}
-        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
       >
         <h2
           id="logout-title"
@@ -85,7 +85,7 @@ export function LogoutConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            className="min-h-12 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             Cancel
           </button>

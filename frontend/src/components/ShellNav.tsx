@@ -40,13 +40,13 @@ import type { View } from "../store/view";
 // border. `min-h-12` is the non-negotiable accessibility floor (CLAUDE.md) and
 // is asserted on every button by ShellNav.test.tsx.
 const ITEM_BASE =
-  "flex min-h-12 w-full items-center gap-2 border-2 px-4 text-left text-label";
+  "flex min-h-12 w-full items-center gap-2 border px-4 text-left text-label";
 
 // Utility controls are NEVER accent-filled, even when toggled on: `aria-pressed`
 // plus the label text ("Dark", "Voice Replies: On") carries the state. The
 // accent fill is reserved for the selected destination. `rounded-lg` instead of
 // `rounded-xl` is DESIGN.md's existing quiet tell that these are utilities.
-const UTILITY_ITEM = `${ITEM_BASE} rounded-lg border-[var(--color-depth)] bg-[var(--color-mist)] text-[var(--color-depth)]`;
+const UTILITY_ITEM = `${ITEM_BASE} rounded-lg border-[var(--color-hairline)] bg-[var(--color-mist)] text-[var(--color-depth)]`;
 
 interface NavItem {
   view: View;
@@ -145,7 +145,7 @@ export function ShellNav({
                 className={`${ITEM_BASE} rounded-xl ${
                   selected
                     ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-text)]"
-                    : "border-[var(--color-depth)] bg-[var(--color-mist)] text-[var(--color-depth)]"
+                    : "border-[var(--color-hairline)] bg-[var(--color-mist)] text-[var(--color-depth)]"
                 }`}
               >
                 <Icon aria-hidden="true" size={24} />
@@ -157,7 +157,7 @@ export function ShellNav({
       </nav>
 
       {/* 24px separation plus a 2px depth rule between the two groups (§5.1). */}
-      <hr className="my-6 border-t-2 border-[var(--color-depth)]" />
+      <hr className="my-6 border-t border-[var(--color-hairline)]" />
 
       <div className="flex flex-col gap-2">
         {/* Theme toggle (D-15). */}

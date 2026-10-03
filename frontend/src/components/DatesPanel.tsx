@@ -21,7 +21,7 @@ import { DateRangePicker } from "./DateRangePicker";
 // Shared control styling contract (13-UI-SPEC.md accent rules): inactive =
 // mist card with depth text plus a 2px depth border; active = accent fill.
 const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
 const activeClass =
   "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 

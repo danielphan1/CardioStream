@@ -36,7 +36,7 @@ export function AgentStatusBanner() {
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className="mt-4 flex items-center gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] p-4 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)] transition-opacity duration-200 motion-reduce:transition-none"
+      className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-deck)] p-4 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)] transition-opacity duration-200 motion-reduce:transition-none"
     >
       <BotOff aria-hidden="true" className="h-6 w-6 shrink-0" />
       <span>{AGENT_UNAVAILABLE_BANNER_COPY}</span>

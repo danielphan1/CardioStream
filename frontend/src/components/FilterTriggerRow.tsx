@@ -38,13 +38,15 @@ const FILTER_PULSE_FIELDS: PulseField[] = [
 const PULSE_RING =
   " ring-2 ring-[var(--color-accent)] motion-safe:animate-pulse";
 
-/** Open adds a 2px accent border and a 2px accent INNER ring while the fill
- *  stays mist: the accent is reserved for selection, and "open" is not a
- *  selection. Focus stays on the sitewide ring, untouched. */
+/** Open recolours the 1px border to the accent and adds a 2px accent INNER
+ *  ring while the fill stays mist: the accent is reserved for selection, and
+ *  "open" is not a selection. The ring, not the border width, is what carries
+ *  the weight now that idle boundaries are 1px hairlines (quick 261003-hev).
+ *  Focus stays on the sitewide ring, untouched. */
 const stateClass = (isOpen: boolean) =>
   isOpen
     ? "border-[var(--color-accent)] ring-2 ring-inset ring-[var(--color-accent)]"
-    : "border-[var(--color-depth)]";
+    : "border-[var(--color-hairline)]";
 
 export function FilterTriggerRow({
   openOverlay,
@@ -101,7 +103,7 @@ export function FilterTriggerRow({
           aria-expanded={datesOpen}
           aria-controls="dates-popover"
           onClick={() => (datesOpen ? onClose() : onOpen("dates"))}
-          className={`flex min-h-12 items-center gap-2 rounded-xl border-2 bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
+          className={`flex min-h-12 items-center gap-2 rounded-xl border bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
             datesOpen,
           )}${datesPulse}`}
         >
@@ -131,7 +133,7 @@ export function FilterTriggerRow({
             count > 0 ? `Filters, ${count} applied` : "Filters, none applied"
           }
           onClick={() => (filtersOpen ? onClose() : onOpen("filters"))}
-          className={`flex min-h-12 items-center gap-2 rounded-xl border-2 bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
+          className={`flex min-h-12 items-center gap-2 rounded-xl border bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
             filtersOpen,
           )}${filtersPulse}`}
         >

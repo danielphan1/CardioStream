@@ -35,7 +35,7 @@ import { useFilters } from "../store/filters";
 const boxClass =
   "min-h-12 flex items-center gap-2 rounded-xl py-2 px-4 text-label " +
   "bg-[var(--color-mist)] text-[var(--color-depth)] " +
-  "border-2 border-[var(--color-depth)] shadow-[var(--shadow-elevation)] cursor-pointer";
+  "border border-[var(--color-hairline)] shadow-[var(--shadow-elevation)] cursor-pointer";
 
 // Visible label prefix (UI-SPEC §3) — every group gets one now, mirroring
 // ShowPanel.tsx's own "Show:" prefix span.
@@ -108,14 +108,14 @@ export function FilterBar() {
             {CLINICAL_ORDER.map((cat) => (
               <label
                 key={cat}
-                className="min-h-12 flex items-center gap-2 rounded-full border-2 px-4 text-label text-[var(--color-depth)] cursor-pointer"
+                className="min-h-12 flex items-center gap-2 rounded-full border px-4 text-label text-[var(--color-depth)] cursor-pointer"
                 style={{
                   backgroundColor: bpCategory[cat]
                     ? categoryTint(cat)
                     : "var(--color-deck)",
                   borderColor: bpCategory[cat]
                     ? categoryColor(cat)
-                    : "var(--color-depth)",
+                    : "var(--color-hairline)",
                 }}
               >
                 <input
@@ -151,14 +151,14 @@ export function FilterBar() {
             {PULSE_CLINICAL_ORDER.map((cat) => (
               <label
                 key={cat}
-                className="min-h-12 flex items-center gap-2 rounded-full border-2 px-4 text-label text-[var(--color-depth)] cursor-pointer"
+                className="min-h-12 flex items-center gap-2 rounded-full border px-4 text-label text-[var(--color-depth)] cursor-pointer"
                 style={{
                   backgroundColor: pulseCategory[cat]
                     ? pulseCategoryTint(cat)
                     : "var(--color-deck)",
                   borderColor: pulseCategory[cat]
                     ? pulseCategoryColor(cat)
-                    : "var(--color-depth)",
+                    : "var(--color-hairline)",
                 }}
               >
                 <input

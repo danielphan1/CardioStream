@@ -53,7 +53,7 @@ const TYPE_OPTIONS: { key: RecordType; label: string }[] = [
 // Type-switcher styling — mirrors FilterBar's exact inactiveClass/activeClass
 // constants verbatim (D-02, UI-SPEC "AddRecordPage.tsx layout").
 const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border-2 border-[var(--color-depth)]";
+  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
 const activeClass =
   "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
@@ -244,7 +244,7 @@ export function AddRecordPage() {
         <section
           role="status"
           aria-label="Add record result"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           {/* optical alignment: 2px centres the 24px icon on the 27px first
               text line (deliberately off the 4px spacing scale) */}
@@ -259,7 +259,7 @@ export function AddRecordPage() {
         <section
           role="alert"
           aria-label="Add record notice"
-          className="flex items-start gap-2 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] p-6 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+          className="flex items-start gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
         >
           {/* optical alignment: 2px centres the 24px icon on the 27px first
               text line (deliberately off the 4px spacing scale) */}

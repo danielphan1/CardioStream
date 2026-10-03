@@ -35,7 +35,7 @@ import { useFilters } from "../store/filters";
 const boxClass =
   "min-h-12 flex items-center gap-2 rounded-xl py-2 px-4 text-label " +
   "bg-[var(--color-mist)] text-[var(--color-depth)] " +
-  "border-2 border-[var(--color-depth)] shadow-[var(--shadow-elevation)] cursor-pointer";
+  "border border-[var(--color-hairline)] shadow-[var(--shadow-elevation)] cursor-pointer";
 
 export function ShowPanel() {
   const visibleDatasets = useFilters((s) => s.visibleDatasets);

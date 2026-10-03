@@ -312,7 +312,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             className={
               micArmed
                 ? "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--cat-normal)] bg-[var(--cat-normal)] text-[var(--cat-chip-text)]"
-                : "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] text-[var(--color-depth)]"
+                : "flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-[var(--color-hairline)] bg-[var(--color-deck)] text-[var(--color-depth)]"
             }
           >
             {voiceState === "paused" ? (
@@ -329,7 +329,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           disabled={anyWorking}
           aria-label="Type a dashboard command"
           placeholder={placeholder}
-          className="min-h-12 flex-grow rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)] disabled:cursor-not-allowed disabled:border-dashed disabled:bg-[var(--color-mist)]"
+          className="min-h-12 flex-grow rounded-xl border border-[var(--color-hairline)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:bg-[var(--color-mist)]"
         />
         {/* Disabled = DESIGN.md's Dashed-Border Rule (2px dashed Ink, Sky/mist
             fill), never a dimmed solid. The base accent border is solid so the
@@ -337,7 +337,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
+          className="min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
         >
           Send
         </button>
@@ -363,7 +363,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            className="min-h-12 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             Cancel
           </button>

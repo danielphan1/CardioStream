@@ -68,7 +68,7 @@ export function AssistantPopup({
         onClick={toggleOpen}
         aria-expanded={open}
         aria-controls="assistant-panel"
-        className="flex min-h-14 items-center gap-2 rounded-full border-2 border-[var(--color-depth)] bg-[var(--color-panel)] px-5 text-label text-[var(--color-panel-text)] shadow-[var(--shadow-elevation)]"
+        className="flex min-h-14 items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-panel)] px-5 text-label text-[var(--color-panel-text)] shadow-[var(--shadow-elevation)]"
       >
         <Mic aria-hidden="true" className="h-6 w-6 shrink-0" />
         Assistant
@@ -84,7 +84,7 @@ export function AssistantPopup({
         aria-label="Assistant"
         hidden={!mounted}
         data-surface="panel"
-        className={`w-[min(92vw,480px)] max-h-[70vh] overflow-y-auto rounded-xl border-2 border-[var(--color-depth)] bg-[var(--color-panel)] px-4 pb-4 shadow-[var(--shadow-elevation)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
+        className={`w-[min(92vw,480px)] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--color-hairline)] bg-[var(--color-panel)] px-4 pb-4 shadow-[var(--shadow-elevation)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
           shown ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -98,7 +98,7 @@ export function AssistantPopup({
             ref={closeButtonRef}
             type="button"
             onClick={close}
-            className="flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-deck)] px-4 text-label text-[var(--color-depth)]"
+            className="flex min-h-12 items-center gap-2 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-deck)] px-4 text-label text-[var(--color-depth)]"
           >
             <X aria-hidden="true" className="h-6 w-6 shrink-0" />
             Close

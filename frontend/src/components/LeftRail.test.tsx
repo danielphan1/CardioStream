@@ -105,14 +105,20 @@ describe("LeftRail demo badge (D-08, re-homed from Header.test.tsx)", () => {
 });
 
 describe("LeftRail surface (§5.0/§5.1 Flat-Sea Rule)", () => {
-  it("is a 240px rail with a 2px border on its right edge only", async () => {
+  it("is a 240px rail with a hairline border on its right edge only", async () => {
     mockGetHealth.mockResolvedValue(health({ demo: false }));
     const { container } = renderRail(<LeftRail />);
 
     await screen.findByText("health-settled");
     const root = railRoot(container);
     expect(root.className).toContain("w-60");
-    expect(root.className).toContain("border-r-2");
+    // 1px --color-hairline since the "Open Water" re-skin (quick 261003-hev);
+    // it was a 2px --color-depth edge. Still one edge, still only on the
+    // right — the Flat-Sea Rule this test guards is about WHICH edges carry a
+    // boundary, not how thick it is.
+    expect(root.className).toContain("border-r");
+    expect(root.className).not.toContain("border-r-2");
+    expect(root.className).toContain("border-[var(--color-hairline)]");
     expect(root.className).toContain("shrink-0");
   });
 

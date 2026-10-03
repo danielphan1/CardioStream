@@ -26,7 +26,7 @@ import { useGuide } from "../store/guide";
 // the two buttons must not be able to drift apart; both buttons carrying it is
 // asserted by SlimTopBar.test.tsx rather than by a grep count.
 const HEADER_CHROME =
-  "flex min-h-12 items-center gap-2 rounded-lg border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]";
+  "flex min-h-12 items-center gap-2 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]";
 
 export function SlimTopBar({
   menuOpen,
@@ -50,7 +50,7 @@ export function SlimTopBar({
   const demoMode = useHealth().data?.demo ?? false;
 
   return (
-    <div className="flex min-h-16 flex-wrap items-center gap-2 bg-[var(--color-mist)] border-b-2 border-[var(--color-depth)] px-4 py-2">
+    <div className="flex min-h-16 flex-wrap items-center gap-2 bg-[var(--color-mist)] border-b border-[var(--color-hairline)] px-4 py-2">
       <Sailboat
         aria-hidden="true"
         size={32}
@@ -70,7 +70,7 @@ export function SlimTopBar({
       {demoMode && (
         <span
           role="status"
-          className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-depth)] bg-[var(--color-mist)] px-4 py-1 text-base text-[var(--color-depth)]"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-1 text-base text-[var(--color-depth)]"
         >
           <Info aria-hidden="true" size={18} />
           Guest Demo · Synthetic Data
