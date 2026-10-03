@@ -32,8 +32,9 @@ export function SingleDateField({ label, value, onChange }: SingleDateFieldProps
         invalid={value !== "" && !valid}
       />
 
-      <div style={rdpSizing} className="text-base text-[var(--color-depth)]">
+      <div className="text-base text-[var(--color-depth)]">
         <DayPicker
+          style={rdpSizing}
           mode="single"
           selected={valid ? parseDateOnly(value) : undefined}
           onSelect={(d) => d && onChange(formatDateParam(d))}

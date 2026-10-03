@@ -91,8 +91,9 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
         />
       </div>
 
-      <div style={rdpSizing} className="text-base text-[var(--color-depth)]">
+      <div className="text-base text-[var(--color-depth)]">
         <DayPicker
+          style={rdpSizing}
           mode="range"
           selected={selected}
           onSelect={handleSelect}
