@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Charts & Filters
 status: awaiting_verification
-last_updated: "2026-10-03T12:50:00.000Z"
-last_activity: "2026-10-03 -- quick 261003-hev shipped: \"Open Water\" visual overhaul + a 5x band-opacity bug"
+last_updated: "2026-10-03T20:50:00.000Z"
+last_activity: "2026-10-03 -- quick 261003-iuc shipped: dead date-picker variables (42px targets), timeline margin at phone width, gradient fills"
 progress:
   total_phases: 8
   completed_phases: 4
@@ -31,7 +31,7 @@ Next unplanned: Phase 17 (analytical-views-bp-heatmap-and-event-correlation) —
 Deployed: live at https://health-dashboard-demo.vercel.app (see Blockers for the credential spelling
   discrepancy) — Railway project "friendly-rebirth" (service CardioStream + Postgres) + Vercel project
   health-dashboard-demo. 19-HUMAN-UAT.md's one test passed; see that file for verification detail.
-Last activity: 2026-10-03 - Completed quick task 261003-hev: "Open Water" re-skin (4 commits, 52d672c..a2c111c)
+Last activity: 2026-10-03 - Completed quick task 261003-iuc: date-picker 48px fix, timeline margin, gradients
 
 ## Performance Metrics
 
@@ -209,6 +209,7 @@ None yet.
 | 260930-n7i | Fix 5 confirmed findings from an AI-slop design-cliche audit of the frontend: (1) replaced Inter + Space Grotesk with Atkinson Hyperlegible as the single family, deleting the --font-display token and restoring DESIGN.md's Two-Weight Rule (3 type tokens + 15 font-semibold + 8 inline fontWeight all 600 -> 700, since Atkinson ships only 400/700 static and every surviving 600 was a browser-synthesized fake weight); (2) collapsed three utilities rendering the same 18px (text-lg x46, text-[18px] x23, text-base) onto one token; (3) pulled off-scale spacing onto DESIGN.md's 4px scale, deliberately KEEPING mt-0.5 at 5 sites as documented optical alignment ((27-24)/2); (4) replaced 4 disabled:opacity fades with DESIGN.md's dashed-border rule - the LoginGate submit button went from ~2.6:1 (a WCAG failure) to 14.11:1 light / 14.44:1 dark; (5) rewrote 20 user-facing em-dash-joined strings, preserving the StatsStrip null placeholder and chart data labels. Follow-up CHIP_CHAR_WIDTH_FACTOR risk CLOSED by in-browser canvas measurement: Atkinson is ~10% wider than Inter but the 0.62 factor still over-estimates the longest label by 72px (required factor 0.498), so the constant and chartData.test.ts's 383/295/40 expectations stand unchanged | 2026-09-30 | 26f08e7, b4d9fb7, e99a236 | Verified | [260930-n7i-design-audit-fixes](./quick/260930-n7i-design-audit-fixes/) |
 | 261002-kem | Make the AI voice chat a dismissible floating popup: the Command Bar moved out of the shell's top band into a card anchored above a persistent bottom-right Assistant trigger, with the dismissal persisted to localStorage (hv-assistant-open, default open). The card is HIDDEN, never unmounted, because CommandBar owns the live SpeechRecognition session and the primary user cannot tap a trigger to restart one; a wake-word hit re-opens the card by itself. Reusing useDismissable surfaced TWO focus defects, both fixed: the hook stole focus to Close on mount for a consumer that mounts open, and — latent since 16.1 — its focus() ran one commit before `mounted` rendered the panel, so focus-on-open was a SILENT NO-OP for every consumer in the app. Confirmed live: opening the Filters popover now actually lands focus on its Close. The three tests that covered this all mounted their panel already open (the one path no caller takes) and now open by transition | 2026-10-03 | 087f334 | Verified (tests + live DOM); narrow-viewport look outstanding | [261002-kem-make-the-voice-chat-a-dismissible-popup](./quick/261002-kem-make-the-voice-chat-a-dismissible-popup/) |
 | 261003-hev | Client-driven visual overhaul: re-skin the whole frontend into "Open Water" (light) / "Deep Watch" (dark), modeled on two reference dashboards the user supplied, keeping the nautical identity. Blue-TINTED canvas with WHITE elevated cards (the light theme now inverts which of deck/mist is lighter), 1px blue-grey hairlines replacing 47 2px near-black borders, 18px radius, wider softer shadow, four vitals KPI cards, charts in their own cards, rounded bar caps. The user's "brighter sky blue" steer collided with WCAG 1.4.11 — #8FD3F4 is 1.47:1 on the canvas, so a sky button would have no edge — resolved by splitting the role: #1278AE carries text-bearing controls, sky is graphic-only, and a new non-inverting --color-accent-on-panel puts the bright blue on Send inside the dark panel (7.86:1). Found and fixed a bug no test could catch: the timeline's clinical bands had been painting at 50% opacity, 5x the documented 10%, since Phase 13, because .chart-band set fill-opacity on the Recharts <g> while the <path> inside carried its own attribute. Clinical/overlay/series hues byte-identical; category tints and dimmed-line literals recomputed since their grounds moved. DESIGN.md rewritten (it still documented the pre-Phase-13 terracotta world). 765 tests, tsc and lint clean. SECOND PASS (8942947) after the user said it still did not look like the references: they were right, the first pass repainted but did not re-compose. Added --color-muted for secondary text at regular weight, dropped borders from static CARDS (1.4.11 governs interactive components, not containers), put a greeting header at the top of the page, made the Readings tile the dark navy feature card, de-boxed the rail nav rows, and quieted the bands to 6%. 774 tests | 2026-10-03 | 52d672c, 427faef, 3b45014, a2c111c, 8942947 | Verified (tests + live DOM audit, both themes); narrow viewport outstanding | [261003-hev-visual-overhaul-modern-open-water-re-ski](./quick/261003-hev-visual-overhaul-modern-open-water-re-ski/) |
+| 261003-iuc | Fix three re-skin follow-ups found while verifying at 390px: (1) every `--rdp-*` custom property in `rdpSizing.ts` was dead — spread on a wrapper div while react-day-picker declares them on `.rdp-root`, so day buttons rendered 42px against the non-negotiable 48px floor and the accent painted pure blue; (2) `CombinedTimeline`'s hardcoded `right: 112` margin left an 86px plot inside a 318px chart at phone width — now responsive, with a `SeriesKey` replacing the dropped end-label pills; (3) gradient area fills, deferred from 261003-hev | 2026-10-03 | 3f1006a | Verified | [261003-iuc-date-picker-vars-dead-timeline-margin-at](./quick/261003-iuc-date-picker-vars-dead-timeline-margin-at/) |
 
 ## Deferred Items
 
@@ -231,20 +232,27 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-10-03T12:50:00.000Z
-Stopped at: Quick task 261003-hev finished and committed, including a second composition pass after
-  user feedback — the frontend is re-skinned to "Open Water", 774/774 tests green, verified live
-Next action: Phase 15 (Unified Filter Surface) still has a UI-SPEC ready to plan. Two open items from
-  today's two quick tasks, both deliberately not decided: 261002-kem's Escape/`Close` ambiguity, and
-  whether the timeline should get gradient area fills now that the bands sit at their correct 10%.
-Resume file: .planning/quick/261003-hev-visual-overhaul-modern-open-water-re-ski/261003-hev-SUMMARY.md
+Last session: 2026-10-03T20:50:00.000Z
+Stopped at: Quick task 261003-iuc finished and committed — 784/784 tests green, verified live in both
+  themes with the browser tab actually visible for the first time
+Next action: Phase 17 (Analytical Views) is the next real phase and has no CONTEXT.md, so
+  /gsd-discuss-phase 17 before planning. Phase 16.1 is still executed-but-unverified.
+Resume file: .planning/quick/261003-iuc-date-picker-vars-dead-timeline-margin-at/261003-iuc-SUMMARY.md
 
 ## Operator Next Steps
 
-- Phase 19 done. Plan Phase 15 (/gsd-plan-phase 15) or scope/name a milestone for 13-19 first.
-- Look at the app on a phone. Chrome refused to resize below ~1647px in both of today's sessions, so
-  neither the assistant popup's sub-640px layout nor the new KPI card grid at 2 columns has been seen live.
-- DESIGN.md is now accurate again (261003-hev). It had been describing the pre-Phase-13 terracotta
-  palette for two phases — worth re-checking it after any future visual phase, not just after a re-skin.
-- Guest demo credentials (demo_guest / demo_test_pass) are stored only in Railway's env vars and this
-  session's chat history — write them down somewhere durable if they need to be shared with portfolio viewers.
+- **Browser verification was lying, and it is worth knowing why.** "Chrome refused to resize below
+  ~1647px" was never a Chrome rule — `document.visibilityState` was `"hidden"` for the automated tab,
+  which silently no-ops `resize_window` AND freezes `requestAnimationFrame`. Anything rAF-driven then
+  renders frozen while screenshots still succeed, so `GuideOverlay` and the Recharts series both looked
+  broken when they were fine. Check `visibilityState` before trusting any visual pass; for narrow
+  widths, load the app into a same-origin iframe instead of resizing the window.
+- Phase 15, 16 and 19 are all Complete in ROADMAP.md — STATE.md's old "Phase 15 PLANNED, ready to
+  execute" line was stale and has been corrected. Phase 17 is the next real phase (no CONTEXT.md yet).
+- Phase 16.1 is executed but has no VERIFICATION.md or HUMAN-UAT.md. Now that the tab-visibility
+  problem is understood, that verification can actually be done.
+- Still unverified by eye: Login, and the Guide's own content. Band-label chips crowd the data at
+  390px ("Normal"/"Hypotension"/Bradycardia overlap) — the obvious next narrow-width item.
+- Guest demo credentials: STATE.md says `guest_demo` at the top of this file and `demo_guest` here.
+  One is wrong; Railway's env vars are the source of truth. Worth writing down durably either way.
+- DESIGN.md was made accurate again in 261003-hev — re-check it after any future visual phase.
