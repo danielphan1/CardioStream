@@ -42,9 +42,10 @@
  */
 import { useState } from "react";
 import {
+  Area,
+  ComposedChart,
   DefaultZIndexes,
   Line,
-  LineChart,
   ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
@@ -88,7 +89,7 @@ type BandLabelChipProps = {
   viewBox?: { x?: number; y?: number; width?: number; height?: number };
 };
 
-/** Render data for the LineChart once trend lines exist (D-02) — a strict
+/** Render data for the chart once trend lines exist (D-02) — a strict
  *  superset of TimePoint, so bands/axes/markers/tooltip (which never read
  *  these keys) are unaffected. */
 type TrendPoint = TimePoint & {
@@ -96,6 +97,28 @@ type TrendPoint = TimePoint & {
   diastolicTrend?: number;
   pulseTrend?: number;
 };
+
+// Below this rendered width the 112px right margin — sized for the widest
+// end-label pill — costs more than the pills are worth: at a 390px viewport
+// the chart is 318px, and 318 - 112 - 60 - 60 leaves 86px of drawable plot.
+// Under this width the pills come off and `SeriesKey` identifies the series
+// instead, so nothing is lost but the inline placement (quick 261003-iuc).
+const COMPACT_WIDTH_PX = 520;
+
+// Peak alpha of the gradient area under each line, fading to 0 at the axis.
+// Deliberately low: these fills sit ON TOP of the six clinical bands, and the
+// reason the gradients were deferred in 261003-hev was that a heavy fill over
+// a tinted band turns to mud. The lines themselves paint after the areas at
+// full strength, so no series' contrast against its ground changes.
+const AREA_PEAK_OPACITY = 0.14;
+
+// One gradient per series. Ids are referenced by `url(#...)`, so they must
+// stay unique within the document — there is only ever one timeline mounted.
+const SERIES_FILLS = [
+  { id: "fill-systolic", color: "var(--line-systolic)" },
+  { id: "fill-diastolic", color: "var(--line-diastolic)" },
+  { id: "fill-pulse", color: "var(--line-pulse)" },
+] as const;
 
 const CHIP_FONT_SIZE = 14;
 const CHIP_PAD_X = 6;
@@ -211,6 +234,51 @@ const BANDS: { cat: BPCategory; y1: number; y2: number; chip: boolean }[] = [
   { cat: "Hypertensive Crisis", y1: 180, y2: 220, chip: true },
 ];
 
+/** The series key that replaces the end-label pills below COMPACT_WIDTH_PX.
+ *  Rendered ABOVE the chart, not below it: below, it lands at the very bottom
+ *  of the scroll and the fixed Assistant button sits on top of the last entry
+ *  at maximum scroll, so "Pulse" could never be read at 390px.
+ *  Not a Recharts <Legend>: this has to mirror the pills exactly, dash pattern
+ *  included, because the dash — not the hue — is what separates pulse from
+ *  systolic in greyscale and under colour-vision deficiency (see the Line
+ *  below). A <Legend> would also eat vertical space from the plot, which is
+ *  the one thing in short supply at this width. */
+function SeriesKey({ showBP, showPulse }: { showBP: boolean; showPulse: boolean }) {
+  const entries = [
+    ...(showBP
+      ? [
+          { label: "Systolic", color: "var(--line-systolic)", dashed: false },
+          { label: "Diastolic", color: "var(--line-diastolic)", dashed: false },
+        ]
+      : []),
+    ...(showPulse ? [{ label: "Pulse", color: "var(--line-pulse)", dashed: true }] : []),
+  ];
+  return (
+    <ul className="m-0 flex shrink-0 list-none flex-wrap gap-x-5 gap-y-1 p-0">
+      {entries.map(({ label, color, dashed }) => (
+        <li
+          key={label}
+          className="flex items-center gap-2"
+          style={{ fontSize: 18, color: "var(--color-depth)" }}
+        >
+          <svg width="26" height="12" aria-hidden="true" focusable="false">
+            <line
+              x1="1"
+              y1="6"
+              x2="25"
+              y2="6"
+              stroke={color}
+              strokeWidth="4"
+              strokeDasharray={dashed ? "7 4" : undefined}
+            />
+          </svg>
+          {label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function CombinedTimeline({
   readings,
   overlayEvents,
@@ -224,6 +292,10 @@ export default function CombinedTimeline({
   const { ref, width } = useElementWidth<HTMLDivElement>();
   const hasTrend = points.length >= 7;
   const crowded = isDotCrowded(width, points.length);
+  // `width` is 0 until the ResizeObserver first fires (and stays 0 in jsdom),
+  // so `compact` is false by default — the full-width layout is what renders
+  // when the width is simply not known yet.
+  const compact = width > 0 && width < COMPACT_WIDTH_PX;
 
   // D-01/D-02: bold rolling-average trend lines, merged onto a superset of
   // `points` so bands/axes/markers/tooltip (which never read the new keys)
@@ -267,15 +339,18 @@ export default function CombinedTimeline({
           ? "Bold lines show a 7-reading rolling average. Lighter lines show each individual reading."
           : `Trend line needs at least 7 readings to show. You have ${points.length} here, so only individual readings are shown.`}
       </p>
+      {compact && <SeriesKey showBP={showBP} showPulse={showPulse} />}
       <div className="min-h-0 flex-1">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
+        <ComposedChart
           data={trendPoints}
           accessibilityLayer
           onClick={() => setDismissed(false)}
           // right: fits the widest end-label pill ("Diastolic" ≈ 96px) with
-          // headroom so it never clips against the SVG edge.
-          margin={{ top: 8, right: 112, bottom: 8, left: 0 }}
+          // headroom so it never clips against the SVG edge. When `compact`
+          // drops the pills there is nothing left to reserve it for, and
+          // handing those 100px back to the plot is the whole point.
+          margin={{ top: 8, right: compact ? 12 : 112, bottom: 8, left: 0 }}
         >
           {/* Bands FIRST — behind the lines (Pitfall 7). Blood-pressure
               context, so they follow the blood_pressure dataset (D-04). */}
@@ -304,6 +379,55 @@ export default function CombinedTimeline({
                 label={makeBandLabelChip(cat)}
               />
             ))}
+
+          {/* Gradient fills under each series (deferred from 261003-hev,
+              requested in 261003-iuc). These paint BEFORE the Lines, so the
+              strokes stay full-strength on top and no series' contrast against
+              its ground changes — AREA_PEAK_OPACITY explains why the alpha is
+              as low as it is. The fill follows whichever line is the prominent
+              one: the bold trend once 7+ readings exist, the raw line until
+              then, mirroring where the end-label pill goes. */}
+          <defs>
+            {SERIES_FILLS.map(({ id, color }) => (
+              <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity={AREA_PEAK_OPACITY} />
+                <stop offset="100%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            ))}
+          </defs>
+          {showBP && (
+            <Area
+              yAxisId={MMHG}
+              dataKey="systolic"
+              stroke="none"
+              fill="url(#fill-systolic)"
+              isAnimationActive={animate}
+              activeDot={false}
+              tooltipType="none"
+            />
+          )}
+          {showBP && (
+            <Area
+              yAxisId={MMHG}
+              dataKey="diastolic"
+              stroke="none"
+              fill="url(#fill-diastolic)"
+              isAnimationActive={animate}
+              activeDot={false}
+              tooltipType="none"
+            />
+          )}
+          {showPulse && (
+            <Area
+              yAxisId={BPM}
+              dataKey="pulse"
+              stroke="none"
+              fill="url(#fill-pulse)"
+              isAnimationActive={animate}
+              activeDot={false}
+              tooltipType="none"
+            />
+          )}
 
           {/* Real time axis (Pitfall 5) — proportional gaps. */}
           <XAxis
@@ -370,7 +494,7 @@ export default function CombinedTimeline({
               activeDot={{ r: 10 }}
               isAnimationActive={animate}
             >
-              {!hasTrend && (
+              {!hasTrend && !compact && (
                 <LabelList
                   content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
                 />
@@ -388,7 +512,7 @@ export default function CombinedTimeline({
               activeDot={{ r: 10 }}
               isAnimationActive={animate}
             >
-              {!hasTrend && (
+              {!hasTrend && !compact && (
                 <LabelList
                   content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
                 />
@@ -411,7 +535,7 @@ export default function CombinedTimeline({
               activeDot={{ r: 10 }}
               isAnimationActive={animate}
             >
-              {!hasTrend && (
+              {!hasTrend && !compact && (
                 <LabelList
                   content={makeEndLabel(lastIndex, "Pulse", "var(--line-pulse)", endLabelYs)}
                 />
@@ -432,9 +556,11 @@ export default function CombinedTimeline({
               activeDot={false}
               isAnimationActive={animate}
             >
-              <LabelList
-                content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
-              />
+              {!compact && (
+                <LabelList
+                  content={makeEndLabel(lastIndex, "Systolic", "var(--line-systolic)", endLabelYs)}
+                />
+              )}
             </Line>
           )}
           {showBP && hasTrend && (
@@ -447,9 +573,11 @@ export default function CombinedTimeline({
               activeDot={false}
               isAnimationActive={animate}
             >
-              <LabelList
-                content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
-              />
+              {!compact && (
+                <LabelList
+                  content={makeEndLabel(lastIndex, "Diastolic", "var(--line-diastolic)", endLabelYs)}
+                />
+              )}
             </Line>
           )}
           {showPulse && hasTrend && (
@@ -463,9 +591,11 @@ export default function CombinedTimeline({
               activeDot={false}
               isAnimationActive={animate}
             >
-              <LabelList
-                content={makeEndLabel(lastIndex, "Pulse", "var(--line-pulse)", endLabelYs)}
-              />
+              {!compact && (
+                <LabelList
+                  content={makeEndLabel(lastIndex, "Pulse", "var(--line-pulse)", endLabelYs)}
+                />
+              )}
             </Line>
           )}
 
@@ -489,7 +619,7 @@ export default function CombinedTimeline({
               />
             );
           })}
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
       </div>
     </div>
