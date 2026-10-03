@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Charts & Filters
 status: awaiting_verification
-last_updated: "2026-10-03T11:40:00.000Z"
-last_activity: "2026-10-03 -- quick 261002-kem shipped: assistant popup + a latent useDismissable focus bug"
+last_updated: "2026-10-03T12:50:00.000Z"
+last_activity: "2026-10-03 -- quick 261003-hev shipped: \"Open Water\" visual overhaul + a 5x band-opacity bug"
 progress:
   total_phases: 8
   completed_phases: 4
@@ -31,7 +31,7 @@ Phase: 16.1
 Phase: 15 (unified-filter-surface-multi-select-checkboxes-pulse-categor) — PLANNED, ready to execute
 Plan: Not started
 Status: Executed — awaiting human browser verification
-Last activity: 2026-10-03 - Completed quick task 261002-kem: assistant popup (commit 087f334)
+Last activity: 2026-10-03 - Completed quick task 261003-hev: "Open Water" re-skin (4 commits, 52d672c..a2c111c)
 
 ## Performance Metrics
 
@@ -208,6 +208,7 @@ None yet.
 | 260916-hu8 | Update PROJECT.md Requirements → Validated section (Phases 13, 14, 19) and correct the stale "no milestone currently in progress" Active/Next Milestone framing to name Phases 15-18 as the open continuation work | 2026-09-16 | d90d86e | | [260916-hu8-update-project-md-requirements-validated](./quick/260916-hu8-update-project-md-requirements-validated/) |
 | 260930-n7i | Fix 5 confirmed findings from an AI-slop design-cliche audit of the frontend: (1) replaced Inter + Space Grotesk with Atkinson Hyperlegible as the single family, deleting the --font-display token and restoring DESIGN.md's Two-Weight Rule (3 type tokens + 15 font-semibold + 8 inline fontWeight all 600 -> 700, since Atkinson ships only 400/700 static and every surviving 600 was a browser-synthesized fake weight); (2) collapsed three utilities rendering the same 18px (text-lg x46, text-[18px] x23, text-base) onto one token; (3) pulled off-scale spacing onto DESIGN.md's 4px scale, deliberately KEEPING mt-0.5 at 5 sites as documented optical alignment ((27-24)/2); (4) replaced 4 disabled:opacity fades with DESIGN.md's dashed-border rule - the LoginGate submit button went from ~2.6:1 (a WCAG failure) to 14.11:1 light / 14.44:1 dark; (5) rewrote 20 user-facing em-dash-joined strings, preserving the StatsStrip null placeholder and chart data labels. Follow-up CHIP_CHAR_WIDTH_FACTOR risk CLOSED by in-browser canvas measurement: Atkinson is ~10% wider than Inter but the 0.62 factor still over-estimates the longest label by 72px (required factor 0.498), so the constant and chartData.test.ts's 383/295/40 expectations stand unchanged | 2026-09-30 | 26f08e7, b4d9fb7, e99a236 | Verified | [260930-n7i-design-audit-fixes](./quick/260930-n7i-design-audit-fixes/) |
 | 261002-kem | Make the AI voice chat a dismissible floating popup: the Command Bar moved out of the shell's top band into a card anchored above a persistent bottom-right Assistant trigger, with the dismissal persisted to localStorage (hv-assistant-open, default open). The card is HIDDEN, never unmounted, because CommandBar owns the live SpeechRecognition session and the primary user cannot tap a trigger to restart one; a wake-word hit re-opens the card by itself. Reusing useDismissable surfaced TWO focus defects, both fixed: the hook stole focus to Close on mount for a consumer that mounts open, and — latent since 16.1 — its focus() ran one commit before `mounted` rendered the panel, so focus-on-open was a SILENT NO-OP for every consumer in the app. Confirmed live: opening the Filters popover now actually lands focus on its Close. The three tests that covered this all mounted their panel already open (the one path no caller takes) and now open by transition | 2026-10-03 | 087f334 | Verified (tests + live DOM); narrow-viewport look outstanding | [261002-kem-make-the-voice-chat-a-dismissible-popup](./quick/261002-kem-make-the-voice-chat-a-dismissible-popup/) |
+| 261003-hev | Client-driven visual overhaul: re-skin the whole frontend into "Open Water" (light) / "Deep Watch" (dark), modeled on two reference dashboards the user supplied, keeping the nautical identity. Blue-TINTED canvas with WHITE elevated cards (the light theme now inverts which of deck/mist is lighter), 1px blue-grey hairlines replacing 47 2px near-black borders, 18px radius, wider softer shadow, four vitals KPI cards, charts in their own cards, rounded bar caps. The user's "brighter sky blue" steer collided with WCAG 1.4.11 — #8FD3F4 is 1.47:1 on the canvas, so a sky button would have no edge — resolved by splitting the role: #1278AE carries text-bearing controls, sky is graphic-only, and a new non-inverting --color-accent-on-panel puts the bright blue on Send inside the dark panel (7.86:1). Found and fixed a bug no test could catch: the timeline's clinical bands had been painting at 50% opacity, 5x the documented 10%, since Phase 13, because .chart-band set fill-opacity on the Recharts <g> while the <path> inside carried its own attribute. Clinical/overlay/series hues byte-identical; category tints and dimmed-line literals recomputed since their grounds moved. DESIGN.md rewritten (it still documented the pre-Phase-13 terracotta world). 765 tests, tsc and lint clean | 2026-10-03 | 52d672c, 427faef, 3b45014, a2c111c | Verified (tests + live DOM audit, both themes); narrow viewport outstanding | [261003-hev-visual-overhaul-modern-open-water-re-ski](./quick/261003-hev-visual-overhaul-modern-open-water-re-ski/) |
 
 ## Deferred Items
 
@@ -230,20 +231,20 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-10-03T11:40:00.000Z
-Stopped at: Quick task 261002-kem finished and committed (087f334) — the assistant is a dismissible
-  popup, 758/758 frontend tests green, verified live against the dev server
-Next action: Phase 15 (Unified Filter Surface) still has a UI-SPEC ready to plan; no formal milestone
-  wraps phases 13-19 yet. Two product calls were raised by 261002-kem and deliberately not made —
-  see its SUMMARY's Follow-ups (one Escape now closes two surfaces; two `Close` buttons can share the
-  screen, which the 16.1 Copywriting Contract assumed impossible).
-Resume file: .planning/quick/261002-kem-make-the-voice-chat-a-dismissible-popup/261002-kem-SUMMARY.md
+Last session: 2026-10-03T12:50:00.000Z
+Stopped at: Quick task 261003-hev finished and committed — the frontend is re-skinned to "Open Water",
+  765/765 tests green, verified live in both themes
+Next action: Phase 15 (Unified Filter Surface) still has a UI-SPEC ready to plan. Two open items from
+  today's two quick tasks, both deliberately not decided: 261002-kem's Escape/`Close` ambiguity, and
+  whether the timeline should get gradient area fills now that the bands sit at their correct 10%.
+Resume file: .planning/quick/261003-hev-visual-overhaul-modern-open-water-re-ski/261003-hev-SUMMARY.md
 
 ## Operator Next Steps
 
 - Phase 19 done. Plan Phase 15 (/gsd-plan-phase 15) or scope/name a milestone for 13-19 first.
-- Look at the assistant popup on a phone: the window would not resize below ~1647px in the 261002-kem
-  session, so the sub-640px layout (trigger vs. the bottom of the Readings table / Add Record form) is the
-  one thing that change has not been seen doing.
+- Look at the app on a phone. Chrome refused to resize below ~1647px in both of today's sessions, so
+  neither the assistant popup's sub-640px layout nor the new KPI card grid at 2 columns has been seen live.
+- DESIGN.md is now accurate again (261003-hev). It had been describing the pre-Phase-13 terracotta
+  palette for two phases — worth re-checking it after any future visual phase, not just after a re-skin.
 - Guest demo credentials (demo_guest / demo_test_pass) are stored only in Railway's env vars and this
   session's chat history — write them down somewhere durable if they need to be shared with portfolio viewers.
