@@ -1,52 +1,57 @@
-// WCAG contrast regression test for the Phase 13 "Slack Water" (light) /
-// "Night Watch" (dark) accent, hazard, and panel token trio. Mirrors
+// WCAG contrast regression test for the "Open Water" (light) / "Deep Watch"
+// (dark) surface, accent, hazard and panel tokens (quick 261003-hev, which
+// replaced Phase 13's "Slack Water"/"Night Watch"). Mirrors
 // index.css's :root/.dark hex literals so a future token edit that
 // regresses contrast fails this test rather than shipping.
 import { hex } from "wcag-contrast";
 import { describe, expect, it } from "vitest";
 
 const LIGHT = {
-  deck: "#F5F7F6",
-  mist: "#E3EBE9",
-  depth: "#101C2E",
-  accent: "#0D826C",
+  deck: "#EDF3F9",
+  mist: "#FFFFFF",
+  depth: "#0B2034",
+  accent: "#1278AE",
   accentText: "#FFFFFF",
-  focus: "#8A5A1E",
+  sky: "#8FD3F4",
+  hairline: "#5E7E99",
+  focus: "#8A5620",
   hazard: "#9C2B22",
   hazardText: "#FFFFFF",
-  panel: "#101C2E",
-  panelText: "#F5F7F6",
+  panel: "#0E3356",
+  panelText: "#F2F8FD",
   lineSystolic: "#1E3A5F",
   lineDiastolic: "#AC40BF",
   linePulse: "#9E4A24",
-  lineSystolicDimmedVsDeck: "#3E5676",
-  lineSystolicDimmedVsMist: "#3C5574",
-  lineDiastolicDimmedVsDeck: "#B75BC7",
-  lineDiastolicDimmedVsMist: "#B45AC5",
-  linePulseDimmedVsDeck: "#AB6444",
-  linePulseDimmedVsMist: "#A86242",
+  lineSystolicDimmedVsDeck: "#3D5676",
+  lineSystolicDimmedVsMist: "#405877",
+  lineDiastolicDimmedVsDeck: "#B65BC8",
+  lineDiastolicDimmedVsMist: "#B85DC9",
+  linePulseDimmedVsDeck: "#AA6344",
+  linePulseDimmedVsMist: "#AD6545",
 };
 
 const DARK = {
-  deck: "#0A121F",
-  mist: "#101D30",
+  deck: "#071624",
+  mist: "#0D2234",
   depth: "#E7EEF2",
-  accent: "#33C1A6",
-  accentText: "#0A121F",
+  accent: "#56C2EC",
+  accentText: "#071624",
+  sky: "#8FD3F4",
+  hairline: "#6D90AD",
   focus: "#D9A356",
   hazard: "#E2685A",
-  hazardText: "#0A121F",
-  panel: "#050A12",
-  panelText: "#F5F7F6",
+  hazardText: "#071624",
+  panel: "#04101C",
+  panelText: "#F2F8FD",
   lineSystolic: "#9DBFE0",
   lineDiastolic: "#B055BE",
   linePulse: "#E3A07C",
-  lineSystolicDimmedVsDeck: "#87A5C3",
-  lineSystolicDimmedVsMist: "#88A7C6",
-  lineDiastolicDimmedVsDeck: "#974BA6",
+  lineSystolicDimmedVsDeck: "#87A6C4",
+  lineSystolicDimmedVsMist: "#87A7C6",
+  lineDiastolicDimmedVsDeck: "#974CA7",
   lineDiastolicDimmedVsMist: "#984DA9",
-  linePulseDimmedVsDeck: "#C28B6E",
-  linePulseDimmedVsMist: "#C38C71",
+  linePulseDimmedVsDeck: "#C28B6F",
+  linePulseDimmedVsMist: "#C38D71",
 };
 
 // --color-signal-on-panel: ONE literal for both themes, so it is deliberately
@@ -88,23 +93,23 @@ type CategoryKey = (typeof CATEGORY_KEYS)[number];
 // Selected category-chip fills — 12% of the category hue over --color-deck.
 // Mirrors index.css's --cat-*-tint / --ref-bradycardia-tint literals.
 const TINTS_LIGHT: Record<CategoryKey, string> = {
-  hypotension: "#DFE7EA",
-  normal: "#DDE8E3",
-  elevated: "#E8E6D8",
-  stage1: "#EDE4DC",
-  stage2: "#EBDFDD",
-  crisis: "#E6DDDC",
-  refBradycardia: "#DFE7EA",
+  hypotension: "#D8E3EC",
+  normal: "#D6E4E6",
+  elevated: "#E1E3DB",
+  stage1: "#E6E1DE",
+  stage2: "#E4DCDF",
+  crisis: "#DFDADE",
+  refBradycardia: "#D8E3EC",
 };
 
 const TINTS_DARK: Record<CategoryKey, string> = {
-  hypotension: "#1A2534",
-  normal: "#14272C",
-  elevated: "#242625",
-  stage1: "#242125",
-  stage2: "#251E28",
-  crisis: "#261A24",
-  refBradycardia: "#1A2534",
+  hypotension: "#172939",
+  normal: "#122A31",
+  elevated: "#212929",
+  stage1: "#22252A",
+  stage2: "#22222D",
+  crisis: "#231E29",
+  refBradycardia: "#172939",
 };
 
 // The category hues themselves — index.css --cat-* / --ref-bradycardia.
@@ -310,10 +315,12 @@ describe("focus ring on the Command Bar's dark panel (--color-signal-on-panel)",
 // Send is accent-filled and sits on the Command Bar's dark panel, so the
 // accent needs a non-text floor against panel as well as deck and mist.
 describe("accent against the Command Bar panel (Send)", () => {
-  it("light accent against the panel clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
-    expect(hex(LIGHT.accent, LIGHT.panel)).toBeGreaterThanOrEqual(3);
-  });
-
+  // The light accent NO LONGER clears this floor after the "Open Water"
+  // re-skin (2.66:1 on the richer navy panel), which is why Send inside the
+  // panel draws with --color-accent-on-panel instead. That token's own floors
+  // are asserted in the "accent inside the dark feature panel" block at the
+  // bottom of this file, including a guard that fails if the ordinary accent
+  // ever becomes legal here again.
   it("dark accent against the panel clears non-text UI floor (3:1, WCAG 1.4.11)", () => {
     expect(hex(DARK.accent, DARK.panel)).toBeGreaterThanOrEqual(3);
   });
@@ -409,5 +416,65 @@ describe("solid vitals series separate in greyscale", () => {
 
   it("dark diastolic vs pulse stays at least 1.8:1 apart in luminance", () => {
     expect(hex(DARK.lineDiastolic, DARK.linePulse)).toBeGreaterThanOrEqual(1.8);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tokens introduced by the "Open Water" re-skin (quick 261003-hev).
+//
+// --color-hairline replaced 2px --color-depth borders with 1px ones. A
+// control's boundary is a non-text UI component, so thinning it only stays
+// legal while the colour itself clears 3:1 against BOTH grounds it is drawn
+// on — the tinted deck and the white card. This block is what stops a future
+// "make the borders softer" edit from quietly dropping under the floor.
+//
+// --color-sky is graphic-only and deliberately NOT asserted against deck: it
+// scores 1.47:1 there, which is exactly why it is never a button fill on a
+// light surface. It is asserted where it IS load-bearing: on the dark panel.
+// ---------------------------------------------------------------------------
+
+describe("hairline border contrast floors (WCAG 1.4.11, 3:1)", () => {
+  it("light hairline against deck", () => {
+    expect(hex(LIGHT.hairline, LIGHT.deck)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("light hairline against mist", () => {
+    expect(hex(LIGHT.hairline, LIGHT.mist)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("dark hairline against deck", () => {
+    expect(hex(DARK.hairline, DARK.deck)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("dark hairline against mist", () => {
+    expect(hex(DARK.hairline, DARK.mist)).toBeGreaterThanOrEqual(3);
+  });
+});
+
+// --color-accent-on-panel / -text: ONE literal pair for both themes, like
+// --color-signal-on-panel, because --color-panel does not invert either.
+const ACCENT_ON_PANEL = "#8FD3F4";
+const ACCENT_ON_PANEL_TEXT = "#0B2034";
+
+describe("accent inside the dark feature panel (--color-accent-on-panel)", () => {
+  it("its text clears AA normal text on the fill (4.5:1, WCAG 1.4.3)", () => {
+    expect(
+      hex(ACCENT_ON_PANEL_TEXT, ACCENT_ON_PANEL),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("the fill clears the non-text floor on the light-theme panel (3:1)", () => {
+    expect(hex(ACCENT_ON_PANEL, LIGHT.panel)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("the fill clears the non-text floor on the dark-theme panel (3:1)", () => {
+    expect(hex(ACCENT_ON_PANEL, DARK.panel)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("exists because --color-accent itself does NOT clear the light panel", () => {
+    // The reason this token pair exists at all. If a future edit ever makes
+    // the ordinary accent legal on the panel, this guard fails and the extra
+    // token can be retired deliberately rather than by accident.
+    expect(hex(LIGHT.accent, LIGHT.panel)).toBeLessThan(3);
   });
 });

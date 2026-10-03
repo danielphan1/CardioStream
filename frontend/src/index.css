@@ -1,6 +1,14 @@
 /*
- * Design-token system — 13-UI-SPEC.md locked "Slack Water" (light) /
- * "Night Watch" (dark) palette (D-01, D-02, D-06, D-07, D-08, D-09).
+ * Design-token system — "Open Water" (light) / "Deep Watch" (dark), quick
+ * 261003-hev. Replaces Phase 13's "Slack Water"/"Night Watch" surfaces and
+ * accent; the clinical, overlay and chart-series hues below are UNCHANGED
+ * (DESIGN.md's Data-Is-Locked Rule — they encode medical meaning).
+ *
+ * The move is the references' idiom: a blue-TINTED canvas with WHITE elevated
+ * cards on it, 1px blue-grey hairlines where 2px near-black borders used to
+ * be, wider/softer shadow, larger radius. --color-mist is now white and
+ * --color-deck carries the tint: the light theme inverts which of the pair is
+ * lighter, deliberately, so cards lift off the page instead of sinking into it.
  * ALL color custom properties for BOTH themes live here; later plans consume
  * var(--...) and never invent color values. Hex pairs are contrast-computed
  * in the UI-SPEC tables — do not re-derive.
@@ -24,8 +32,9 @@
   --text-base: 1.125rem;
   --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Tailwind v4 rounded-xl override — 14px per 13-UI-SPEC.md Elevation & Shape */
-  --radius-xl: 14px;
+  /* Tailwind v4 rounded-xl override. 18px (was 14px) — one edit repaints all
+     63 rounded-xl call sites into the references' softer card silhouette. */
+  --radius-xl: 18px;
 
   /* Named type-scale tokens (13-UI-SPEC.md Typography table).
      Weights are 700, never 600: Atkinson Hyperlegible ships static 400 and 700
@@ -43,17 +52,40 @@
 }
 
 :root {
-  /* Surfaces + ink — light theme ("Slack Water") */
-  --color-deck: #F5F7F6; /* page background */
-  --color-mist: #E3EBE9; /* cards, filter bar surface */
-  --color-depth: #101C2E; /* ALL text, icons, borders */
-  --color-accent: #0D826C; /* primary accent — One Signal Rule */
+  /* Surfaces + ink — light theme ("Open Water") */
+  --color-deck: #EDF3F9; /* page background — soft blue tint, NOT the lightest surface */
+  --color-mist: #FFFFFF; /* cards, panels — white, and lifted by --shadow-elevation */
+  --color-depth: #0B2034; /* ALL text and icons (borders now use --color-hairline) */
+  --color-accent: #1278AE; /* primary accent, "sail blue" — One Signal Rule */
   --color-accent-text: #FFFFFF;
-  --color-signal: #8A5A1E; /* 3px focus-visible ring */
+  --color-signal: #8A5620; /* 3px focus-visible ring — brass, never the accent's hue */
   --color-hazard: #9C2B22; /* reserved for destructive actions */
   --color-hazard-text: #FFFFFF;
-  --color-panel: #101C2E; /* Command Bar feature-panel background — always dark, non-inverting */
-  --color-panel-text: #F5F7F6; /* Command Bar feature-panel text — always light, non-inverting */
+  --color-panel: #0E3356; /* feature-panel background — always dark, non-inverting */
+  --color-panel-text: #F2F8FD; /* feature-panel text — always light, non-inverting */
+  /* 1px boundary colour, replacing the old 2px --color-depth borders. A
+     control's boundary is a non-text UI component (WCAG 1.4.11, 3:1): this
+     scores 3.82:1 on deck and 4.27:1 on white mist, so the reference look's
+     thin border is reached WITHOUT dropping below the floor. Thinner, not
+     fainter — a 1px hairline at 3:1+ is compliant; a 1px hairline at 1.5:1
+     would not be, which is why the references' own borders are not copied. */
+  --color-hairline: #5E7E99;
+  /* Graphic-only sky. Deliberately NEVER a text-bearing fill on a light
+     surface: 1.47:1 against deck means a sky-filled button would have no
+     visible edge. Chart gradient stops, the active rail pill, KPI accents,
+     and the dark panel's controls — all places where a boundary or a dark
+     ground carries the contrast instead. Non-inverting. */
+  --color-sky: #8FD3F4;
+  /* Accent INSIDE the always-dark panel. --color-accent scores only 2.66:1 on
+     --color-panel, under the 3:1 floor; sky scores 7.86:1 there with 10.07:1
+     ink on it. Same non-inverting precedent as --color-signal-on-panel below:
+     the ground it is judged against does not invert, so neither may this. */
+  --color-accent-on-panel: #8FD3F4;
+  --color-accent-on-panel-text: #0B2034;
+  /* Chart grid lines — the hairline at low alpha. A grid is decoration behind
+     data, not a UI boundary, so it is exempt from the 3:1 floor and is kept
+     deliberately faint so the plotted series stay dominant. */
+  --color-grid: rgba(94, 126, 153, 0.22);
   /* Focus ring INSIDE the always-dark Command Bar panel. Declared with the
      same literal in :root and .dark — deliberately NON-INVERTING, exactly the
      --color-panel-text precedent two lines above: the ground it is judged
@@ -62,7 +94,9 @@
      3:1 floor); this token scores 7.60:1 there (16.1-UI-SPEC §4.3(2)).
      Do NOT "fix" the duplication by making it theme-dependent. */
   --color-signal-on-panel: #D9A356;
-  --shadow-elevation: 0 8px 24px -4px rgba(16, 28, 46, 0.10), 0 2px 6px -2px rgba(16, 28, 46, 0.06);
+  /* Wider and softer than Phase 13's: white cards on a tinted ground need a
+     diffuse shadow to read as floating rather than outlined. */
+  --shadow-elevation: 0 14px 34px -10px rgba(11, 32, 52, 0.16), 0 3px 8px -3px rgba(11, 32, 52, 0.08);
 
   /* Chart series — systolic/diastolic share the mmHg axis, pulse owns the bpm
      axis. --line-pulse is a rust deliberately outside four existing hue
@@ -95,13 +129,13 @@
      deliberately NOT used here: the gate has to mirror a literal.
      Reach these from components only via palette.ts categoryTint() /
      pulseCategoryTint() — never as a hex. */
-  --cat-hypotension-tint: #DFE7EA;
-  --cat-normal-tint: #DDE8E3;
-  --cat-elevated-tint: #E8E6D8;
-  --cat-stage1-tint: #EDE4DC;
-  --cat-stage2-tint: #EBDFDD;
-  --cat-crisis-tint: #E6DDDC;
-  --ref-bradycardia-tint: #DFE7EA; /* = hypotension tint; --ref-bradycardia shares its hex */
+  --cat-hypotension-tint: #D8E3EC;
+  --cat-normal-tint: #D6E4E6;
+  --cat-elevated-tint: #E1E3DB;
+  --cat-stage1-tint: #E6E1DE;
+  --cat-stage2-tint: #E4DCDF;
+  --cat-crisis-tint: #DFDADE;
+  --ref-bradycardia-tint: #D8E3EC; /* = hypotension tint; --ref-bradycardia shares its hex */
 
   /* Overlay dataset marker/toggle colors — violet/magenta/olive hue
      families, chosen to sit outside every existing clinical/chart hue range */
@@ -112,19 +146,30 @@
 }
 
 .dark {
-  /* Surfaces + ink — dark theme ("Night Watch") */
-  --color-deck: #0A121F;
-  --color-mist: #101D30;
+  /* Surfaces + ink — dark theme ("Deep Watch") */
+  --color-deck: #071624;
+  /* Cards still LIFT off the page in dark (lighter than deck) — but only just.
+     The ceiling is set by data, not taste: Phase 16 draws raw vitals lines at
+     0.85 opacity over this surface, and the dark diastolic dimmed against a
+     lighter card falls under WCAG 1.4.11's 3:1 (it is 2.82:1 at #102A42).
+     #0D2234 keeps it at 3.06:1. Do not lighten without re-running
+     contrast.test.ts's dimmed-line block. */
+  --color-mist: #0D2234;
   --color-depth: #E7EEF2;
-  --color-accent: #33C1A6;
-  --color-accent-text: #0A121F;
+  --color-accent: #56C2EC;
+  --color-accent-text: #071624;
   --color-signal: #D9A356;
   --color-hazard: #E2685A;
-  --color-hazard-text: #0A121F;
-  --color-panel: #050A12; /* genuinely dark on its own — NOT derived from --color-depth's dark-theme (near-white) value */
-  --color-panel-text: #F5F7F6; /* same literal hex as light theme — intentionally non-inverting */
+  --color-hazard-text: #071624;
+  --color-hairline: #6D90AD; /* 5.43:1 on deck, 4.36:1 on mist */
+  --color-sky: #8FD3F4; /* same literal as light — non-inverting, see :root */
+  --color-accent-on-panel: #8FD3F4; /* same literal as light — non-inverting */
+  --color-accent-on-panel-text: #0B2034; /* same literal as light — non-inverting */
+  --color-grid: rgba(109, 144, 173, 0.26);
+  --color-panel: #04101C; /* genuinely dark on its own — NOT derived from --color-depth's dark-theme (near-white) value */
+  --color-panel-text: #F2F8FD; /* same literal hex as light theme — intentionally non-inverting */
   --color-signal-on-panel: #D9A356; /* same literal hex as light theme — intentionally non-inverting, see :root */
-  --shadow-elevation: 0 8px 24px -4px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(231, 238, 242, 0.05);
+  --shadow-elevation: 0 14px 34px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(231, 238, 242, 0.06);
 
   --line-systolic: #9DBFE0;
   --line-diastolic: #B055BE;
@@ -140,15 +185,15 @@
   --band-opacity: 0.14;
   --cat-chip-text: #0A121F;
 
-  /* = 12% --cat-* over --color-deck (#0A121F). Precomputed so
+  /* = 12% --cat-* over --color-deck (#071624). Precomputed so
      contrast.test.ts can mirror the literal — do not re-derive. */
-  --cat-hypotension-tint: #1A2534;
-  --cat-normal-tint: #14272C;
-  --cat-elevated-tint: #242625;
-  --cat-stage1-tint: #242125;
-  --cat-stage2-tint: #251E28;
-  --cat-crisis-tint: #261A24;
-  --ref-bradycardia-tint: #1A2534; /* = hypotension tint; --ref-bradycardia shares its hex */
+  --cat-hypotension-tint: #172939;
+  --cat-normal-tint: #122A31;
+  --cat-elevated-tint: #212929;
+  --cat-stage1-tint: #22252A;
+  --cat-stage2-tint: #22222D;
+  --cat-crisis-tint: #231E29;
+  --ref-bradycardia-tint: #172939; /* = hypotension tint; --ref-bradycardia shares its hex */
 
   --overlay-labs: #C3A0E8;
   --overlay-incidents: #EFA0C9;
