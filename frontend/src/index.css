@@ -228,10 +228,18 @@ body {
 }
 
 /*
- * Timeline band opacity (D-08): a class rule wins over the SVG fill-opacity
- * presentation attribute, and — unlike an attribute — resolves the
- * theme-dependent var (0.10 light / 0.14 dark) so bands flip with `.dark`.
+ * Timeline band opacity (D-08). A class rule does win over an SVG
+ * fill-opacity presentation attribute — but only on the element the class is
+ * ON, and `chart-band` lands on the Recharts <g> LAYER while the attribute
+ * (fill-opacity="0.5") is on the <path> inside it. A presentation attribute
+ * on the child beats an inherited value from the parent, so the selector
+ * below has to name the painted element: the bands rendered at 50% for the
+ * whole of Phases 13-16, five times the documented 10%, which is why the
+ * timeline read as a wall of colour (found live, quick 261003-hev).
+ *
+ * The var is still what makes the bands theme-aware (0.10 light / 0.14 dark);
+ * an attribute could not resolve it.
  */
-.chart-band {
+.chart-band .recharts-reference-area-rect {
   fill-opacity: var(--band-opacity);
 }

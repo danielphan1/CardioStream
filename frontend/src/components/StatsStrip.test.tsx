@@ -69,13 +69,16 @@ describe("landmark and cell anatomy (§5.6)", () => {
     expect(section.querySelectorAll("section")).toHaveLength(0);
   });
 
-  it("gives each vitals cell two line boxes: the label, then value plus range", () => {
+  it("gives each vitals cell three stacked line boxes: label, value, range", () => {
     render(<StatsStrip stats={STATS} isLoading={false} />);
     const cell = cellFor("Systolic");
-    // label + value + range = three paragraphs, but the value and the range
-    // share ONE line box via the baseline-aligned flex row between them.
+    // Was two line boxes (the value and range shared a baseline-aligned flex
+    // row). The "Open Water" card treatment (quick 261003-hev) spends 32px of
+    // each cell on padding, which leaves less than the 146.1px the inline
+    // value-plus-range layout measured at, so the range moved to its own
+    // line — the same anatomy both reference dashboards give a KPI tile.
     expect(cell.querySelectorAll("p")).toHaveLength(3);
-    expect(cell.querySelectorAll(":scope > *")).toHaveLength(2);
+    expect(cell.querySelectorAll(":scope > *")).toHaveLength(3);
   });
 
   it("stays two columns on phones and only goes to four from the lg breakpoint", () => {

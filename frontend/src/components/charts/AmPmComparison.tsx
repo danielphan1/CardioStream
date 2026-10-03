@@ -93,12 +93,12 @@ export default function AmPmComparison({
 
   // UI-SPEC color assignment: AM bars = systolic navy, PM = diastolic teal.
   const amBar = (withLabels: boolean) => (
-    <Bar dataKey="AM" fill="var(--line-systolic)" isAnimationActive={animate}>
+    <Bar dataKey="AM" fill="var(--line-systolic)" radius={[8, 8, 0, 0]} isAnimationActive={animate}>
       {withLabels && <LabelList dataKey="AM" content={makeBarLabels("AM")} />}
     </Bar>
   );
   const pmBar = (withLabels: boolean) => (
-    <Bar dataKey="PM" fill="var(--line-diastolic)" isAnimationActive={animate}>
+    <Bar dataKey="PM" fill="var(--line-diastolic)" radius={[8, 8, 0, 0]} isAnimationActive={animate}>
       {withLabels && <LabelList dataKey="PM" content={makeBarLabels("PM")} />}
     </Bar>
   );

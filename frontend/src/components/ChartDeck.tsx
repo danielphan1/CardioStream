@@ -154,7 +154,13 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
 
   return (
     <section aria-label="Charts" className="flex flex-col gap-8">
-      <div>
+      {/* The chart sits in its own elevated white card on the tinted canvas
+          (quick 261003-hev) — the structural move both reference dashboards
+          make, and what stops the timeline's full-bleed clinical bands from
+          reading as the page's own background. The heading moved inside the
+          card with it, so the card is the whole unit rather than a frame
+          floating under a loose title. */}
+      <div className="rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-4 shadow-[var(--shadow-elevation)] md:p-6">
         <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           {title}
         </h2>

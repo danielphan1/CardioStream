@@ -111,7 +111,11 @@ export default function CategoryBars({ stats }: CategoryBarsProps) {
           />
           {/* Category names live in the D-10 label — ticks stay hidden. */}
           <YAxis type="category" dataKey="category" hide />
-          <Bar dataKey="count" isAnimationActive={animate}>
+          {/* Rounded cap on the bar's growing end (horizontal bars, so
+              right-hand corners). Fill stays the SOLID locked category hue —
+              a gradient fade would lighten the bar against the card and
+              weaken the contrast contrast.test.ts guards. */}
+          <Bar dataKey="count" radius={[8, 8, 8, 8]} isAnimationActive={animate}>
             {rows.map((row) => (
               <Cell key={row.category} fill={categoryColor(row.category)} />
             ))}

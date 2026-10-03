@@ -230,8 +230,12 @@ export function CommandBar({ latestReading }: CommandBarProps) {
   // retained for WORKING; armed/listening adds a green ring with a motion-safe
   // pulse and a static ring-2 fallback for reduced motion (D-09), copying the
   // FilterBar pulseClass structure. Colors are existing tokens only (no hex).
+  // --color-accent-on-panel, not --color-accent: this bar lives inside the
+  // always-dark feature panel, where the ordinary accent scores 2.66:1 and
+  // fails WCAG 1.4.11. contrast.test.ts asserts that failure deliberately, so
+  // a future edit back to --color-accent here is caught by the gate.
   const ringClass = anyWorking
-    ? "rounded-lg ring-2 ring-[var(--color-accent)]"
+    ? "rounded-lg ring-2 ring-[var(--color-accent-on-panel)]"
     : voiceState === "listening" || voiceState === "triggered"
       ? "rounded-lg ring-2 ring-[var(--cat-normal)] motion-safe:animate-pulse"
       : "";
@@ -329,7 +333,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           disabled={anyWorking}
           aria-label="Type a dashboard command"
           placeholder={placeholder}
-          className="min-h-12 flex-grow rounded-xl border border-[var(--color-hairline)] bg-[var(--color-deck)] px-4 text-base text-[var(--color-depth)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:bg-[var(--color-mist)]"
+          className="min-h-12 flex-grow rounded-xl border border-[var(--color-panel-text)]/40 bg-[var(--color-panel-text)]/10 px-4 text-base text-[var(--color-panel-text)] placeholder:text-[var(--color-panel-text)]/70 disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed"
         />
         {/* Disabled = DESIGN.md's Dashed-Border Rule (2px dashed Ink, Sky/mist
             fill), never a dimmed solid. The base accent border is solid so the
@@ -337,7 +341,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
+          className="min-h-12 rounded-xl border-2 border-[var(--color-accent-on-panel)] bg-[var(--color-accent-on-panel)] px-6 text-label text-[var(--color-accent-on-panel-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-panel-text)] disabled:bg-transparent disabled:text-[var(--color-panel-text)]"
         >
           Send
         </button>
