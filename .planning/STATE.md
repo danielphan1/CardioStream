@@ -24,13 +24,13 @@ See: .planning/PROJECT.md (updated 2026-08-19)
 
 ## Current Position
 
-Phase: 16.1
-  live and verified at https://health-dashboard-demo.vercel.app (guest_demo/demo_test_pass) — Railway
-  project "friendly-rebirth" (service CardioStream + Postgres) + Vercel project health-dashboard-demo.
-  19-HUMAN-UAT.md's one test passed; see that file for full verification detail.
-Phase: 15 (unified-filter-surface-multi-select-checkboxes-pulse-categor) — PLANNED, ready to execute
-Plan: Not started
-Status: Executed — awaiting human browser verification
+Phase: 16.1 (dashboard-shell-redesign-left-rail-navigation-filter-popover) — 9/9 plans executed
+Plan: all complete
+Status: Executed — awaiting human browser verification (no 16.1-VERIFICATION.md / 16.1-HUMAN-UAT.md yet)
+Next unplanned: Phase 17 (analytical-views-bp-heatmap-and-event-correlation) — no CONTEXT.md yet
+Deployed: live at https://health-dashboard-demo.vercel.app (see Blockers for the credential spelling
+  discrepancy) — Railway project "friendly-rebirth" (service CardioStream + Postgres) + Vercel project
+  health-dashboard-demo. 19-HUMAN-UAT.md's one test passed; see that file for verification detail.
 Last activity: 2026-10-03 - Completed quick task 261003-hev: "Open Water" re-skin (4 commits, 52d672c..a2c111c)
 
 ## Performance Metrics
