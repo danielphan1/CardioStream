@@ -68,8 +68,19 @@ const GRID = "grid grid-cols-2 lg:grid-cols-4 gap-4";
  *  between two floating cards would be drawing a line in mid-air.
  *
  *  Card padding is what forced the stacked layout below — see VitalCell. */
+/** NO BORDER. A card is a container, not a control: WCAG 1.4.11's 3:1
+ *  boundary rule governs interactive components, and applying it to static
+ *  surfaces as well is what kept this looking outlined rather than floating.
+ *  The shadow alone separates the card from the canvas, exactly as it does in
+ *  both reference dashboards. Controls keep their hairlines. */
 const CARD =
-  "rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-3 shadow-[var(--shadow-elevation)]";
+  "rounded-xl bg-[var(--color-mist)] px-5 py-4 shadow-[var(--shadow-elevation)]";
+
+/** One tile in the row is the dark one — the reference's navy feature tile
+ *  dropped into the stat row. Readings is the natural choice: it is the only
+ *  readout with no min-max, so it was already the odd cell out. */
+const CARD_FEATURE =
+  "rounded-xl bg-[var(--color-panel)] px-5 py-4 shadow-[var(--shadow-elevation)]";
 
 /** One vital readout as a card: label, then the value, then the range on its
  *  OWN line.
@@ -103,14 +114,18 @@ function VitalCell({
     <div className={CARD}>
       {/* The symbol is decoration: the adjacent word already names the vital,
           so it is aria-hidden and adds nothing to the announced string. */}
-      <p className="flex items-center gap-2 text-base text-[var(--color-depth)]">
+      {/* Label and range sit in --color-muted at regular weight; only the
+          value holds full ink and 700. Setting every line at 20px/700 ink is
+          what made the old strip read as a wall of bold navy — the references
+          put a quiet grey label above a loud number, and so does this now. */}
+      <p className="flex items-center gap-2 text-base font-normal text-[var(--color-muted)]">
         <Icon aria-hidden="true" size={20} className="shrink-0" />
         {label}
       </p>
       <p className="mt-1 text-display text-[var(--color-depth)]">
         {vital !== null ? vital.avg : "—"}
       </p>
-      <p className="text-base text-[var(--color-depth)]">
+      <p className="text-base font-normal text-[var(--color-muted)]">
         {vital !== null ? (
           <>
             <span aria-hidden="true">{`${vital.min}–${vital.max}`}</span>
@@ -161,8 +176,8 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
             <VitalCell label="Systolic" vital={stats.systolic} Icon={Gauge} />
             <VitalCell label="Diastolic" vital={stats.diastolic} Icon={Activity} />
             <VitalCell label="Pulse" vital={stats.pulse} Icon={HeartPulse} />
-            <div className={CARD}>
-              <p className="flex items-center gap-2 text-base text-[var(--color-depth)]">
+            <div className={CARD_FEATURE}>
+              <p className="flex items-center gap-2 text-base font-normal text-[var(--color-muted-on-panel)]">
                 <ListChecks aria-hidden="true" size={20} className="shrink-0" />
                 Readings
               </p>
@@ -171,7 +186,7 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
                   cells set the row height anyway. Do not add a "total" or
                   "all time" filler string to balance the cell visually — on a
                   data surface an invented word is worse than white space. */}
-              <p className="mt-1 text-display text-[var(--color-depth)]">{stats.count}</p>
+              <p className="mt-1 text-display text-[var(--color-panel-text)]">{stats.count}</p>
             </div>
           </>
         )}

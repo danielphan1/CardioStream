@@ -160,7 +160,7 @@ export function ChartDeck({ readings, stats, overlayEvents }: ChartDeckProps) {
           reading as the page's own background. The heading moved inside the
           card with it, so the card is the whole unit rather than a frame
           floating under a loose title. */}
-      <div className="rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-4 shadow-[var(--shadow-elevation)] md:p-6">
+      <div className="rounded-xl bg-[var(--color-mist)] p-5 shadow-[var(--shadow-elevation)] md:p-6">
         <h2 className="text-heading leading-tight text-[var(--color-depth)]">
           {title}
         </h2>

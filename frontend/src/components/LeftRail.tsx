@@ -2,9 +2,15 @@
 // replacing the 216px horizontal header band. The mark, the single <h1>, the
 // Guest-Demo provenance badge and ShellNav's eight controls all live here now.
 //
-// Flat-Sea Rule: this is a control surface, not an elevated island — a flat
-// mist fill (the 30% secondary surface) with a 2px depth border on the right
-// edge only, deliberately with no elevation and no stacking offset of its own.
+// Flat-Sea Rule: this is chrome, not an elevated island — a flat mist fill
+// with one soft hairline edge on the right, no elevation and no stacking
+// offset of its own (§5.0 depends on the second omission: the guide's backdrop
+// sits on the layer directly beneath its own panel and must cover the rail,
+// which it only does while the rail stays on the automatic layer).
+//
+// The edge is deliberately softer than a control's (60% hairline). What made
+// this rail look dated was never its edge — it was the stack of OUTLINED
+// BUTTONS inside it, which are now plain rows (quick 261003-hev).
 // §5.0 depends on that second omission: the guide's backdrop sits on the layer
 // directly beneath its own panel and must cover the rail completely, which it
 // only does while the rail stays on the automatic layer.
@@ -41,7 +47,7 @@ export function LeftRail({
     // a parent or a child of either.
     <div
       inert={inert}
-      className="w-60 shrink-0 sticky top-0 h-screen overflow-y-auto bg-[var(--color-mist)] border-r border-[var(--color-hairline)] px-4 pt-4 pb-6"
+      className="w-60 shrink-0 sticky top-0 h-screen overflow-y-auto bg-[var(--color-mist)] border-r border-[var(--color-hairline)]/60 px-4 pt-4 pb-6"
     >
       {/* Stacked header group: 8px gap, 24px below. The decorative curved
           divider that used to close the horizontal band is dropped — it was an

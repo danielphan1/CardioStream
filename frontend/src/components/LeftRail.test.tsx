@@ -112,17 +112,14 @@ describe("LeftRail surface (§5.0/§5.1 Flat-Sea Rule)", () => {
     await screen.findByText("health-settled");
     const root = railRoot(container);
     expect(root.className).toContain("w-60");
-    // 1px --color-hairline since the "Open Water" re-skin (quick 261003-hev);
-    // it was a 2px --color-depth edge. Still one edge, still only on the
-    // right — the Flat-Sea Rule this test guards is about WHICH edges carry a
-    // boundary, not how thick it is.
+    // A soft 1px hairline since the "Open Water" re-skin; it was a 2px
+    // --color-depth edge. Still one edge, still only on the right — the
+    // Flat-Sea Rule this guards is about WHICH edges carry a boundary, and
+    // that the rail never lifts, not about how thick the line is.
     expect(root.className).toContain("border-r");
     expect(root.className).not.toContain("border-r-2");
-    expect(root.className).toContain("border-[var(--color-hairline)]");
     expect(root.className).toContain("shrink-0");
-  });
-
-  it("is flat and unlayered: no elevation class and no stacking offset", async () => {
+  });  it("is flat and unlayered: no elevation class and no stacking offset", async () => {
     mockGetHealth.mockResolvedValue(health({ demo: false }));
     const { container } = renderRail(<LeftRail />);
 

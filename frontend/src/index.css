@@ -70,6 +70,14 @@
      fainter — a 1px hairline at 3:1+ is compliant; a 1px hairline at 1.5:1
      would not be, which is why the references' own borders are not copied. */
   --color-hairline: #5E7E99;
+  /* Secondary text. The reference dashboards get much of their calm from
+     NOT setting every word at full ink: labels, ranges and helper copy sit a
+     step back in a blue-grey while only values and headings hold full
+     contrast. Still a TEXT colour, so it clears 4.5:1 on both grounds —
+     6.13:1 on a white card, 5.48:1 on the canvas — this is hierarchy, not
+     low-contrast styling. */
+  --color-muted: #4A6480;
+  --color-muted-on-panel: #AFC9DE; /* 7.52:1 on --color-panel, non-inverting */
   /* Graphic-only sky. Deliberately NEVER a text-bearing fill on a light
      surface: 1.47:1 against deck means a sky-filled button would have no
      visible edge. Chart gradient stops, the active rail pill, KPI accents,
@@ -120,7 +128,7 @@
   --cat-stage1: #B5591C;
   --cat-stage2: #A33323;
   --cat-crisis: #7A1F1A;
-  --band-opacity: 0.10;
+  --band-opacity: 0.06;
   --cat-chip-text: #FFFFFF;
 
   /* Selected category-chip fills (16.1-UI-SPEC §4.4).
@@ -162,6 +170,8 @@
   --color-hazard: #E2685A;
   --color-hazard-text: #071624;
   --color-hairline: #6D90AD; /* 5.43:1 on deck, 4.36:1 on mist */
+  --color-muted: #9DB4C9; /* 7.57:1 on mist, 8.53:1 on deck */
+  --color-muted-on-panel: #AFC9DE; /* same literal as light — non-inverting */
   --color-sky: #8FD3F4; /* same literal as light — non-inverting, see :root */
   --color-accent-on-panel: #8FD3F4; /* same literal as light — non-inverting */
   --color-accent-on-panel-text: #0B2034; /* same literal as light — non-inverting */
@@ -182,7 +192,7 @@
   --cat-stage1: #E58F52;
   --cat-stage2: #E8776C;
   --cat-crisis: #F0584C;
-  --band-opacity: 0.14;
+  --band-opacity: 0.10;
   --cat-chip-text: #0A121F;
 
   /* = 12% --cat-* over --color-deck (#071624). Precomputed so

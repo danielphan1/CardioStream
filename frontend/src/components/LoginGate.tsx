@@ -65,7 +65,7 @@ export function LoginGate() {
       <form
         onSubmit={handleSubmit}
         aria-label="Sign in"
-        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-6 md:p-8 shadow-[var(--shadow-elevation)]"
+        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl bg-[var(--color-mist)] p-6 md:p-8 shadow-[var(--shadow-elevation)]"
       >
         <div className="flex flex-col items-center gap-2 text-center">
           <Sailboat
@@ -135,7 +135,7 @@ export function LoginGate() {
         {rejected && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] p-4 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+            className="flex items-start gap-2 rounded-xl bg-[var(--color-mist)] p-4 text-base text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
           >
             {/* optical alignment: 2px centres the 24px icon on the 27px first
                 text line (deliberately off the 4px spacing scale) */}

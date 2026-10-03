@@ -21,6 +21,7 @@ import { ChartDeck } from "./components/ChartDeck";
 import { ChartViewSwitcher } from "./components/ChartViewSwitcher";
 import { EmptyState } from "./components/EmptyState";
 import { FilterStateBlock } from "./components/FilterStateBlock";
+import { GreetingHeader } from "./components/GreetingHeader";
 import { FilterSurface } from "./components/FilterSurface";
 import { FilterTriggerRow } from "./components/FilterTriggerRow";
 import { GuideOverlay } from "./components/GuideOverlay";
@@ -209,7 +210,12 @@ function AppShell({
         >
           {showFilters && (
             <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16 pt-2 pb-6">
-              <div className="flex flex-col gap-2">
+              {/* The greeting LEADS the page (quick 261003-hev, second pass) —
+                  it is the first thing both reference dashboards show, above
+                  the controls rather than below them. Pure orientation: no
+                  controls of its own, so it adds nothing to reach by voice. */}
+              <GreetingHeader />
+              <div className="mt-6 flex flex-col gap-2">
                 {/* The trigger row sits ABOVE the sentence it summarises —
                     §5.4's reading order. At ≥768px each trigger carries its
                     own anchored popover; below that the surfaces are the
