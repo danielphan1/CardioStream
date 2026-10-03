@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Charts & Filters
 status: awaiting_verification
-last_updated: "2026-10-02T21:17:02.249Z"
-last_activity: "2026-10-02 -- Phase 16.1 executed: 9/9 plans, 748 tests"
+last_updated: "2026-10-03T11:40:00.000Z"
+last_activity: "2026-10-03 -- quick 261002-kem shipped: assistant popup + a latent useDismissable focus bug"
 progress:
   total_phases: 8
   completed_phases: 4
@@ -31,7 +31,7 @@ Phase: 16.1
 Phase: 15 (unified-filter-surface-multi-select-checkboxes-pulse-categor) — PLANNED, ready to execute
 Plan: Not started
 Status: Executed — awaiting human browser verification
-Last activity: 2026-09-30 - Completed quick task 260930-n7i: design audit fixes
+Last activity: 2026-10-03 - Completed quick task 261002-kem: assistant popup (commit 087f334)
 
 ## Performance Metrics
 
@@ -207,6 +207,7 @@ None yet.
 | 260914-lff | Restyle favicon sailboat: white fills with navy blue outline, wavier water line | 2026-09-14 | a16c900 | | [260914-lff-restyle-favicon-sailboat-white-fills-wit](./quick/260914-lff-restyle-favicon-sailboat-white-fills-wit/) |
 | 260916-hu8 | Update PROJECT.md Requirements → Validated section (Phases 13, 14, 19) and correct the stale "no milestone currently in progress" Active/Next Milestone framing to name Phases 15-18 as the open continuation work | 2026-09-16 | d90d86e | | [260916-hu8-update-project-md-requirements-validated](./quick/260916-hu8-update-project-md-requirements-validated/) |
 | 260930-n7i | Fix 5 confirmed findings from an AI-slop design-cliche audit of the frontend: (1) replaced Inter + Space Grotesk with Atkinson Hyperlegible as the single family, deleting the --font-display token and restoring DESIGN.md's Two-Weight Rule (3 type tokens + 15 font-semibold + 8 inline fontWeight all 600 -> 700, since Atkinson ships only 400/700 static and every surviving 600 was a browser-synthesized fake weight); (2) collapsed three utilities rendering the same 18px (text-lg x46, text-[18px] x23, text-base) onto one token; (3) pulled off-scale spacing onto DESIGN.md's 4px scale, deliberately KEEPING mt-0.5 at 5 sites as documented optical alignment ((27-24)/2); (4) replaced 4 disabled:opacity fades with DESIGN.md's dashed-border rule - the LoginGate submit button went from ~2.6:1 (a WCAG failure) to 14.11:1 light / 14.44:1 dark; (5) rewrote 20 user-facing em-dash-joined strings, preserving the StatsStrip null placeholder and chart data labels. Follow-up CHIP_CHAR_WIDTH_FACTOR risk CLOSED by in-browser canvas measurement: Atkinson is ~10% wider than Inter but the 0.62 factor still over-estimates the longest label by 72px (required factor 0.498), so the constant and chartData.test.ts's 383/295/40 expectations stand unchanged | 2026-09-30 | 26f08e7, b4d9fb7, e99a236 | Verified | [260930-n7i-design-audit-fixes](./quick/260930-n7i-design-audit-fixes/) |
+| 261002-kem | Make the AI voice chat a dismissible floating popup: the Command Bar moved out of the shell's top band into a card anchored above a persistent bottom-right Assistant trigger, with the dismissal persisted to localStorage (hv-assistant-open, default open). The card is HIDDEN, never unmounted, because CommandBar owns the live SpeechRecognition session and the primary user cannot tap a trigger to restart one; a wake-word hit re-opens the card by itself. Reusing useDismissable surfaced TWO focus defects, both fixed: the hook stole focus to Close on mount for a consumer that mounts open, and — latent since 16.1 — its focus() ran one commit before `mounted` rendered the panel, so focus-on-open was a SILENT NO-OP for every consumer in the app. Confirmed live: opening the Filters popover now actually lands focus on its Close. The three tests that covered this all mounted their panel already open (the one path no caller takes) and now open by transition | 2026-10-03 | 087f334 | Verified (tests + live DOM); narrow-viewport look outstanding | [261002-kem-make-the-voice-chat-a-dismissible-popup](./quick/261002-kem-make-the-voice-chat-a-dismissible-popup/) |
 
 ## Deferred Items
 
@@ -229,15 +230,20 @@ Acknowledged at v1.1 milestone close (2026-08-27) — all resolved in substance,
 
 ## Session Continuity
 
-Last session: 2026-09-17T23:27:57.823Z
-Stopped at: Phase 16 UI-SPEC approved
-Next action: Phase 15 (Unified Filter Surface) has a UI-SPEC ready to plan; no formal milestone currently
-  wraps phases 13-19 (v1.1 already shipped 2026-08-27) — consider scoping one, or continue straight to
-  Phase 15 planning
-Resume file: .planning/phases/16-trend-clarity-and-chart-polish/16-UI-SPEC.md
+Last session: 2026-10-03T11:40:00.000Z
+Stopped at: Quick task 261002-kem finished and committed (087f334) — the assistant is a dismissible
+  popup, 758/758 frontend tests green, verified live against the dev server
+Next action: Phase 15 (Unified Filter Surface) still has a UI-SPEC ready to plan; no formal milestone
+  wraps phases 13-19 yet. Two product calls were raised by 261002-kem and deliberately not made —
+  see its SUMMARY's Follow-ups (one Escape now closes two surfaces; two `Close` buttons can share the
+  screen, which the 16.1 Copywriting Contract assumed impossible).
+Resume file: .planning/quick/261002-kem-make-the-voice-chat-a-dismissible-popup/261002-kem-SUMMARY.md
 
 ## Operator Next Steps
 
 - Phase 19 done. Plan Phase 15 (/gsd-plan-phase 15) or scope/name a milestone for 13-19 first.
+- Look at the assistant popup on a phone: the window would not resize below ~1647px in the 261002-kem
+  session, so the sub-640px layout (trigger vs. the bottom of the Readings table / Add Record form) is the
+  one thing that change has not been seen doing.
 - Guest demo credentials (demo_guest / demo_test_pass) are stored only in Railway's env vars and this
   session's chat history — write them down somewhere durable if they need to be shared with portfolio viewers.
