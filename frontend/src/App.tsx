@@ -16,10 +16,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { AddRecordPage } from "./components/AddRecordPage";
-import { AgentStatusBanner } from "./components/AgentStatusBanner";
+import { AssistantPopup } from "./components/AssistantPopup";
 import { ChartDeck } from "./components/ChartDeck";
 import { ChartViewSwitcher } from "./components/ChartViewSwitcher";
-import { CommandBar } from "./components/CommandBar";
 import { EmptyState } from "./components/EmptyState";
 import { FilterStateBlock } from "./components/FilterStateBlock";
 import { FilterSurface } from "./components/FilterSurface";
@@ -153,15 +152,18 @@ function AppShell({
           would remove working navigation for no benefit. */}
       {isDesktop && <LeftRail inert={guideOpen} />}
       <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-deck)]">
-        {/* The ONE measured top band: the slim bar plus the Command Bar in a
-            single wrapper, which goes sticky above every overlay layer while
-            any overlay is open. One measurement of this one ref then supplies
-            every panel's top offset, the guide's included.
+        {/* The ONE measured top band. The Command Bar no longer lives in it
+            (quick 261002-kem — it moved into the dismissible AssistantPopup
+            below), so below 1024px this is the slim bar alone and at >=1024px
+            it measures as empty; either way the ref stays the single source of
+            every panel's top offset, the guide's included, and the band goes
+            sticky above every overlay layer while an overlay is open.
 
-            This wrapper is NEVER made inert (D-03/D-04). The mic and the live
-            session it drives must stay reachable with any overlay open, and
-            the menu trigger inside it must stay live so a second tap closes
-            the panel it opened. */}
+            This wrapper is NEVER made inert (D-03/D-04): the menu trigger
+            inside it must stay live so a second tap closes the panel it
+            opened. The mic that used to be the other reason now lives in the
+            popup, which is also never made inert — it is a sibling of <main>,
+            not a child. */}
         <div
           ref={shellTopRef}
           className={anyOverlayOpen ? "sticky top-0 z-[60]" : undefined}
@@ -171,20 +173,6 @@ function AppShell({
               menuOpen={openOverlay === "nav"}
               onToggleMenu={toggleNav}
             />
-          )}
-          {/* Command bar (D-01) — full-width sky band, top billing for the
-              primary control. Its inner div matches the content column's
-              gutters so the input aligns with the dashboard below. The
-              panel-surface marker below is what resolves the focus ring
-              inside this always-dark fill to the non-inverting signal token,
-              closing a pre-existing 2.90:1 gap. */}
-          {showCommandBar && (
-            <section data-surface="panel" className="bg-[var(--color-panel)]">
-              <div className="mx-auto max-w-[1280px] px-4 md:px-8 xl:px-16">
-                <CommandBar latestReading={latestReading} />
-                <AgentStatusBanner />
-              </div>
-            </section>
           )}
         </div>
         <GuideOverlay clearanceAbove={clearance} />
@@ -249,6 +237,15 @@ function AppShell({
             The anchored ≥768px popovers are the opposite case — they cover
             nothing, leave the content live, and therefore belong inside
             <main> next to their triggers, where FilterTriggerRow puts them. */}
+        {/* The assistant (quick 261002-kem) — the Command Bar plus the agent
+            status banner, in a dismissible floating card. Gated on the same
+            showCommandBar prop the band used, so it still appears on the
+            dashboard and the readings view only. A SIBLING of <main>, never a
+            child, for the same reason the filter panels are: <main> goes inert
+            under the guide and the nav panel, and the assistant is the primary
+            user's main input — it must stay live. Its own dismissed state is
+            persisted, so the popup starts closed for anyone who closed it. */}
+        {showCommandBar && <AssistantPopup latestReading={latestReading} />}
         {showFilters && !isWide && (
           <>
             <FilterSurface

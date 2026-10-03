@@ -159,7 +159,13 @@ describe("NavPanel dismissal (§5.2 routes a/b/c)", () => {
 
 describe("NavPanel focus management (D-03/D-04, T-16.1-19)", () => {
   it("lands focus on the Close button on open", async () => {
-    renderPanel();
+    // Mounts CLOSED and then opens, which is the only path App.tsx has
+    // (`open={openOverlay === "nav"}` starts false). useDismissable moves
+    // focus on a real closed->open transition only, so a consumer that mounts
+    // already open cannot steal focus on page load (quick 261002-kem).
+    const { setProps } = renderPanel({ open: false });
+
+    setProps({ open: true });
 
     const close = await screen.findByRole("button", { name: "Close" });
     expect(document.activeElement).toBe(close);

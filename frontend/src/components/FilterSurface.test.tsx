@@ -122,7 +122,13 @@ describe("FilterSurface mounting and geometry", () => {
 
 describe("FilterSurface dismiss affordance", () => {
   it("anchored: Close is the first focusable control, clears 48px, and holds focus on open", () => {
-    renderSurface({ presentation: "anchored" });
+    // Opened by transition, not by mounting open: that is what both call
+    // sites do (App.tsx and FilterTriggerRow both pass `open` from state that
+    // starts false), and useDismissable only moves focus on a real
+    // closed->open transition (quick 261002-kem).
+    const { setProps } = renderSurface({ presentation: "anchored", open: false });
+
+    setProps({ open: true });
 
     const close = screen.getByRole("button", { name: "Close" });
     // First in DOM among the surface's own buttons.
@@ -132,7 +138,13 @@ describe("FilterSurface dismiss affordance", () => {
   });
 
   it("panel: Close is the first focusable control, clears 48px, and holds focus on open", () => {
-    renderSurface({ presentation: "panel" });
+    // Opened by transition, not by mounting open: that is what both call
+    // sites do (App.tsx and FilterTriggerRow both pass `open` from state that
+    // starts false), and useDismissable only moves focus on a real
+    // closed->open transition (quick 261002-kem).
+    const { setProps } = renderSurface({ presentation: "panel", open: false });
+
+    setProps({ open: true });
 
     const close = screen.getByRole("button", { name: "Close" });
     expect(surfaceEl()?.querySelectorAll("button")[0]).toBe(close);

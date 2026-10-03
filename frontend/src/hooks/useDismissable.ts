@@ -135,16 +135,36 @@ export function useDismissable({
   // always matches `open` itself, so the `else` branch can only run once
   // `wasOpenRef.current` was actually `true` on a prior render — i.e. only on
   // a real open->close transition, never on mount.
+  // wasOpenRef now gates BOTH branches on a real transition, not just the
+  // close one (quick 261002-kem): AssistantPopup is the first consumer that
+  // can mount already open (its dismissal is persisted, so an undismissed
+  // popup is open on the very first render), and an unguarded focus() there
+  // would steal focus to a Close button on page load.
+  //
+  // The effect also keys on `mounted`, which fixes a latent bug the old
+  // mount-open shortcut hid: `mounted` is seeded from `open` and otherwise
+  // set from an effect, so on a real closed->open transition the consumer
+  // still renders `null` for the commit in which `open` flips — meaning
+  // closeButtonRef.current is null when the effects for that commit run, and
+  // `focus()` was a silent no-op. Focus only ever landed on Close for a
+  // surface that mounted open, which is exactly what no consumer in the app
+  // does. Waiting for `mounted` (without recording the transition until then)
+  // moves focus on the next commit, when the panel's DOM actually exists.
   const wasOpenRef = useRef(open);
   useEffect(() => {
     const wasOpen = wasOpenRef.current;
-    wasOpenRef.current = open;
+    // Equal means no transition — every initial mount included, whichever
+    // value `open` had.
+    if (open === wasOpen) return;
     if (open) {
+      if (!mounted) return; // the panel has no DOM yet; re-runs on `mounted`
+      wasOpenRef.current = true;
       closeButtonRef.current?.focus();
-    } else if (wasOpen) {
+    } else {
+      wasOpenRef.current = false;
       document.getElementById(triggerId)?.focus();
     }
-  }, [open, triggerId]);
+  }, [open, mounted, triggerId]);
 
   return { mounted, shown, closeButtonRef };
 }

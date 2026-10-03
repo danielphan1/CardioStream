@@ -15,6 +15,7 @@ import App from './App.tsx'
 import { useTheme } from './store/theme'
 import { useSpeech } from './store/speech'
 import { useFilters } from './store/filters'
+import { useAssistant } from './store/assistant'
 
 const queryClient = new QueryClient()
 
@@ -26,6 +27,9 @@ useSpeech.getState().initSpeech()
 // Restore the persisted filter/overlay session before first paint (impeccable
 // P1, 2026-08-27 re-critique) — survives a Safari/iOS involuntary reload
 useFilters.getState().initFilters()
+// Restore the persisted assistant-popup dismissal before first paint (quick
+// 261002-kem) — a popup the user closed must not flash open on the way in
+useAssistant.getState().initAssistant()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

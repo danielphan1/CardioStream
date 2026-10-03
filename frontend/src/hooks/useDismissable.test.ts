@@ -148,6 +148,28 @@ describe("useDismissable focus management", () => {
     expect(document.activeElement).not.toBe(trigger);
   });
 
+  it("does not move focus on first mount with open: true (quick 261002-kem)", () => {
+    const unrelated = appendButton("unrelated");
+    unrelated.focus();
+    const onClose = vi.fn();
+    const closeButton = appendButton();
+
+    const { result, rerender } = renderHook(
+      ({ open }: { open: boolean }) =>
+        useDismissable({ open, onClose, triggerId: TRIGGER_ID }),
+      { initialProps: { open: true } },
+    );
+    result.current.closeButtonRef.current = closeButton;
+    // A re-render while still open must not re-run the focus move either —
+    // this is the half the ref assignment above can actually observe.
+    rerender({ open: true });
+
+    // AssistantPopup can mount already open (its dismissal is persisted), and
+    // focusing Close there would steal focus on page load.
+    expect(document.activeElement).toBe(unrelated);
+    expect(document.activeElement).not.toBe(closeButton);
+  });
+
   it("tolerates a triggerId that is not in the DOM", () => {
     const onClose = vi.fn();
     const { rerender } = renderHook(

@@ -8,7 +8,7 @@
 // isDesktop is false, and the <1024px slim-bar shell is what mounts here
 // (UI-SPEC §5.2). That is what makes the Guide path below assertable in a
 // unit test at all, rather than browser-only.
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { StatsSummary } from '../api/types'
@@ -131,13 +131,20 @@ test('opens the Guide from the slim top bar and restores focus to it on close', 
 
   fireEvent.click(guideButton)
   expect(useGuide.getState().open).toBe(true)
-  expect(
-    await screen.findByRole('button', { name: 'Close' }),
-  ).toBeInTheDocument()
+  // Scoped to the guide's own region: the assistant popup (quick 261002-kem)
+  // is open by default and carries a Close of its own, so an unscoped query
+  // for the dismiss control is ambiguous now that two disclosures can be open
+  // at once. Scoping also makes the assertion say what it means — it is the
+  // GUIDE's Close that must restore focus to the Guide button.
+  const guide = await screen.findByRole('region', { name: 'Site guide' })
+  const guideClose = await within(guide).findByRole('button', {
+    name: 'Close',
+  })
+  expect(guideClose).toBeInTheDocument()
   // The nav panel plays no part in reaching the Guide.
   expect(document.querySelector('#nav-panel')).toBeNull()
 
-  fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+  fireEvent.click(guideClose)
   expect(useGuide.getState().open).toBe(false)
   // GuideOverlay's getElementById restore found its target: the control sits
   // in the top band, which is never made inert, so it is still focusable.

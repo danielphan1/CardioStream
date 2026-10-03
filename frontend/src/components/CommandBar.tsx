@@ -38,6 +38,7 @@ import { OFFLINE_COPY, RATE_LIMIT_COPY } from "../lib/copy";
 import { WAKE_WORD } from "../lib/voice";
 import { EXAMPLES } from "../lib/voiceCommands";
 import { useAgentStatus } from "../store/agentStatus";
+import { useAssistant } from "../store/assistant";
 import { useFilters } from "../store/filters";
 import { useSpeech } from "../store/speech";
 
@@ -106,6 +107,18 @@ export function CommandBar({ latestReading }: CommandBarProps) {
     }, 6000);
     return () => clearInterval(id);
   }, [status, text]);
+
+  // Wake-word auto-open (quick 261002-kem). The assistant popup can be
+  // dismissed while THIS component stays mounted and the recognizer keeps
+  // listening (AssistantPopup hides its card rather than unmounting it), so a
+  // hands-free command has to bring the panel back itself — otherwise the live
+  // transcript, the confirmation and the Cancel control would all resolve
+  // inside a hidden card. "triggered" is the first state after the wake word,
+  // so this fires before anything lands in the announced region below.
+  // setOpen no-ops when the popup is already open.
+  useEffect(() => {
+    if (voiceState === "triggered") useAssistant.getState().setOpen(true);
+  }, [voiceState]);
 
   function onApplied(reply: AgentReply) {
     // Reset-first then present-value deltas happen inside applyAgentFilters;
