@@ -42,7 +42,15 @@ const PULSE_RING =
  *  ring while the fill stays mist: the accent is reserved for selection, and
  *  "open" is not a selection. The ring, not the border width, is what carries
  *  the weight now that idle boundaries are 1px hairlines (quick 261003-hev).
- *  Focus stays on the sitewide ring, untouched. */
+ *  Focus stays on the sitewide ring, untouched.
+ *
+ *  That recolour no longer SNAPS, and nothing in this file says so:
+ *  `.press-swell` (index.css) carries a --dur-state ease on colour,
+ *  background-color, border-color and box-shadow, and box-shadow is what
+ *  Tailwind's `ring-*` compiles to. A Tailwind easing utility added here
+ *  would be DEAD CODE — that class is unlayered, so its `transition`
+ *  shorthand beats any such utility on the same element. Both triggers
+ *  already carry `press-swell`, so both already ease their open state. */
 const stateClass = (isOpen: boolean) =>
   isOpen
     ? "border-[var(--color-accent)] ring-2 ring-inset ring-[var(--color-accent)]"
@@ -143,9 +151,19 @@ export function FilterTriggerRow({
             /* The one accent-filled text surface in the app below 20px/700,
                which is exactly why the accent token is held to the 4.5:1
                normal-text floor. Do not shrink it or lighten its weight. */
+            /* The badge SETTLES IN rather than appearing, so a filter landing
+               by voice is visible as well as announced — the primary user is
+               often looking at the trigger when the agent changes something
+               behind it. `key={count}` is what makes the animation replay on
+               every count change instead of only on the 0-to-1 mount: a new
+               key is a new element, and a new element runs its animation from
+               the start. The badge stays aria-hidden and the count stays in
+               the trigger's accessible name, so the number is never announced
+               twice. */
             <span
+              key={count}
               aria-hidden="true"
-              className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[var(--color-accent)] px-1 text-base text-[var(--color-accent-text)]"
+              className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[var(--color-accent)] px-1 text-base text-[var(--color-accent-text)] motion-safe:animate-[count-settle_var(--dur-state)_var(--ease-swell)]"
             >
               {count}
             </span>

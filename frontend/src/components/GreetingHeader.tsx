@@ -33,20 +33,44 @@ export function GreetingHeader() {
   // One quiet line of orientation. While the count is still loading it says
   // nothing rather than guessing a number — an invented figure on a health
   // surface is worse than a blank.
-  const subtitle =
-    isLoading || data === undefined
-      ? "Your blood pressure and pulse, at a glance."
-      : data.count === 1
-        ? "1 reading matches the filters below."
-        : `${data.count} readings match the filters below.`;
+  const hasCount = !isLoading && data !== undefined;
 
+  // Greeting and subtitle are steps 1 and 2 of ONE rise that passes through
+  // the page — the rail crested first (LeftRail), the KPI cards continue the
+  // same ladder from step 3 (StatsStrip). The offsets are cumulative across
+  // groups on purpose: a per-group reset would start the first KPI card at the
+  // same instant as the rail, and the whole point is a single wave with a
+  // stated direction. Do not re-derive these multipliers.
   return (
     <div>
-      <h2 className="text-display leading-tight text-[var(--color-depth)]">
+      <h2
+        className="text-display leading-tight text-[var(--color-depth)] motion-safe:animate-[swell-rise_var(--dur-crest)_var(--ease-swell)_both]"
+        style={{ animationDelay: "calc(var(--stagger-step) * 1)" }}
+      >
         {greeting}
       </h2>
-      <p className="mt-1 text-base font-normal text-[var(--color-muted)]">
-        {subtitle}
+      <p
+        className="mt-1 text-base font-normal text-[var(--color-muted)] motion-safe:animate-[swell-rise_var(--dur-crest)_var(--ease-swell)_both]"
+        style={{ animationDelay: "calc(var(--stagger-step) * 2)" }}
+      >
+        {hasCount ? (
+          <>
+            {/* The number is the only FACT on this line, and it was the
+                quietest thing on it. Full ink at 700 against the muted 400
+                remainder — a typographic promotion, not a copy change: the
+                sentence is byte-identical, only its markup is split. The
+                count stays a single text node of its own element so a test
+                can still assert the interpolated VALUE, not just the copy. */}
+            <span className="font-bold text-[var(--color-depth)]">
+              {data.count}
+            </span>
+            {data.count === 1
+              ? " reading matches the filters below."
+              : " readings match the filters below."}
+          </>
+        ) : (
+          "Your blood pressure and pulse, at a glance."
+        )}
       </p>
     </div>
   );

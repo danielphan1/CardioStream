@@ -11,7 +11,7 @@
 // All colours are index.css var() tokens; there is no hex literal in this file
 // (grep-gated). Only font weights 400 and 700 are used — `text-label` already
 // carries 700, and Atkinson Hyperlegible ships only those two static files.
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import {
   BookOpen,
   ClipboardPlus,
@@ -133,32 +133,100 @@ export function ShellNav({
     onNavigate?.();
   }
 
+  const destinations = NAV_ITEMS.filter(
+    (item) => !(item.writeSurface && demoMode),
+  );
+
+  // THE TIDE MARK's geometry. The accent fill used to sit on the selected
+  // button itself, so changing destination teleported it; one measured pill
+  // behind the rows travels instead, and the eye tracks where it went.
+  //
+  // Measured rather than computed: the rows are `min-h-12` FLOORS, not fixed
+  // heights, so a row's real height is only knowable from layout.
+  //
+  // No ResizeObserver, deliberately: the rail is a fixed 208px of content and
+  // none of the four labels wrap, so row geometry only moves when the LIST
+  // does — which is what the deps below track (guest demo renders 3 rows, not
+  // 4). ShellNav also renders inside NavPanel, which mounts fresh each time it
+  // opens, so a layout-effect measurement is valid in both shells.
+  const navRef = useRef<HTMLElement>(null);
+  const [pill, setPill] = useState({ top: 0, height: 0 });
+  useLayoutEffect(() => {
+    const selectedRow = navRef.current?.querySelector<HTMLElement>(
+      '[aria-current="page"]',
+    );
+    // Under jsdom every offset reads 0, and in guest demo the current view can
+    // briefly be a hidden write surface with no row to sit on. Both collapse
+    // the pill to nothing, which renders harmlessly rather than throwing.
+    setPill({
+      top: selectedRow?.offsetTop ?? 0,
+      height: selectedRow?.offsetHeight ?? 0,
+    });
+  }, [view, destinations.length]);
+
   return (
     <>
       {/* Destinations. No "Back to dashboard" control: the Dashboard item now
           serves that purpose from every view, at every width. */}
-      <nav aria-label="Main" className="flex flex-col gap-2">
-        {NAV_ITEMS.filter((item) => !(item.writeSurface && demoMode)).map(
-          ({ view: itemView, label, Icon }) => {
-            const selected = view === itemView;
-            return (
-              <button
-                key={itemView}
-                type="button"
-                onClick={() => selectDestination(itemView)}
-                aria-current={selected ? "page" : undefined}
-                className={`press-swell ${ITEM_BASE} rounded-xl ${
-                  selected
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-text)]"
-                    : "text-[var(--color-depth)]"
-                }`}
+      <nav aria-label="Main" className="relative flex flex-col gap-2" ref={navRef}>
+        {/* The traveling pill, and then the 2px tide mark at its leading edge.
+            Both are aria-hidden decoration painted UNDER the rows:
+            `aria-current="page"` is still the announced signal and the pill is
+            never the only cue.
+
+            The pill is inset 2px from the nav's left edge and the mark is
+            drawn in the gap, against the rail's mist ground — the mark has to
+            read in the skeleton with the labels stripped out, so it cannot be
+            an accent bar sitting on an accent fill. The pill's 18px corner
+            radius curves away from the mark's straight edge, which is what
+            separates the two shapes at a glance.
+
+            TRANSFORM ONLY. `top` and `height` are never transitioned: they are
+            layout properties, so animating them would thrash layout every
+            frame instead of riding the compositor. */}
+        <div
+          aria-hidden="true"
+          className="absolute left-0.5 right-0 top-0 rounded-xl bg-[var(--color-accent)] transition-transform duration-[var(--dur-travel)] ease-[var(--ease-swell)] motion-reduce:transition-none"
+          style={{ transform: `translateY(${pill.top}px)`, height: pill.height }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-0 w-0.5 rounded-full bg-[var(--color-accent)] transition-transform duration-[var(--dur-travel)] ease-[var(--ease-swell)] motion-reduce:transition-none"
+          style={{ transform: `translateY(${pill.top}px)`, height: pill.height }}
+        />
+        {destinations.map(({ view: itemView, label, Icon }) => {
+          const selected = view === itemView;
+          return (
+            <button
+              key={itemView}
+              type="button"
+              onClick={() => selectDestination(itemView)}
+              aria-current={selected ? "page" : undefined}
+              // `relative` so the row paints ABOVE the absolutely-positioned
+              // pill, which would otherwise cover its own label.
+              className={`press-swell relative ${ITEM_BASE} rounded-xl`}
+            >
+              {/* The label owns its colour flip, not the button: `press-swell`
+                  is unlayered and its `transition` shorthand would override a
+                  `delay-*` utility on the button (and delaying the button's
+                  transition would delay the press scale too). On this span the
+                  utilities apply normally.
+
+                  The flip lands at the MIDPOINT of the travel when a row is
+                  being SELECTED, so the label never sits accent-on-accent
+                  mid-flight — but it is immediate when a row is DESELECTED,
+                  because the pill leaves faster than it arrives and a delayed
+                  flip would strand accent-coloured text on the bare mist
+                  ground, i.e. white on white, for the length of the delay. */}
+              <span
+                className={`flex items-center gap-2 transition-colors duration-[var(--dur-state)] motion-reduce:transition-none ${selected ? "text-[var(--color-accent-text)] delay-[var(--dur-flip)]" : "text-[var(--color-depth)] delay-0"}`}
               >
                 <Icon aria-hidden="true" size={24} />
                 {label}
-              </button>
-            );
-          },
-        )}
+              </span>
+            </button>
+          );
+        })}
       </nav>
 
       {/* 24px separation plus a 2px depth rule between the two groups (§5.1). */}

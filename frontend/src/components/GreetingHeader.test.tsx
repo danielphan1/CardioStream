@@ -47,17 +47,39 @@ describe("GreetingHeader subtitle", () => {
     ).toBeInTheDocument();
   });
 
+  // The count is now its own bold element inside the subtitle (quick
+  // 261005-mj2): the number was the only fact on the line and the quietest
+  // thing on it. The COPY is unchanged, but splitting it across a child
+  // element means Testing Library's getNodeText — which joins only an
+  // element's DIRECT text-node children — no longer sees the whole sentence
+  // on the <p>. So the copy is matched by regex on the remainder, and the
+  // interpolated VALUE is asserted separately on the count element. Both
+  // halves are required: the old single assertion proved the wording AND the
+  // number, and regex-on-remainder alone would let a wrong-number bug ship.
   it("uses the singular for exactly one reading", () => {
     renderHeader({ count: 1 }, false);
     expect(
-      screen.getByText("1 reading matches the filters below."),
+      screen.getByText(/^reading matches the filters below\.$/),
     ).toBeInTheDocument();
+    expect(screen.getByText("1")).toHaveTextContent("1");
   });
 
   it("uses the plural otherwise", () => {
     renderHeader({ count: 132 }, false);
     expect(
-      screen.getByText("132 readings match the filters below."),
+      screen.getByText(/^readings match the filters below\.$/),
     ).toBeInTheDocument();
+    expect(screen.getByText("132")).toHaveTextContent("132");
+  });
+
+  it("sets the count in full ink at 700, not in the muted remainder", () => {
+    renderHeader({ count: 132 }, false);
+    const countEl = screen.getByText("132");
+    expect(countEl).toHaveTextContent("132");
+    expect(countEl).toHaveClass("font-bold");
+    expect(countEl.className).toContain("var(--color-depth)");
+    // The sentence around it stays quiet — the promotion is a contrast between
+    // the two, so a muted parent is half the assertion.
+    expect(countEl.parentElement?.className).toContain("var(--color-muted)");
   });
 });

@@ -35,8 +35,43 @@
 // band. The block is visible and AT-readable again the instant the panel
 // closes; it simply does not fire a retroactive announcement for a change
 // made behind it.
+//
+// WHY THESE ARE LINE-LEVEL PILLS AND NOT FACET-LEVEL ONES (quick 261005-mj2).
+// The design brief asked for a ribbon of five facet chips — date range, time
+// of day, BP category, pulse category, datasets — and supplied its own escape
+// hatch: "if a ribbon cannot hold all of that, keep the sentences and restyle
+// their typography only; the contract outranks the visual." A facet ribbon
+// cannot hold it, for a mechanical reason worth writing down so nobody
+// re-attempts it:
+//
+// Testing Library's getNodeText joins only an element's DIRECT text-node
+// children. The filter sentence is exactly the string the brief wants cut into
+// four chips, and it is asserted by exact string through getByText — so the
+// instant that sentence is split across child <span>s the <p>'s matched text
+// becomes "" and the assertion fails. Splitting also breaks the p-count
+// assertion and turns the " · " separators from text into chip boundaries.
+// Those assertions are not describing old markup; they ARE the enforcement of
+// the contract clause "the sentences' text content stays derivable from
+// buildFilterSentence / buildShowSentence".
+//
+// So each of the three EXISTING paragraphs becomes its own pill instead. That
+// delivers the pill vocabulary and the ribbon read without forking the copy,
+// without giving any fact a second home, and with FilterStateBlock.test.tsx
+// passing completely unchanged. EACH SENTENCE MUST STAY A SINGLE DIRECT TEXT
+// NODE of its <p> — the icon is an <svg> sibling, which contributes no text.
+// Do not split a sentence. Do not interpolate into one.
+import { Info, ListChecks, SlidersHorizontal } from "lucide-react";
+
 import { buildFilterSentence, buildShowSentence } from "../lib/showSentence";
 import { useFilters } from "../store/filters";
+
+/** One pill. `rounded-full` is DESIGN.md's reserved shape for an
+ *  information-bearing chip, which is precisely what these are — the same
+ *  vocabulary as the Guest-Demo provenance badge in the rail, down to the
+ *  18px mark. Every piece of state still carries a WORD, because the
+ *  sentences themselves are untouched. */
+const PILL =
+  "inline-flex items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-1 text-base text-[var(--color-depth)]";
 
 // THE ONLY declaration of this string in the app. Plan 16.1-04 briefly
 // duplicated it from ShowPanel.tsx because that file was outside its scope
@@ -75,11 +110,26 @@ export function FilterStateBlock({ latestReading }: FilterStateBlockProps) {
   const appliesHere = chartView === "timeline";
 
   return (
-    <div aria-live="polite" className="space-y-2">
-      <p className="text-base text-[var(--color-depth)]">{filterSentence}</p>
-      <p className="text-base text-[var(--color-depth)]">{showSentence}</p>
+    // `flex flex-wrap gap-2` rather than `space-y-2`: the three pills read as
+    // one ribbon on a line instead of a stack of three grey paragraphs, which
+    // was the grey wall standing between the controls and the data. The
+    // wrapper is otherwise untouched — still the single polite region, still
+    // non-atomic, never assertive, and the three <p> children still carry no
+    // live attribute, no aria-atomic and no role of their own.
+    <div aria-live="polite" className="flex flex-wrap gap-2">
+      <p className={PILL}>
+        <SlidersHorizontal aria-hidden="true" size={18} className="shrink-0" />
+        {filterSentence}
+      </p>
+      <p className={PILL}>
+        <ListChecks aria-hidden="true" size={18} className="shrink-0" />
+        {showSentence}
+      </p>
       {!appliesHere && (
-        <p className="text-base text-[var(--color-depth)]">{NOTE_COPY}</p>
+        <p className={PILL}>
+          <Info aria-hidden="true" size={18} className="shrink-0" />
+          {NOTE_COPY}
+        </p>
       )}
     </div>
   );

@@ -459,9 +459,38 @@ table th,
 
 /* App-wide press feedback. `:active` fires on tap, on click AND on keyboard
    activation for a <button>, so this is safe for a user with no reliable
-   pointer and is NOT a hover affordance. */
+   pointer and is NOT a hover affordance.
+ *
+ * THIS RULE ALSO OWNS THE STATE RECOLOUR, and that is a consequence of being
+ * unlayered rather than a convenience. `transition` is a SHORTHAND: it resets
+ * transition-property, -duration, -delay and -timing-function. Because this
+ * rule is unlayered it beats Tailwind's `transition-[color,…]`,
+ * `duration-*`, `delay-*` and `motion-reduce:transition-none` utilities on the
+ * same element — so a button carrying `press-swell` CANNOT have its transition
+ * customised from a className, and a `transition-[color,background-color,…]`
+ * added at a call site would be silently dead while looking correct in the
+ * source and leaving the suite green (verified against the built CSS: Tailwind
+ * emits its utilities inside `@layer utilities{…}`, this rule sits outside it).
+ * Rather than fight that, the one unlayered rule declares both jobs, which is
+ * also what the brief wants everywhere: the filter triggers' open-state
+ * border/ring and the chart switcher's active fill both stop snapping without
+ * a single class at the call site.
+ *
+ * Reduced motion is handled at the TOKEN level, not by a utility: every
+ * duration below resolves to 0ms inside the reduced-motion block at the foot
+ * of this file, so these transitions become instant. That is precisely the
+ * belt-and-braces the token block exists for.
+ *
+ * A per-element exception needs an INLINE style (inline wins over unlayered) —
+ * see ShellNav's label flip, which delays only the colour leg. */
 .press-swell {
-  transition: transform var(--dur-press) var(--ease-swell);
+  transition:
+    transform var(--dur-press) var(--ease-swell),
+    color var(--dur-state) var(--ease-swell),
+    background-color var(--dur-state) var(--ease-swell),
+    border-color var(--dur-state) var(--ease-swell),
+    /* covers Tailwind's ring-* utilities, which compile to box-shadow */
+      box-shadow var(--dur-state) var(--ease-swell);
 }
 .press-swell:active {
   transform: scale(0.97);

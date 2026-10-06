@@ -45,9 +45,15 @@ export function LeftRail({
   return (
     // A plain div, and a SIBLING of the top band and of <main> (§5.0) — never
     // a parent or a child of either.
+    // The rail arrives FIRST in the entrance order, because it is the frame
+    // the rest of the page rises inside. ONE crest for the whole rail and no
+    // stagger between its own rows: staggering chrome would read as the shell
+    // assembling itself, and the staggered surfaces are the CONTENT. Still no
+    // `shadow-` and no `z-` class here — the Flat-Sea Rule and §5.0's
+    // backdrop-covers-the-rail guarantee both depend on their absence.
     <div
       inert={inert}
-      className="w-60 shrink-0 sticky top-0 h-screen overflow-y-auto bg-[var(--color-mist)] border-r border-[var(--color-hairline)]/60 px-4 pt-4 pb-6"
+      className="w-60 shrink-0 sticky top-0 h-screen overflow-y-auto bg-[var(--color-mist)] border-r border-[var(--color-hairline)]/60 px-4 pt-4 pb-6 motion-safe:animate-[swell-rise_var(--dur-crest)_var(--ease-swell)_both]"
     >
       {/* Stacked header group: 8px gap, 24px below. The decorative curved
           divider that used to close the horizontal band is dropped — it was an
