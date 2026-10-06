@@ -172,29 +172,22 @@ export function ShellNav({
       {/* Destinations. No "Back to dashboard" control: the Dashboard item now
           serves that purpose from every view, at every width. */}
       <nav aria-label="Main" className="relative flex flex-col gap-2" ref={navRef}>
-        {/* The traveling pill, and then the 2px tide mark at its leading edge.
-            Both are aria-hidden decoration painted UNDER the rows:
+        {/* The traveling pill. aria-hidden decoration painted UNDER the rows:
             `aria-current="page"` is still the announced signal and the pill is
             never the only cue.
 
-            The pill is inset 2px from the nav's left edge and the mark is
-            drawn in the gap, against the rail's mist ground — the mark has to
-            read in the skeleton with the labels stripped out, so it cannot be
-            an accent bar sitting on an accent fill. The pill's 18px corner
-            radius curves away from the mark's straight edge, which is what
-            separates the two shapes at a glance.
+            A 2px tide mark used to sit in a gap at the pill's leading edge;
+            removed at client request 2026-10-05, the pill and its travel kept.
+            The pill's `left-0.5` inset went with it — that inset existed only
+            to open the gap the mark was drawn in, so it is now flush at
+            `left-0` rather than leaving a 2px void where the mark used to be.
 
             TRANSFORM ONLY. `top` and `height` are never transitioned: they are
             layout properties, so animating them would thrash layout every
             frame instead of riding the compositor. */}
         <div
           aria-hidden="true"
-          className="absolute left-0.5 right-0 top-0 rounded-xl bg-[var(--color-accent)] transition-transform duration-[var(--dur-travel)] ease-[var(--ease-swell)] motion-reduce:transition-none"
-          style={{ transform: `translateY(${pill.top}px)`, height: pill.height }}
-        />
-        <div
-          aria-hidden="true"
-          className="absolute left-0 top-0 w-0.5 rounded-full bg-[var(--color-accent)] transition-transform duration-[var(--dur-travel)] ease-[var(--ease-swell)] motion-reduce:transition-none"
+          className="absolute left-0 right-0 top-0 rounded-xl bg-[var(--color-accent)] transition-transform duration-[var(--dur-travel)] ease-[var(--ease-swell)] motion-reduce:transition-none"
           style={{ transform: `translateY(${pill.top}px)`, height: pill.height }}
         />
         {destinations.map(({ view: itemView, label, Icon }) => {
