@@ -33,22 +33,22 @@ colors:
   overlay-chip-text: "#FFFFFF"
 typography:
   display:
-    fontFamily: "Atkinson Hyperlegible, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, -apple-system, 'Segoe UI', sans-serif"
     fontSize: "2rem"
     fontWeight: 700
     lineHeight: 1.25
   headline:
-    fontFamily: "Atkinson Hyperlegible, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, -apple-system, 'Segoe UI', sans-serif"
     fontSize: "1.5rem"
     fontWeight: 700
     lineHeight: 1.25
   label:
-    fontFamily: "Atkinson Hyperlegible, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, -apple-system, 'Segoe UI', sans-serif"
     fontSize: "1.25rem"
     fontWeight: 700
     lineHeight: 1.25
   body:
-    fontFamily: "Atkinson Hyperlegible, system-ui, -apple-system, 'Segoe UI', sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, -apple-system, 'Segoe UI', sans-serif"
     fontSize: "1.125rem"
     fontWeight: 400
     lineHeight: 1.5
@@ -223,7 +223,15 @@ without a deliberate, documented decision.
 
 ## Typography
 
-**Body & Display Font:** Atkinson Hyperlegible (with `system-ui, -apple-system, "Segoe UI", sans-serif` fallback) — a typeface designed for low-vision and dyslexic readability, shipped in exactly two static weights (400, 700; no 600/semibold file exists, so no synthesized "medium" weight is ever introduced).
+**Body & Display Font:** Plus Jakarta Sans (with `system-ui, -apple-system, "Segoe UI", sans-serif` fallback) — a geometric humanist sans, self-hosted through `@fontsource` at exactly two weights (400, 700).
+
+> **This replaced Atkinson Hyperlegible on 2026-10-05, as a deliberate client decision, and the thing it cost is recorded here on purpose.**
+>
+> Atkinson Hyperlegible was drawn by the Braille Institute specifically to raise character recognition for low-vision readers — unambiguous `I`/`l`/`1`, a slashed-feeling `0` against `O`, letterforms pulled apart from each other. That was the reason it was chosen, on a product whose primary user is disabled and whose primary content is clinical numbers.
+>
+> The client supplied a reference dashboard and asked for its typeface. Offered Poppins (the closest match to the reference) against Plus Jakarta Sans, they chose Plus Jakarta Sans **because it keeps more character differentiation** — a real `l` with a tail, less perfectly circular bowls — while still reading as the same geometric family. So the swap is a considered trade of some hyperlegibility for the chosen visual direction, taken with the tradeoff named, not an oversight.
+>
+> **Do not "restore" Atkinson Hyperlegible as a bugfix.** If it should come back, that is a new design decision and needs the same conversation, not a silent revert. The accessibility floors that do NOT move with it — the 18px minimum, the 48px targets, the contrast gates in `contrast.test.ts` — are unchanged and still binding.
 
 **Character:** One typeface, one weight pair, four sizes. There is no display/body font split — the same face carries the 32px hero number and the 18px body copy, so hierarchy comes from size and weight alone, never from a second, more "expressive" family.
 
@@ -236,7 +244,9 @@ without a deliberate, documented decision.
 ### Named Rules
 **The 18px Floor Rule.** No text in the product renders below 18px. This is a hard accessibility floor (`--text-base`), not a starting point to shrink from on dense screens.
 
-**The Two-Weight Rule.** Only 400 and 700 are used, matching the two static font files actually shipped. Never introduce an intermediate weight — the browser would fake it.
+**The Two-Weight Rule.** Only 400 and 700 are used. Never introduce an intermediate weight.
+
+The rule survives the 2026-10-05 typeface swap but its *enforcement* changed, which matters to anyone touching it. Atkinson Hyperlegible shipped 400 and 700 and nothing else, so the package guaranteed the rule by itself. Plus Jakarta Sans ships 200-800, so it does not: the rule now holds because `main.tsx` imports exactly two weight files, backed by the `font-medium|font-semibold|font-weight: *[56]00` grep gate. Import a third weight file, or swap the two static imports for the variable face, and `font-medium` silently starts resolving to a real file instead of nothing.
 
 ## Layout
 
@@ -385,6 +395,6 @@ session survives being dismissed.
 ### Don't:
 - **Don't** touch the six clinical BP-category colors, the three overlay-dataset colors, or the chart-line colors for aesthetic reasons — they are locked medical/data identity.
 - **Don't** add a hover-only, drag, or precise-pointing interaction anywhere — the primary user cannot reliably operate a pointer.
-- **Don't** introduce a third font weight — only 400 and 700 ship as static files for Atkinson Hyperlegible; a synthesized weight is a regression, not an enhancement.
+- **Don't** introduce a third font weight — only the 400 and 700 files are imported, and Plus Jakarta Sans ships 200-800, so adding an import is all it takes to break this silently; a synthesized or newly-imported intermediate weight is a regression, not an enhancement.
 - **Don't** let the brass Focus ring drift into the blue family — it is deliberately outside it so a focused control and a pressed control are never visually confused.
 - **Don't** hardcode a hex value in a component. Every color is a `var(--...)` custom property declared once in `index.css` for both themes.

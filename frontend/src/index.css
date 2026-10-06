@@ -30,16 +30,20 @@
 @theme {
   /* 18px body floor — D-06 */
   --text-base: 1.125rem;
-  --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Tailwind v4 rounded-xl override. 18px (was 14px) — one edit repaints all
      63 rounded-xl call sites into the references' softer card silhouette. */
   --radius-xl: 18px;
 
   /* Named type-scale tokens (13-UI-SPEC.md Typography table).
-     Weights are 700, never 600: Atkinson Hyperlegible ships static 400 and 700
-     files only, so a 600 request makes the browser synthesize a fake weight —
-     DESIGN.md's Two-Weight Rule calls that a regression, not an enhancement. */
+     Weights are 700, never 600. Until the 2026-10-05 typeface swap this was
+     self-enforcing — Atkinson Hyperlegible shipped 400 and 700 files only, so
+     a 600 request could only ever produce a synthesized weight. Plus Jakarta
+     Sans ships 200-800, so the constraint now rests on main.tsx importing just
+     two weight files plus DESIGN.md's grep gate. Same rule, weaker floor:
+     DESIGN.md's Two-Weight Rule calls a third weight a regression, not an
+     enhancement, and it is now easier to introduce one by accident. */
   --text-label: 1.25rem;
   --text-label--font-weight: 700;
   --text-label--line-height: 1.25;

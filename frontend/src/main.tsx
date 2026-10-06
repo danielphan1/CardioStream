@@ -2,14 +2,25 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 // Self-hosted fonts — no CDN requests (SEC-03 discipline). One family, two
-// weights: Atkinson Hyperlegible at 400 (body) and 700 (labels, headings,
-// display). Atkinson Hyperlegible is restored here because it is the face
-// DESIGN.md documents, and because it is the only one that satisfies the
-// Two-Weight Rule without a synthesized weight: the package ships static
-// files for 400 and 700 only, so any other weight request would make the
-// browser fake-bold the face, which DESIGN.md calls a regression.
-import '@fontsource/atkinson-hyperlegible/400.css'
-import '@fontsource/atkinson-hyperlegible/700.css'
+// weights: Plus Jakarta Sans at 400 (body) and 700 (labels, headings, display),
+// the face DESIGN.md documents since the 2026-10-05 client typeface swap that
+// retired Atkinson Hyperlegible.
+//
+// THESE TWO LINES ARE WHAT ENFORCES THE TWO-WEIGHT RULE. Atkinson Hyperlegible
+// shipped static files for 400 and 700 and nothing else, so the package itself
+// used to guarantee the rule. Plus Jakarta Sans ships 200-800, so that
+// guarantee is gone: the rule now holds precisely because only these two
+// weights are imported. Importing a third — or swapping these for the variable
+// face — would silently let a 500- or 600-weight utility resolve to a real file
+// instead of nothing, and DESIGN.md's weight grep gate is the only other thing
+// standing between that and a third weight on screen.
+//
+// That gate matches the literal utility class names, so this comment names
+// those weights numerically on purpose: spelling them as class names here
+// would trip the gate on prose, the same false positive the chart swap's
+// structural gate had to be taught to ignore. Do not add a third.
+import '@fontsource/plus-jakarta-sans/400.css'
+import '@fontsource/plus-jakarta-sans/700.css'
 import './index.css'
 import App from './App.tsx'
 import { useTheme } from './store/theme'

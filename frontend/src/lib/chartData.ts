@@ -159,17 +159,25 @@ export function isDotCrowded(width: number, pointCount: number): boolean {
 
 /**
  * Average glyph width as a fraction of font-size for the bold 14px
- * Atkinson Hyperlegible band-label chip text.
+ * Plus Jakarta Sans band-label chip text.
  *
  * ponytail: 0.62 was calibrated against Inter, where it was deliberately
  * generous so the estimate erred toward a slightly wider chip rather than one
- * that clipped its own label. Atkinson Hyperlegible has wider letterforms, so
- * the factor is now only roughly exact and that safety margin is gone — the
- * ceiling is that a long label at a narrow viewport could clip again (the
- * failure 16-VERIFICATION.md logged as a BLOCKER). Upgrade path: bump it only
- * against a real observed clip, never a guess — `chartData.test.ts` hardcodes
- * this function's outputs (383/295/40) as the regression test for that fix, so
- * a speculative change would break a verified test to chase a hypothetical.
+ * that clipped its own label. Atkinson Hyperlegible then ate that margin with
+ * its wider letterforms, leaving the factor only roughly exact — the ceiling
+ * being that a long label at a narrow viewport could clip again (the failure
+ * 16-VERIFICATION.md logged as a BLOCKER).
+ *
+ * The 2026-10-05 typeface swap to Plus Jakarta Sans RESTORES the margin
+ * rather than spending it: Plus Jakarta Sans is narrower than Atkinson and
+ * close to Inter's proportions, which is what this number was derived
+ * against, so the estimate again errs wide. The value is deliberately
+ * UNCHANGED — erring wide is the safe direction for a chip whose whole job is
+ * to cover the line behind it, and `chartData.test.ts` hardcodes this
+ * function's outputs (383/295/40) as the regression test for that fix.
+ * Upgrade path is unchanged: bump it only against a real observed clip, never
+ * a guess, since a speculative change would break a verified test to chase a
+ * hypothetical.
  */
 const CHIP_CHAR_WIDTH_FACTOR = 0.62;
 

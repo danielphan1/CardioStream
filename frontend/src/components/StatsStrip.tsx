@@ -34,6 +34,15 @@
 // the value line is still forbidden. The value also drops 36px -> 24px,
 // which is what buys the height AND widens the value line's own slack from
 // 9.9px to roughly 36px.
+//
+// EVERY PIXEL FIGURE ABOVE WAS MEASURED AGAINST ATKINSON HYPERLEGIBLE and the
+// 2026-10-05 client typeface swap retired that face for Plus Jakarta Sans, so
+// they are now approximations rather than measurements. They are kept because
+// the DIRECTION of the error is known and safe: Plus Jakarta Sans is the
+// narrower of the two, so every "spare" figure here understates the real
+// slack and no cell gets tighter than the numbers claim. Do not treat them as
+// exact, and re-measure before using them to justify ADDING anything to a
+// cell — that is the one move they can no longer support.
 //   - the six-chip category-percent list: it duplicates the `BP Categories`
 //     chart view, which renders the same distribution larger, labelled, and
 //     one voice command away (§5.6, decision closed 2026-09-30). Dropped

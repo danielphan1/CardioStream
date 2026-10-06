@@ -10,7 +10,10 @@
 //
 // All colours are index.css var() tokens; there is no hex literal in this file
 // (grep-gated). Only font weights 400 and 700 are used — `text-label` already
-// carries 700, and Atkinson Hyperlegible ships only those two static files.
+// carries 700. Plus Jakarta Sans ships 200-800, so unlike Atkinson Hyperlegible
+// the package no longer makes that true on its own: main.tsx imports exactly
+// two weight files, and that import list plus the grep gate are what hold the
+// Two-Weight Rule now.
 import { useLayoutEffect, useRef, useState } from "react";
 import {
   BookOpen,

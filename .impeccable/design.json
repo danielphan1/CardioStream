@@ -48,7 +48,7 @@
       "refersTo": "button-primary",
       "description": "The only accent-filled surface in the app — submit actions, 'Show all data', 'Apply', 'Send', 'Log out' confirm.",
       "html": "<button type=\"button\" class=\"ds-btn-primary\">Show all data</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px; border: none; border-radius: 12px; background: var(--color-accent); color: var(--color-accent-text); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-primary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; } /* no :hover treatment — the system deliberately has none; every interaction is tap/click, not hover */"
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px; border: none; border-radius: 12px; background: var(--color-accent); color: var(--color-accent-text); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-primary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; } /* no :hover treatment — the system deliberately has none; every interaction is tap/click, not hover */"
     },
     {
       "name": "Secondary / Filter Toggle Button",
@@ -56,7 +56,7 @@
       "refersTo": "button-secondary",
       "description": "Inactive-vs-pressed filter/toggle control (FilterBar, OverlayToggle). Pressed state reuses the Primary button's accent fill.",
       "html": "<div style=\"display:flex;gap:8px;flex-wrap:wrap\"><button type=\"button\" class=\"ds-btn-secondary\" aria-pressed=\"false\">7 days</button><button type=\"button\" class=\"ds-btn-secondary\" aria-pressed=\"true\">30 days</button></div>",
-      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-sky); color: var(--color-ink); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-secondary[aria-pressed='true'] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-text); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-sky); color: var(--color-ink); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-secondary[aria-pressed='true'] { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-text); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
     },
     {
       "name": "Header Chrome Button",
@@ -64,7 +64,7 @@
       "refersTo": "button-chrome",
       "description": "Header utility controls (theme, Voice Replies, Guide, Upload, Log out) — icon + text, never accent-filled even when pressed, at the smaller 8px radius that quietly distinguishes them from primary app surfaces.",
       "html": "<button type=\"button\" class=\"ds-btn-chrome\" aria-pressed=\"false\"><svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/></svg>Guide</button>",
-      "css": ".ds-btn-chrome { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border-radius: 8px; border: 2px solid var(--color-ink); background: var(--color-sky); color: var(--color-ink); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-chrome:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; } /* stays sky/ink even when aria-pressed='true' — chrome controls are never accent-filled, that fill is reserved for primary/filter actions */"
+      "css": ".ds-btn-chrome { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border-radius: 8px; border: 2px solid var(--color-ink); background: var(--color-sky); color: var(--color-ink); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; cursor: pointer; } .ds-btn-chrome:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; } /* stays sky/ink even when aria-pressed='true' — chrome controls are never accent-filled, that fill is reserved for primary/filter actions */"
     },
     {
       "name": "Icon-Only Mic Button",
@@ -80,7 +80,7 @@
       "refersTo": "input-field",
       "description": "Manual-entry form field (LabFields, DateRangePicker, CommandBar). Foam fill so it reads as a distinct well against the Sky card it usually sits inside.",
       "html": "<label class=\"ds-field-label\">Test name<input type=\"text\" class=\"ds-input\" placeholder=\"e.g. A1C, Cholesterol panel\"></label>",
-      "css": ".ds-field-label { display: flex; flex-direction: column; gap: 4px; font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; color: var(--color-ink); } .ds-input { min-height: 48px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-foam); color: var(--color-ink); padding: 0 12px; font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.125rem; font-weight: 400; } .ds-input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
+      "css": ".ds-field-label { display: flex; flex-direction: column; gap: 4px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; color: var(--color-ink); } .ds-input { min-height: 48px; border-radius: 12px; border: 2px solid var(--color-ink); background: var(--color-foam); color: var(--color-ink); padding: 0 12px; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.125rem; font-weight: 400; } .ds-input:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }"
     },
     {
       "name": "Clinical Category Chip",
@@ -88,7 +88,7 @@
       "refersTo": null,
       "description": "Pill-shaped, always solid-colored (even inactive) since the color itself is clinical information, not decoration. Example shown: Normal.",
       "html": "<span class=\"ds-chip-category\">Normal</span>",
-      "css": ".ds-chip-category { display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border-radius: 9999px; background: var(--cat-normal); color: var(--cat-chip-text); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; } /* an active/selected chip additionally gets box-shadow: 0 0 0 3px var(--color-ink) — a ring, not an outline, so :focus-visible's own outline stays independently visible */"
+      "css": ".ds-chip-category { display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; border-radius: 9999px; background: var(--cat-normal); color: var(--cat-chip-text); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 1.25rem; font-weight: 700; } /* an active/selected chip additionally gets box-shadow: 0 0 0 3px var(--color-ink) — a ring, not an outline, so :focus-visible's own outline stays independently visible */"
     },
     {
       "name": "Stat Tile Card",
@@ -96,7 +96,7 @@
       "refersTo": "card-surface",
       "description": "The Elevation token's canonical use — a Sky card floating on the flat Foam page, showing a Display-size hero number.",
       "html": "<div class=\"ds-card\"><p class=\"ds-card-label\">Systolic</p><p class=\"ds-card-value\">128</p><p class=\"ds-card-detail\">min 104 &middot; max 151</p></div>",
-      "css": ".ds-card { border-radius: 12px; background: var(--color-sky); color: var(--color-ink); padding: 24px; box-shadow: var(--shadow-elevation); font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif; } .ds-card-label { margin: 0; font-size: 1.25rem; font-weight: 700; line-height: 1.25; } .ds-card-value { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.25; } .ds-card-detail { margin: 0; font-size: 1.125rem; font-weight: 400; }"
+      "css": ".ds-card { border-radius: 12px; background: var(--color-sky); color: var(--color-ink); padding: 24px; box-shadow: var(--shadow-elevation); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; } .ds-card-label { margin: 0; font-size: 1.25rem; font-weight: 700; line-height: 1.25; } .ds-card-value { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.25; } .ds-card-detail { margin: 0; font-size: 1.125rem; font-weight: 400; }"
     }
   ],
   "narrative": {
@@ -130,7 +130,7 @@
     "donts": [
       "Don't touch the six clinical BP-category colors, the three overlay-dataset colors, or the chart-line colors for aesthetic reasons — they are locked medical/data identity.",
       "Don't add a hover-only, drag, or precise-pointing interaction anywhere — the primary user cannot reliably operate a pointer.",
-      "Don't introduce a third font weight — only 400 and 700 ship as static files for Atkinson Hyperlegible; a synthesized weight is a regression, not an enhancement.",
+      "Don't introduce a third font weight — only the 400 and 700 files are imported, and Plus Jakarta Sans ships 200-800, so adding an import is all it takes to break this silently; a synthesized or newly-imported intermediate weight is a regression, not an enhancement.",
       "Don't let the Focus ring and Terracotta accent collapse into the same color again — they were deliberately separated in dark mode so a focused control and a pressed control are never visually confused.",
       "Don't hardcode a hex value in a component. Every color is a var(--...) custom property declared once in index.css for both themes."
     ]
