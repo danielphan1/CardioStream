@@ -68,7 +68,7 @@ export function AssistantPopup({
         onClick={toggleOpen}
         aria-expanded={open}
         aria-controls="assistant-panel"
-        className="flex min-h-14 items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-panel)] px-5 text-label text-[var(--color-panel-text)] shadow-[var(--shadow-elevation)]"
+        className="press-swell flex min-h-14 items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-panel)] px-5 text-label text-[var(--color-panel-text)] shadow-[var(--shadow-elevation)]"
       >
         <Mic aria-hidden="true" className="h-6 w-6 shrink-0" />
         Assistant
@@ -98,7 +98,7 @@ export function AssistantPopup({
             ref={closeButtonRef}
             type="button"
             onClick={close}
-            className="flex min-h-12 items-center gap-2 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-deck)] px-4 text-label text-[var(--color-depth)]"
+            className="press-swell flex min-h-12 items-center gap-2 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-deck)] px-4 text-label text-[var(--color-depth)]"
           >
             <X aria-hidden="true" className="h-6 w-6 shrink-0" />
             Close

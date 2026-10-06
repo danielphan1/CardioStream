@@ -53,9 +53,9 @@ const TYPE_OPTIONS: { key: RecordType; label: string }[] = [
 // Type-switcher styling — mirrors FilterBar's exact inactiveClass/activeClass
 // constants verbatim (D-02, UI-SPEC "AddRecordPage.tsx layout").
 const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
+  "press-swell min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
 const activeClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+  "press-swell min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 /**
  * Mount-fade wrapper mirroring ChartDeck.tsx's own `FadeSwap` (same
@@ -233,8 +233,8 @@ export function AddRecordPage() {
         aria-busy={isSubmitting}
         className={
           canSubmit
-            ? "min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
-            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            ? "press-swell min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
+            : "press-swell min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
         }
       >
         {isSubmitting ? "Saving…" : SUBMIT_LABEL[recordType]}

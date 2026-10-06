@@ -51,7 +51,7 @@ const ITEM_BASE =
 // put this much distance between a destination and a utility too. State is
 // still carried by the WORD ("Dark", "Voice Replies: On") plus aria-pressed,
 // never by colour alone.
-const UTILITY_ITEM = `${ITEM_BASE} rounded-lg font-normal text-[var(--color-muted)]`;
+const UTILITY_ITEM = `press-swell ${ITEM_BASE} rounded-lg font-normal text-[var(--color-muted)]`;
 
 interface NavItem {
   view: View;
@@ -147,7 +147,7 @@ export function ShellNav({
                 type="button"
                 onClick={() => selectDestination(itemView)}
                 aria-current={selected ? "page" : undefined}
-                className={`${ITEM_BASE} rounded-xl ${
+                className={`press-swell ${ITEM_BASE} rounded-xl ${
                   selected
                     ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-[var(--color-accent-text)]"
                     : "text-[var(--color-depth)]"

@@ -92,7 +92,7 @@ export function NavPanel({
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="flex min-h-12 items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            className="press-swell flex min-h-12 items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             <X aria-hidden="true" size={24} />
             Close

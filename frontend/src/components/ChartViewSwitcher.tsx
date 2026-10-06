@@ -23,9 +23,9 @@ import { useAgentPulseFlash } from "../lib/agent";
 import { useFilters } from "../store/filters";
 
 const inactiveClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
+  "press-swell min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
 const activeClass =
-  "min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
+  "press-swell min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
 const VIEWS: { key: ChartView; label: string }[] = [
   { key: "timeline", label: "Timeline" },

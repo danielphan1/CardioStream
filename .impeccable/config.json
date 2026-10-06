@@ -14,6 +14,12 @@
         "value": "inter",
         "createdAt": "2026-09-14T21:18:52.884Z",
         "reason": "Locked Phase 13 typography decision, 13-02-PLAN.md: Inter+Space Grotesk installed as a deliberate self-hosted pairing (13-CONTEXT.md design contract), not an incidental default"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(86, 194, 236, 0.1)",
+        "createdAt": "2026-10-06T00:08:32.481Z",
+        "reason": "= dark --color-accent #56C2EC at 10% alpha, the --horizon band literal in index.css; index.css is the sanctioned home for derived literals (--color-grid precedent) and plan 261005-mj2 forbids color-mix() for gate-mirrorable values"
       }
     ]
   }

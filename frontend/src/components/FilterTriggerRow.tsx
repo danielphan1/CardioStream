@@ -103,7 +103,7 @@ export function FilterTriggerRow({
           aria-expanded={datesOpen}
           aria-controls="dates-popover"
           onClick={() => (datesOpen ? onClose() : onOpen("dates"))}
-          className={`flex min-h-12 items-center gap-2 rounded-xl border bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
+          className={`press-swell flex min-h-12 items-center gap-2 rounded-xl border bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
             datesOpen,
           )}${datesPulse}`}
         >
@@ -133,7 +133,7 @@ export function FilterTriggerRow({
             count > 0 ? `Filters, ${count} applied` : "Filters, none applied"
           }
           onClick={() => (filtersOpen ? onClose() : onOpen("filters"))}
-          className={`flex min-h-12 items-center gap-2 rounded-xl border bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
+          className={`press-swell flex min-h-12 items-center gap-2 rounded-xl border bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)] ${stateClass(
             filtersOpen,
           )}${filtersPulse}`}
         >

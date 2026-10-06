@@ -85,14 +85,14 @@ export function LogoutConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            className="press-swell min-h-12 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
+            className="press-swell min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
           >
             Log out
           </button>

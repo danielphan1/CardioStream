@@ -161,7 +161,7 @@ export default function ChartTooltip({
           e.stopPropagation();
           onClose();
         }}
-        className="min-h-12 min-w-12 self-end rounded-lg px-6"
+        className="press-swell min-h-12 min-w-12 self-end rounded-lg px-6"
         style={{
           background: "var(--color-accent)",
           color: "var(--color-accent-text)",

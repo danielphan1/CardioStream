@@ -151,6 +151,67 @@
   --overlay-incidents: #9C2E6E;
   --overlay-procedures: #5B6B2A;
   --overlay-chip-text: #FFFFFF;
+
+  /* ---------------------------------------------------------------------
+   * MOTION LAYER — "The Swell" (quick 261005-mj2).
+   *
+   * THEME-INDEPENDENT, AND DECLARED EXACTLY ONCE ON PURPOSE. Nothing in
+   * `.dark` overrides a duration, a delay or an easing curve, so a
+   * duplicated declaration down there would be dead code. This is
+   * deliberately NOT the --color-signal-on-panel precedent: that token is
+   * duplicated because the GROUND it is judged against (--color-panel) does
+   * not invert, which is a claim about colour. A duration has no ground.
+   *
+   * The two motion values that ARE colour-derived (--sheen, --horizon) do
+   * live in both themes — see below, and again in `.dark`.
+   * ------------------------------------------------------------------- */
+  --ease-swell: cubic-bezier(0.16, 1, 0.3, 1); /* every arrival; no bounce */
+  --dur-press: 110ms; /* press acknowledgement */
+  --dur-state: 220ms; /* a control changing state, and every EXIT */
+  --dur-travel: 320ms; /* something moving from A to B */
+  --dur-crest: 460ms; /* a surface arriving */
+  --stagger-step: 60ms; /* sibling delay, capped at 4 siblings per group */
+  /* Half of --dur-travel. It exists so the nav label's colour flip can be
+     expressed as a token-driven `delay-[var(--dur-flip)]` instead of a
+     calc() buried inside a Tailwind arbitrary value. The flip lands at the
+     MIDPOINT of the pill's travel so the label never sits accent-on-accent
+     mid-flight; if --dur-travel ever changes, change this with it. */
+  --dur-flip: 160ms;
+
+  /* One-pass highlight for the crest. Light theme is a white-over-nothing
+     sweep. Deliberately NOT color-mix(): this file already records why a
+     mixing function is avoided for anything a gate might have to mirror,
+     and a literal keeps the two themes legible side by side.
+     NO contrast.test.ts ASSERTION, and that omission is deliberate rather
+     than an oversight: the sheen carries no text and is not a boundary —
+     it is a transient highlight that ends off-surface. */
+  --sheen: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.55) 45%,
+    rgba(255, 255, 255, 0) 60%
+  );
+
+  /* The layered login-gate backdrop: three low-alpha bands drawn from sky,
+     mist and accent. Also UNASSERTED in contrast.test.ts, for the same
+     deliberate reason — these bands sit BEHIND a card, carry no text and
+     draw no boundary. The only ambient loop in the app rides this value
+     (see .swell-horizon). */
+  --horizon: linear-gradient(
+      180deg,
+      rgba(143, 211, 244, 0.26) 0%,
+      rgba(143, 211, 244, 0) 42%
+    ),
+    linear-gradient(
+      200deg,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(18, 120, 174, 0.12) 0%,
+      rgba(18, 120, 174, 0) 48%
+    );
 }
 
 .dark {
@@ -209,6 +270,28 @@
   --overlay-incidents: #EFA0C9;
   --overlay-procedures: #C7D488;
   --overlay-chip-text: #0A121F;
+
+  /* The two COLOUR-DERIVED motion values. The durations and easings in
+     :root are theme-independent and deliberately absent here.
+
+     --sheen derives from --color-depth's dark literal (#E7EEF2) at a much
+     lower alpha than light's white sweep: on a dark card a 0.55 white flash
+     reads as a blown highlight, whereas 0.14 of the near-white ink reads as
+     an edge catching the light, which is the intent. */
+  --sheen: linear-gradient(
+    105deg,
+    rgba(231, 238, 242, 0) 30%,
+    rgba(231, 238, 242, 0.14) 45%,
+    rgba(231, 238, 242, 0) 60%
+  );
+
+  --horizon: linear-gradient(
+      180deg,
+      rgba(143, 211, 244, 0.14) 0%,
+      rgba(143, 211, 244, 0) 44%
+    ),
+    linear-gradient(200deg, rgba(13, 34, 52, 0.9) 0%, rgba(13, 34, 52, 0) 58%),
+    linear-gradient(0deg, rgba(86, 194, 236, 0.1) 0%, rgba(86, 194, 236, 0) 48%);
 }
 
 body {
@@ -252,4 +335,237 @@ body {
  */
 .chart-band .recharts-reference-area-rect {
   fill-opacity: var(--band-opacity);
+}
+
+/* ===========================================================================
+ * THE SWELL — keyframes, browser surfaces, utilities, reduced motion
+ * (quick 261005-mj2). Plain top-level at-rules: they pass straight through
+ * Tailwind's `@import "tailwindcss"` above, and author @keyframes are not
+ * tree-shaken, so `animate-[swell-rise_…]` arbitrary utilities resolve
+ * against these.
+ * ======================================================================== */
+
+/* The directional rise — the app's signature arrival. Used with `both` fill
+   mode so a staggered surface stays INVISIBLE until its delay elapses
+   (which is why useCountUp takes a matching start delay: a card that fades
+   in showing an already-settled number has no arrival at all). */
+@keyframes swell-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* One pass of highlight across a cresting surface. A transform on a pseudo
+   layer rather than an animated background-position: the budget rule prefers
+   composited properties. ONE pass only — never `infinite`. It ends both
+   off-surface and transparent, so there is no resting sheen to clear. */
+@keyframes swell-sheen {
+  from {
+    opacity: 1;
+    transform: translateX(-120%);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+/* THE ONLY PERMITTED LOOP IN THE APP, and only on the pre-auth login
+   surface, which unmounts the moment a token exists. A transform, not a
+   background-position, for the same composited-property reason. */
+@keyframes horizon-drift {
+  from {
+    transform: translate3d(-2.5%, -1.5%, 0) scale(1.08);
+  }
+  to {
+    transform: translate3d(2.5%, 1.5%, 0) scale(1.08);
+  }
+}
+
+/* A value settling onto the page. No bounce and no overshoot: an overshoot
+   on a clinical number reads as the number itself changing. */
+@keyframes count-settle {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Themed browser surfaces — the craft floor this app was leaving at browser
+ * default. All four are chrome, not content.
+ * ----------------------------------------------------------------------- */
+
+/* --color-accent / --color-accent-text is already gated at 4.86:1 in
+   contrast.test.ts, so selected text keeps its AA margin. */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+input,
+textarea {
+  caret-color: var(--color-accent);
+}
+
+/* The standard property plus the -webkit- pseudos, because Safari/iOS — the
+   primary user's likely device — supports only the latter. */
+html {
+  scrollbar-color: var(--color-hairline) var(--color-deck);
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-deck);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-hairline);
+  /* The `full` radius, not an off-scale value: on a 12px track a pill thumb
+     is what the reference chrome draws, and 9999px is already the system's
+     name for that shape. */
+  border-radius: 9999px;
+}
+
+/* Lining figures so a column of numbers does not shimmy. The element
+   selector covers the readings table for free — zero component churn — and
+   `.tnum` is for the KPI readouts, which are not table cells and which
+   animate their own digits. */
+table td,
+table th,
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+ * Two utilities, following the .chart-band precedent above: a bespoke class
+ * here so components stay free of hexes and of long motion strings.
+ *
+ * UNLAYERED ON PURPOSE. Tailwind v4 emits its utilities inside cascade
+ * layers, and unlayered CSS beats layered CSS regardless of source order —
+ * so `.press-swell` always wins over a utility on the same element and can
+ * never be half-copied at a call site.
+ * ----------------------------------------------------------------------- */
+
+/* App-wide press feedback. `:active` fires on tap, on click AND on keyboard
+   activation for a <button>, so this is safe for a user with no reliable
+   pointer and is NOT a hover affordance. */
+.press-swell {
+  transition: transform var(--dur-press) var(--ease-swell);
+}
+.press-swell:active {
+  transform: scale(0.97);
+}
+
+/* The login horizon. `isolation: isolate` is what keeps the negative-z
+   pseudo behind the content but still above the element's own background —
+   without it the band would paint behind the page. */
+.swell-horizon {
+  position: relative;
+  isolation: isolate;
+}
+.swell-horizon::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--horizon);
+  /* Tens of seconds, deliberately below the threshold where the eye reads
+     it as movement rather than as weather. ease-in-out, not --ease-swell:
+     that curve is for arrivals and would snap at each turn. */
+  animation: horizon-drift 48s ease-in-out infinite alternate;
+}
+
+/* The one-pass crest highlight. `overflow: hidden` clips the sweep to the
+   card; at 24px+ of card padding it cannot reach a focus ring. */
+.swell-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.swell-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--sheen);
+  animation: swell-sheen var(--dur-crest) var(--ease-swell) 1 both;
+}
+
+/* ==========================================================================
+ * REDUCED MOTION — belt and braces, and the LAST block in the file.
+ *
+ * Zeroing the duration tokens means a component that MISSES its
+ * `motion-reduce:` companion still degrades correctly, which is the whole
+ * point of putting the durations in tokens.
+ *
+ * The keyframes are re-DECLARED as inert rather than killed with a global
+ * `*{animation:none!important}`. A later @keyframes block of the same name
+ * wins while this query matches, so each animation becomes a no-op WITH ITS
+ * FINAL STATE INTACT — surgical, no !important, and unrelated animations
+ * (the animate-pulse skeletons) are untouched.
+ * ======================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-press: 0ms;
+    --dur-state: 0ms;
+    --dur-travel: 0ms;
+    --dur-crest: 0ms;
+    --dur-flip: 0ms;
+    --stagger-step: 0ms;
+  }
+
+  @keyframes swell-rise {
+    from,
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes swell-sheen {
+    from,
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes horizon-drift {
+    from,
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes count-settle {
+    from,
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .press-swell:active {
+    transform: none;
+  }
+
+  /* THE ONE PLACE WHERE "final state intact" IS THE WRONG ANSWER, so it is
+     handled here rather than left to the inert keyframe above. The sheen
+     layer's final state is `transform: none`, which parks the highlight
+     band across the middle of the card — a permanent gradient streak. The
+     layer is pure decoration with no state to preserve, so under reduced
+     motion it should not exist at all: "no travel, no sheen, no drift". */
+  .swell-sheen::after {
+    display: none;
+  }
 }

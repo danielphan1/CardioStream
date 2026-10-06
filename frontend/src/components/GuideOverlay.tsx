@@ -215,7 +215,7 @@ export function GuideOverlay({ clearanceAbove }: GuideOverlayProps) {
             ref={closeButtonRef}
             type="button"
             onClick={() => setOpen(false)}
-            className="flex min-h-12 items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+            className="press-swell flex min-h-12 items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
           >
             <X aria-hidden="true" size={24} />
             Close

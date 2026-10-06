@@ -280,11 +280,11 @@ function AppShell({
 function ChartSkeleton() {
   return (
     <div aria-busy="true" className="flex flex-col gap-8">
-      <div className="h-[clamp(420px,calc(100vh_-_300px),760px)] animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
+      <div className="h-[clamp(420px,calc(100vh_-_300px),760px)] motion-safe:animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
       <div className="grid gap-8 md:grid-cols-3">
-        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
-        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
-        <div className="h-36 animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 motion-safe:animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 motion-safe:animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
+        <div className="h-36 motion-safe:animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]" />
       </div>
     </div>
   );
@@ -310,7 +310,7 @@ function DataUnavailable({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
+        className="press-swell min-h-12 rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
       >
         Try again
       </button>
@@ -533,7 +533,7 @@ function ReadingsView() {
           {readings.isPending ? (
             <div
               aria-busy="true"
-              className="h-[clamp(420px,calc(100vh_-_300px),760px)] animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]"
+              className="h-[clamp(420px,calc(100vh_-_300px),760px)] motion-safe:animate-pulse rounded-xl bg-[var(--color-mist)] shadow-[var(--shadow-elevation)]"
             />
           ) : readings.isError ? (
             <DataUnavailable onRetry={() => void readings.refetch()} />

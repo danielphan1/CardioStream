@@ -152,7 +152,7 @@ export function OverlayEventsList({
             <button
               type="button"
               onClick={() => setVisible((v) => v + PAGE_SIZE)}
-              className="mt-4 min-h-12 w-full rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
+              className="press-swell mt-4 min-h-12 w-full rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
             >
               Show 20 more
             </button>

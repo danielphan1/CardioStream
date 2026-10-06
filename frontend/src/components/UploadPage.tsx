@@ -147,7 +147,7 @@ export function UploadPage() {
                 type="button"
                 aria-expanded={showRejects}
                 onClick={() => setShowRejects((v) => !v)}
-                className="flex w-fit items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-2 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
+                className="press-swell flex w-fit items-center gap-2 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 py-2 text-label text-[var(--color-depth)] shadow-[var(--shadow-elevation)]"
               >
                 <ChevronDown
                   aria-hidden="true"

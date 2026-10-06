@@ -107,8 +107,8 @@ export function DateRangePicker({ from, to, onApply }: DateRangePickerProps) {
         aria-disabled={!canApply}
         className={
           canApply
-            ? "min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
-            : "min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            ? "press-swell min-h-12 self-start rounded-xl bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)]"
+            : "press-swell min-h-12 cursor-not-allowed self-start rounded-xl border-2 border-dashed border-[var(--color-depth)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
         }
       >
         Apply

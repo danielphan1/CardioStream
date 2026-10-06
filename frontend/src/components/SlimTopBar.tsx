@@ -26,7 +26,7 @@ import { useGuide } from "../store/guide";
 // the two buttons must not be able to drift apart; both buttons carrying it is
 // asserted by SlimTopBar.test.tsx rather than by a grep count.
 const HEADER_CHROME =
-  "flex min-h-12 items-center gap-2 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]";
+  "press-swell flex min-h-12 items-center gap-2 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-mist)] px-4 text-label text-[var(--color-depth)]";
 
 export function SlimTopBar({
   menuOpen,

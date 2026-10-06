@@ -168,7 +168,7 @@ export function LoginGate() {
             password.trim() === "" ||
             submitting
           }
-          className="min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
+          className="press-swell min-h-12 rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-accent)] px-6 text-label text-[var(--color-accent-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-depth)] disabled:bg-[var(--color-mist)] disabled:text-[var(--color-depth)]"
         >
           Enter
         </button>

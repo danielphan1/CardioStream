@@ -315,8 +315,8 @@ export function CommandBar({ latestReading }: CommandBarProps) {
             aria-label={sessionOpen ? "Stop voice control" : "Start voice control"}
             className={
               micArmed
-                ? "flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--cat-normal)] bg-[var(--cat-normal)] text-[var(--cat-chip-text)]"
-                : "flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-[var(--color-hairline)] bg-[var(--color-deck)] text-[var(--color-depth)]"
+                ? "press-swell flex min-h-12 min-w-12 items-center justify-center rounded-xl border-2 border-[var(--cat-normal)] bg-[var(--cat-normal)] text-[var(--cat-chip-text)]"
+                : "press-swell flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-[var(--color-hairline)] bg-[var(--color-deck)] text-[var(--color-depth)]"
             }
           >
             {voiceState === "paused" ? (
@@ -341,7 +341,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
         <button
           type="submit"
           disabled={anyWorking}
-          className="min-h-12 rounded-xl border-2 border-[var(--color-accent-on-panel)] bg-[var(--color-accent-on-panel)] px-6 text-label text-[var(--color-accent-on-panel-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-panel-text)] disabled:bg-transparent disabled:text-[var(--color-panel-text)]"
+          className="press-swell min-h-12 rounded-xl border-2 border-[var(--color-accent-on-panel)] bg-[var(--color-accent-on-panel)] px-6 text-label text-[var(--color-accent-on-panel-text)] disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-[var(--color-panel-text)] disabled:bg-transparent disabled:text-[var(--color-panel-text)]"
         >
           Send
         </button>
@@ -367,7 +367,7 @@ export function CommandBar({ latestReading }: CommandBarProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
+            className="press-swell min-h-12 rounded-xl border border-[var(--color-hairline)] bg-[var(--color-mist)] px-6 text-label text-[var(--color-depth)]"
           >
             Cancel
           </button>
