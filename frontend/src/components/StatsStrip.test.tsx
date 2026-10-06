@@ -14,7 +14,15 @@
 //   3. the D-22 null contract: zero readings renders em dashes, never 0 and
 //      never blank. A health figure that shows 0 where the real answer is
 //      "no data" is a clinical misstatement, not a cosmetic bug.
-import { render, screen } from "@testing-library/react";
+//   4. the values COUNT UP on arrival (quick 261005-mj2), so the assertions
+//      that read a counted number are async now. The exact-match form is
+//      preserved in every case — `findByText` and `waitFor` change only how
+//      long the test is willing to wait, never what it accepts. In
+//      particular the Readings cell's `textContent` comparison stays an
+//      exact `toBe`: it is the §5.6 "no range, no filler copy" contract, and
+//      relaxing it to `toContain` to accommodate an animation would trade a
+//      real gate for a visual flourish.
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { StatsSummary } from "../api/types";
@@ -41,6 +49,14 @@ const STATS: StatsSummary = {
   categories: CATEGORIES,
   latest_reading: "2026-09-30T08:15:00",
 };
+
+/** How long to wait for a counted value to SETTLE. The fourth card's own
+ *  ladder delay is 360ms and the count runs 460ms, so the last number lands
+ *  around 820ms — only 180ms inside Testing Library's 1000ms default, which
+ *  is not enough headroom on a loaded machine. This widens the WAIT only;
+ *  every assertion it guards is still an exact match, so a wrong or
+ *  reformatted number fails here exactly as it did before. */
+const SETTLE = { timeout: 3000 };
 
 // count === 0 means every VitalStats is null (D-22).
 const EMPTY_STATS: StatsSummary = {
@@ -113,22 +129,28 @@ describe("the secondary range string (§6)", () => {
     expect(announced).not.toHaveAttribute("aria-hidden");
   });
 
-  it("renders the backend averages verbatim, with no client arithmetic", () => {
+  // Still VERBATIM, still no client arithmetic — the count-up settles on the
+  // payload string character for character, so these remain exact matches and
+  // are merely awaited. A reformat (118, or 117.90) fails them exactly as a
+  // client-side recomputation would.
+  it("renders the backend averages verbatim, with no client arithmetic", async () => {
     render(<StatsStrip stats={STATS} isLoading={false} />);
-    expect(screen.getByText("117.9")).toBeInTheDocument();
-    expect(screen.getByText("76.4")).toBeInTheDocument();
-    expect(screen.getByText("68.2")).toBeInTheDocument();
-    expect(screen.getByText("30")).toBeInTheDocument();
+    expect(await screen.findByText("117.9", undefined, SETTLE)).toBeInTheDocument();
+    expect(await screen.findByText("76.4", undefined, SETTLE)).toBeInTheDocument();
+    expect(await screen.findByText("68.2", undefined, SETTLE)).toBeInTheDocument();
+    expect(await screen.findByText("30", undefined, SETTLE)).toBeInTheDocument();
   });
 });
 
 describe("the Readings cell has no secondary line (§5.6)", () => {
-  it("renders only a label and a count, with no range and no filler copy", () => {
+  it("renders only a label and a count, with no range and no filler copy", async () => {
     render(<StatsStrip stats={STATS} isLoading={false} />);
     const cell = cellFor("Readings");
     expect(cell.querySelectorAll("p")).toHaveLength(2);
     expect(cell.querySelectorAll(".sr-only")).toHaveLength(0);
-    expect(cell.textContent).toBe("Readings30");
+    // Awaited because the count animates, but still an EXACT comparison of
+    // the whole cell's text: "Readings" plus the number and nothing else.
+    await waitFor(() => expect(cell.textContent).toBe("Readings30"), SETTLE);
   });
 
   it("invents no range words under the count", () => {
@@ -170,7 +192,16 @@ describe("loading and absent states", () => {
     const { container } = render(<StatsStrip stats={undefined} isLoading />);
     const section = screen.getByRole("region", { name: "Summary statistics" });
     expect(section).toHaveAttribute("aria-busy", "true");
-    expect(container.querySelectorAll(".animate-pulse")).toHaveLength(4);
+    // The skeleton's pulse is `motion-safe:animate-pulse` now (quick
+    // 261005-mj2 gated the one remaining ungated animation in the app), and
+    // the rendered class TOKEN is therefore `motion-safe:animate-pulse`, which
+    // the `.animate-pulse` class selector does not match. Substring match
+    // instead — and the count of FOUR stays, because four skeleton cells is
+    // the §5.6 loading contract (the row must not jump when data lands), not
+    // merely "a skeleton exists".
+    expect(container.querySelectorAll('[class*="animate-pulse"]')).toHaveLength(
+      4,
+    );
     expect(screen.queryByText("Systolic")).toBeNull();
   });
 

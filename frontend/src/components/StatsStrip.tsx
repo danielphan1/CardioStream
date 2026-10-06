@@ -43,11 +43,39 @@ import { Activity, Gauge, HeartPulse, ListChecks } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import type { StatsSummary, VitalStats } from "../api/types";
+import { useCountUp } from "../hooks/useCountUp";
 
 type StatsStripProps = {
   stats: StatsSummary | undefined;
   isLoading: boolean;
 };
+
+/** The crest every readout arrives on (quick 261005-mj2, brief §4). */
+const CREST =
+  "motion-safe:animate-[swell-rise_var(--dur-crest)_var(--ease-swell)_both]";
+
+/** THE KPI ROW IS STEPS 3-6 OF ONE LADDER, not a group that starts over.
+ *  LeftRail crested at step 0 and GreetingHeader took steps 1 and 2, so the
+ *  first card starts at step 3. The `3 +` is load-bearing: without it the
+ *  first card would rise alongside the rail and the entrance would stop being
+ *  "rail, then greeting, then the cards left-to-right" — which is the whole
+ *  thesis. Four siblings and three steps of sibling delay, so the brief's
+ *  cap of four per group still holds. */
+const LADDER_OFFSET = 3;
+
+/** Mirrors --stagger-step, for the JS side of the same ladder (useCountUp
+ *  cannot read a CSS custom property). Keep in step with index.css. */
+const STAGGER_MS = 60;
+
+/** The CSS delay and the JS delay for card `n` (0-based, left to right). They
+ *  must agree: the card is invisible until the CSS delay elapses, and the
+ *  count has to start at that same instant rather than behind the curtain. */
+function ladderStep(n: number) {
+  return {
+    css: `calc(var(--stagger-step) * ${LADDER_OFFSET + n})`,
+    ms: (LADDER_OFFSET + n) * STAGGER_MS,
+  };
+}
 
 /** The row is no longer the island (quick 261003-hev). EACH CELL is its own
  *  elevated card now, matching the reference dashboards' KPI row, so the
@@ -105,13 +133,21 @@ function VitalCell({
   label,
   vital,
   Icon,
+  step,
 }: {
   label: string;
   vital: VitalStats | null;
   Icon: LucideIcon;
+  /** 0-based position in the row, left to right — see ladderStep. */
+  step: number;
 }) {
+  const delay = ladderStep(step);
+  // Settles on `vital.avg` verbatim; a null vital returns the em dash
+  // immediately and never counts (D-22). See useCountUp's header.
+  const avg = useCountUp(vital === null ? null : vital.avg, delay.ms);
+
   return (
-    <div className={CARD}>
+    <div className={`${CARD} ${CREST}`} style={{ animationDelay: delay.css }}>
       {/* The symbol is decoration: the adjacent word already names the vital,
           so it is aria-hidden and adds nothing to the announced string. */}
       {/* Label and range sit in --color-muted at regular weight; only the
@@ -122,10 +158,10 @@ function VitalCell({
         <Icon aria-hidden="true" size={20} className="shrink-0" />
         {label}
       </p>
-      <p className="mt-1 text-display text-[var(--color-depth)]">
-        {vital !== null ? vital.avg : "—"}
-      </p>
-      <p className="text-base font-normal text-[var(--color-muted)]">
+      {/* `tnum` (index.css) is what stops the cell shimmying while the digits
+          change — proportional figures would re-measure on every frame. */}
+      <p className="tnum mt-1 text-display text-[var(--color-depth)]">{avg}</p>
+      <p className="tnum text-base font-normal text-[var(--color-muted)]">
         {vital !== null ? (
           <>
             <span aria-hidden="true">{`${vital.min}–${vital.max}`}</span>
@@ -142,11 +178,44 @@ function VitalCell({
   );
 }
 
+/** The dark feature tile. Its own component so the count-up hook has a top
+ *  level to live at — StatsStrip itself returns early and branches on
+ *  `isLoading`, so a hook called inside that branch would be conditional. */
+function ReadingsCell({ count, step }: { count: number; step: number }) {
+  const delay = ladderStep(step);
+  const shown = useCountUp(count, delay.ms);
+
+  return (
+    // The 1px --color-sky waterline on the TOP edge only. Sky on a DARK
+    // ground is exactly where the Sky-Is-Not-A-Button Rule permits it: the
+    // rule bans a text-bearing sky FILL on a light surface, and this is a
+    // boundary on navy. Newly gated in contrast.test.ts rather than left to
+    // ride on --color-accent-on-panel's identical literal.
+    <div
+      className={`${CARD_FEATURE} ${CREST} border-t border-[var(--color-sky)]`}
+      style={{ animationDelay: delay.css }}
+    >
+      <p className="flex items-center gap-2 text-base font-normal text-[var(--color-muted-on-panel)]">
+        <ListChecks aria-hidden="true" size={20} className="shrink-0" />
+        Readings
+      </p>
+      {/* NO secondary line here: a count has no minimum or maximum, a
+          fabricated range would be meaningless, and the other three
+          cells set the row height anyway. Do not add a "total" or
+          "all time" filler string to balance the cell visually — on a
+          data surface an invented word is worse than white space. */}
+      <p className="tnum mt-1 text-display text-[var(--color-panel-text)]">
+        {shown}
+      </p>
+    </div>
+  );
+}
+
 /** Skeleton cell for the initial-load state (§5.6 loading contract) — same
  *  grid, same two line boxes, so the row does not jump when data lands. */
 function SkeletonCell() {
   return (
-    <div className={`${CARD} animate-pulse`}>
+    <div className={`${CARD} motion-safe:animate-pulse`}>
       <div className="h-6 w-24 rounded bg-[var(--color-deck)]" />
       <div className="mt-1 h-9 w-20 rounded bg-[var(--color-deck)]" />
       <div className="mt-1 h-6 w-16 rounded bg-[var(--color-deck)]" />
@@ -173,21 +242,11 @@ export function StatsStrip({ stats, isLoading }: StatsStripProps) {
           </>
         ) : (
           <>
-            <VitalCell label="Systolic" vital={stats.systolic} Icon={Gauge} />
-            <VitalCell label="Diastolic" vital={stats.diastolic} Icon={Activity} />
-            <VitalCell label="Pulse" vital={stats.pulse} Icon={HeartPulse} />
-            <div className={CARD_FEATURE}>
-              <p className="flex items-center gap-2 text-base font-normal text-[var(--color-muted-on-panel)]">
-                <ListChecks aria-hidden="true" size={20} className="shrink-0" />
-                Readings
-              </p>
-              {/* NO secondary line here: a count has no minimum or maximum, a
-                  fabricated range would be meaningless, and the other three
-                  cells set the row height anyway. Do not add a "total" or
-                  "all time" filler string to balance the cell visually — on a
-                  data surface an invented word is worse than white space. */}
-              <p className="mt-1 text-display text-[var(--color-panel-text)]">{stats.count}</p>
-            </div>
+            {/* step 0..3, left to right — the four cards crest in that order. */}
+            <VitalCell label="Systolic" vital={stats.systolic} Icon={Gauge} step={0} />
+            <VitalCell label="Diastolic" vital={stats.diastolic} Icon={Activity} step={1} />
+            <VitalCell label="Pulse" vital={stats.pulse} Icon={HeartPulse} step={2} />
+            <ReadingsCell count={stats.count} step={3} />
           </>
         )}
       </div>

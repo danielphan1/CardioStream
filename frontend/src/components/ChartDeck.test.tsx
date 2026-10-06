@@ -4,7 +4,13 @@
 // Recharts renders nothing under jsdom's 0x0 layout, so these assert WHICH
 // branch mounted (heading + landmark), not chart internals — CombinedTimeline
 // has its own suite for that.
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Reading } from "../api/types";
@@ -123,6 +129,54 @@ describe("ChartDeck routing", () => {
     });
     deck(EVENTS);
     expect(screen.getByRole("heading", { name: "AM vs PM" })).toBeTruthy();
+  });
+});
+
+// The directional chart swap (quick 261005-mj2, brief §5). This is the ONLY
+// gate in the suite that an entrance-only build fails: a grep for a
+// `direction` identifier, or for the VIEW_ORDER import, passes perfectly well
+// on an implementation that never drifts the outgoing chart anywhere. The
+// observable exit phase is the thing worth asserting, so it is asserted
+// rather than inferred from a variable name.
+//
+// Every OTHER test in this file calls useFilters.setState BEFORE render, so no
+// already-mounted deck ever sees a view change and none of them became async.
+// This one deliberately changes the view on a MOUNTED deck, which is the only
+// way the exit phase can occur at all.
+describe("directional view swap (brief §5)", () => {
+  it("drifts the outgoing chart out before the incoming one crests in", async () => {
+    const { container } = deck();
+    expect(container.querySelector('[data-swap-phase="in"]')).toBeTruthy();
+
+    act(() => {
+      useFilters.setState({ chartView: "bp_categories" });
+    });
+
+    // timeline -> bp_categories is a real move along VIEW_ORDER, so the swap
+    // gets an exit phase rather than committing immediately.
+    expect(container.querySelector('[data-swap-phase="exit"]')).toBeTruthy();
+    await waitFor(() =>
+      expect(container.querySelector('[data-swap-phase="in"]')).toBeTruthy(),
+    );
+  });
+
+  it("commits immediately when the swap was not a view change", () => {
+    const { container } = deck();
+    // A dataset toggle changes the remount key but not the view, so there is
+    // nothing directional to say and the entrance runs alone — exactly the
+    // behaviour before the swap existed.
+    act(() => {
+      useFilters.setState({
+        visibleDatasets: {
+          blood_pressure: true,
+          pulse: false,
+          labs: false,
+          incidents: false,
+          procedures: false,
+        },
+      });
+    });
+    expect(container.querySelector('[data-swap-phase="exit"]')).toBeNull();
   });
 });
 

@@ -61,17 +61,31 @@ export function LoginGate() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[var(--color-deck)] px-4">
+    // THE APP'S ONE AUTHORED FOCAL MOMENT (quick 261005-mj2, brief §1). The
+    // first impression was a plain white card on a flat tint. `swell-horizon`
+    // (index.css) layers three low-alpha bands behind everything here and
+    // drifts them on a 48s loop — the ONLY continuous ambient motion in the
+    // app, and it is affordable precisely because it runs on one pre-auth
+    // surface that unmounts the moment a token exists. `isolation: isolate`
+    // in that class is what keeps the negative-z band behind the form while
+    // still above this element's own --color-deck fill.
+    <main className="swell-horizon flex min-h-screen items-center justify-center bg-[var(--color-deck)] px-4">
+      {/* The card crests in with ONE sheen pass across it. `swell-sheen`
+          clips the sweep to the card and parks it off-surface when it ends —
+          never `infinite`, and gone entirely under reduced motion. */}
       <form
         onSubmit={handleSubmit}
         aria-label="Sign in"
-        className="flex w-full max-w-[28rem] flex-col gap-4 rounded-xl bg-[var(--color-mist)] p-6 md:p-8 shadow-[var(--shadow-elevation)]"
+        className="swell-sheen flex w-full max-w-[28rem] flex-col gap-4 rounded-xl bg-[var(--color-mist)] p-6 md:p-8 shadow-[var(--shadow-elevation)] motion-safe:animate-[swell-rise_var(--dur-crest)_var(--ease-swell)_both]"
       >
         <div className="flex flex-col items-center gap-2 text-center">
+          {/* The brand mark rides the same swell ONE stagger step later —
+              it is the mark, so it gets the beat. */}
           <Sailboat
             aria-hidden="true"
             size={40}
-            className="text-[var(--color-depth)]"
+            className="text-[var(--color-depth)] motion-safe:animate-[swell-rise_var(--dur-crest)_var(--ease-swell)_both]"
+            style={{ animationDelay: "var(--stagger-step)" }}
           />
           <h1 className="text-heading leading-tight text-[var(--color-depth)]">
             Chris's Health Dashboard

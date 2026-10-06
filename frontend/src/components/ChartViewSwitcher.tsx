@@ -18,20 +18,25 @@
 // label prefix from the same place, so a standalone row still reads as one
 // member of the control family rather than three unnamed buttons. The groups
 // it used to sit beside are now behind the two triggers above it.
-import type { ChartView } from "../api/types";
 import { useAgentPulseFlash } from "../lib/agent";
+import { VIEW_LABEL, VIEW_ORDER } from "../lib/chartViews";
 import { useFilters } from "../store/filters";
 
+// The active fill no longer SNAPS between the three buttons, and neither
+// class says how: `press-swell` (index.css) carries a --dur-state ease on
+// colour, background-color and border-color as well as the press transform.
+// A Tailwind easing utility added to these strings would be DEAD CODE — that
+// class is unlayered, so its `transition` shorthand beats any such utility on
+// the same element.
 const inactiveClass =
   "press-swell min-h-12 rounded-xl px-4 text-label bg-[var(--color-mist)] text-[var(--color-depth)] border border-[var(--color-hairline)]";
 const activeClass =
   "press-swell min-h-12 rounded-xl px-4 text-label bg-[var(--color-accent)] text-[var(--color-accent-text)] border-2 border-[var(--color-accent)]";
 
-const VIEWS: { key: ChartView; label: string }[] = [
-  { key: "timeline", label: "Timeline" },
-  { key: "bp_categories", label: "BP Categories" },
-  { key: "am_pm_comparison", label: "AM vs PM" },
-];
+// VIEW_ORDER and VIEW_LABEL moved to lib/chartViews.ts (quick 261005-mj2):
+// ChartDeck needs the same order to derive a swap's direction, and exporting
+// a constant from this component file breaks fast refresh. Still exactly ONE
+// declaration of the three keys and the three labels — just not here.
 
 export function ChartViewSwitcher() {
   const chartView = useFilters((s) => s.chartView);
@@ -53,7 +58,10 @@ export function ChartViewSwitcher() {
         aria-label="Chart view"
         className={`flex flex-wrap gap-2${pulseClass}`}
       >
-        {VIEWS.map(({ key, label }) => (
+        {/* Mapped over VIEW_ORDER, so the buttons' left-to-right order and
+            the direction ChartDeck drifts a swap are literally the same
+            fact — not two lists that have to be kept in step. */}
+        {VIEW_ORDER.map((key) => (
           <button
             key={key}
             type="button"
@@ -61,7 +69,7 @@ export function ChartViewSwitcher() {
             onClick={() => setChartView(key)}
             className={chartView === key ? activeClass : inactiveClass}
           >
-            {label}
+            {VIEW_LABEL[key]}
           </button>
         ))}
       </div>

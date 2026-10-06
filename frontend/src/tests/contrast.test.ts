@@ -478,3 +478,37 @@ describe("accent inside the dark feature panel (--color-accent-on-panel)", () =>
     expect(hex(LIGHT.accent, LIGHT.panel)).toBeLessThan(3);
   });
 });
+
+// ---------------------------------------------------------------------------
+// The Sky waterline on the dark KPI feature tile (quick 261005-mj2, brief §4).
+// A 1px --color-sky border on the TOP edge of --color-panel.
+//
+// This block passes trivially today, and that is exactly the point: the sky
+// literal is the same hex as the already-gated --color-accent-on-panel, so the
+// waterline has been riding on ANOTHER token's assertion. Now it has its own.
+// A future edit that retints --color-sky for its chart-gradient job would
+// otherwise drop this boundary below the floor with a green suite.
+//
+// Deliberately NOT asserted here: --sheen and --horizon. Both are pure
+// decoration behind a card — neither carries text nor draws a boundary — so
+// neither has a floor to clear. The omission is a decision, not an oversight.
+// ---------------------------------------------------------------------------
+
+describe("the Sky waterline on the dark feature tile", () => {
+  // A border is a non-text UI component: WCAG 1.4.11, 3:1 — not 4.5:1.
+  it("clears the non-text UI floor on the light-theme panel (3:1)", () => {
+    expect(hex(LIGHT.sky, LIGHT.panel)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("clears the non-text UI floor on the dark-theme panel (3:1)", () => {
+    expect(hex(DARK.sky, DARK.panel)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("is on a DARK ground, which is the only place the Sky rule permits it", () => {
+    // The Sky-Is-Not-A-Button Rule in one assertion: sky against the light
+    // canvas is 1.47:1, so a sky-filled control there would have no visible
+    // edge at all. Keeping this guard here records WHY the waterline is
+    // allowed on the panel and nowhere else.
+    expect(hex(LIGHT.sky, LIGHT.deck)).toBeLessThan(3);
+  });
+});

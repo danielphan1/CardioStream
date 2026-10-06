@@ -77,15 +77,31 @@ export function AssistantPopup({
       {/* No display utility on this element: `hidden` must win, and a Tailwind
           `flex`/`grid` class here would override the attribute's display:none.
           max-h + overflow-y keeps a long transcript on screen (the
-          No-Off-Screen Rule bans the horizontal kind of scrolling only). */}
+          No-Off-Screen Rule bans the horizontal kind of scrolling only).
+
+          THE CARD STILL ONLY FADES ITS VISIBILITY — `hidden={!mounted}` and
+          everything about useDismissable are untouched. The card is hidden,
+          never unmounted, because CommandBar owns the live SpeechRecognition
+          session; mounting must NOT be gated on a transition.
+
+          It now ARRIVES rather than appears (brief §8): a crest from the
+          bottom-right corner it is anchored to, which is where the eye
+          already is after pressing the trigger. Enter takes --dur-crest and
+          exit the faster --dur-state, because exits should be quicker than
+          entrances. That 220ms exit finishes INSIDE useDismissable's
+          DISMISSABLE_FADE_MS (250ms), which is the upper bound on how long
+          the node stays mounted after close — the 30ms gap is deliberate
+          headroom, not an off-by-one to "fix". */}
       <div
         id="assistant-panel"
         role="group"
         aria-label="Assistant"
         hidden={!mounted}
         data-surface="panel"
-        className={`w-[min(92vw,480px)] max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--color-hairline)] bg-[var(--color-panel)] px-4 pb-4 shadow-[var(--shadow-elevation)] transition-opacity duration-[250ms] ease-in-out motion-reduce:transition-none ${
-          shown ? "opacity-100" : "opacity-0"
+        className={`w-[min(92vw,480px)] max-h-[70vh] origin-bottom-right overflow-y-auto rounded-xl border border-[var(--color-hairline)] bg-[var(--color-panel)] px-4 pb-4 shadow-[var(--shadow-elevation)] transition-[opacity,transform] ease-[var(--ease-swell)] motion-reduce:transition-none ${
+          shown
+            ? "duration-[var(--dur-crest)] translate-y-0 scale-100 opacity-100"
+            : "duration-[var(--dur-state)] translate-y-2 scale-95 opacity-0"
         }`}
       >
         {/* Sticky header so Close stays reachable once the transcript grows

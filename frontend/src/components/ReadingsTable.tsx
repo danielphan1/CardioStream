@@ -78,7 +78,17 @@ export function ReadingsTable({ readings }: ReadingsTableProps) {
       className="rounded-xl bg-[var(--color-mist)] p-6 shadow-[var(--shadow-elevation)]"
     >
       {cardLayout ? (
-        <div role="list" aria-label="Readings" className="flex flex-col gap-4">
+        /* ONE CARD TREATMENT PER UNIT OF CONTENT, not two (brief §10). This
+           section is already an elevated rounded card, and each row used to be
+           a rounded, bordered card inside it — nested cards. The rows are now
+           divided by a hairline instead, and `divide-y` puts that rule
+           BETWEEN rows only, never above the first, so the list does not grow
+           a redundant edge just inside the section's own. */
+        <div
+          role="list"
+          aria-label="Readings"
+          className="flex flex-col divide-y divide-[var(--color-hairline)]/50"
+        >
           {shown.map((r) => (
             <ReadingCard key={r.id} reading={r} />
           ))}
@@ -177,10 +187,11 @@ function ReadingRow({ reading: r }: { reading: Reading }) {
 function ReadingCard({ reading: r }: { reading: Reading }) {
   const hasNote = r.notes !== null && r.notes !== "";
   return (
-    <div
-      role="listitem"
-      className="rounded-xl border border-[var(--color-deck)] p-4"
-    >
+    // No rounding and no border of its own — see the role="list" container
+    // above. Vertical padding stays, so the divider has air on both sides;
+    // horizontal padding goes, because the section's own p-6 already provides
+    // it and the row no longer has an edge to sit inside.
+    <div role="listitem" className="py-4">
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
         <dt className="text-base font-bold">Date</dt>
         <dd className="text-base">{fmtDateCell(r.datetime)}</dd>
